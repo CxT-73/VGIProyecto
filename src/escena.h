@@ -8,7 +8,10 @@
 #define GLSOURCE_H
 
 // Entorn VGI: OBJECTE OBJ. Include per la definició de l'objecte Obj_OBJ
-#include "objLoader.h"	
+#include "objLoader.h"
+#include "coche.h"
+//declaramos el coche
+extern Coche* miCoche;
 
 /* ------------------------------------------------------------------------- */
 /*                            Funcions de les escenes                        */

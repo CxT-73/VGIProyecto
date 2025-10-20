@@ -16,6 +16,8 @@
 #include "visualitzacio.h"
 #include "escena.h"
 
+Coche* miCoche = nullptr;
+
 // Dibuixa Eixos Coordenades Món i Reixes, activant un shader propi.
 void dibuixa_Eixos(GLuint ax_programID, bool eix, GLuint axis_Id, CMask3D reixa, CPunt3D hreixa, 
 	glm::mat4 MatriuProjeccio, glm::mat4 MatriuVista)
@@ -444,6 +446,10 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
 		dibuixa(sh_programID, objecte,MatriuVista, MatriuTG);
 		break;
+	}
+	//Renderitzat del cotxe
+	if (miCoche) {
+		miCoche->render(sh_programID, MatriuVista);
 	}
 
 // Enviar les comandes gràfiques a pantalla
