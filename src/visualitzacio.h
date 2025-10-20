@@ -10,7 +10,7 @@
 /* ------------------------------------------------------------------------- */
 /*                                Funcions                                   */
 /* ------------------------------------------------------------------------- */
-
+class Coche;
 // Entorn VGI: Il.luminació
 void Iluminacio(char ilumin, bool ifix, bool ilu2sides, bool ll_amb, LLUM* lumin, char obj, bool frnt_fcs, bool bc_lin, int step);
 
@@ -43,6 +43,11 @@ glm::mat4 Vista_Geode(GLuint sh_programID, CEsfe3D opv, char VPol, bool pant, CP
 	bool frnt_fcs, bool oculta, bool testv, bool bck_ln,
 	char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides,
 	bool eix, CMask3D reixa, CPunt3D hreixa);
+
+// Camera seguiment cotxe
+glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CColor col_fons,
+	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
+	LLUM* lumi, bool ifix, bool il2sides);
 
 // Entorn VGI: Càrrega TG
 glm::mat4 instancia(bool TR, INSTANCIA tg, INSTANCIA tgF);

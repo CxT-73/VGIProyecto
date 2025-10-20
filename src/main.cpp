@@ -338,6 +338,10 @@ void InitGL()
 // Entorn VGI: Altres variables
 	mida = 1.0;			nom = "";		buffer = "";
 	initVAOList();	// Inicialtzar llista de VAO'S.
+	// CREACIÓ DE COTXE
+	if (miCoche == nullptr) {
+		miCoche = new Coche();
+	}
 }
 
 
@@ -600,6 +604,10 @@ void OnPaint(GLFWwindow* window)
 					ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
 					eixos, grid, hgrid);
 				}
+		else if (camera == CAM_FOLLOW) {
+			ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, c_fons, oculta, test_vis, back_line,
+				ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+		}
 
 // Entorn VGI: Dibuix de l'Objecte o l'Escena
 		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
@@ -1167,6 +1175,9 @@ int shortCut_Camera()
 	case CAM_GEODE:		// Càmera GEODE
 		auxCamera = 2;
 		break;
+	case CAM_FOLLOW:
+		auxCamera = 3;
+		break;
 	default:			// Opció CÀMERA <Altres Càmeres>
 		auxCamera = -1;
 		break;
@@ -1532,7 +1543,7 @@ void ShowEntornVGIWindow(bool* p_open)
 			{	clickCG = 0;
 				if (camera == CAM_GEODE) OnCameraOrigenGeode();
 			}
-
+		ImGui::RadioButton("Seguimiento Coche", &oCamera, 3);
 		// Entorn VGI. Gestió opcions desplegable CAMERA segons el valor de la variable selected
 			switch (oCamera)
 			{
@@ -1544,6 +1555,9 @@ void ShowEntornVGIWindow(bool* p_open)
 				break;
 			case 2:	// Opció CAMERA Geode
 				if (camera != CAM_GEODE) OnCameraGeode();
+				break;
+			case 3: // Opció CAMERA Seguiment
+				camera = CAM_FOLLOW;
 				break;
 			default: 
 				// Opció per defecte: CAMERA Esfèrica
