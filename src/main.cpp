@@ -342,6 +342,24 @@ void InitGL()
 	if (miCoche == nullptr) {
 		miCoche = new Coche();
 	}
+
+	if (cono == nullptr) {
+		cono = new OBJ("cono");
+	}
+
+	if (circuit == nullptr) {
+		circuit = new OBJ("circuit");
+	}
+	if (barrera == nullptr) {
+		barrera = new OBJ("barrera");
+	}
+	if (bloc == nullptr) {
+		bloc = new OBJ("bloc");
+	}
+	if (barril == nullptr) {
+		barril = new OBJ("barril");
+	}
+
 }
 
 
