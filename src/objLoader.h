@@ -120,3 +120,20 @@ OBJLOADER_CLASS_DECL COBJModel* _stdcall InitObject();
 OBJLOADER_CLASS_DECL void _stdcall UnInitObject(COBJModel *obj);
 
 #endif // !defined(AFX_OBJMODEL_H__32C5F722_AD3D_11D1_8F4D_E0B57CC10800__INCLUDED_)
+
+
+#pragma once
+
+#include "stdafx.h" 
+
+
+class COBJModel;
+
+class OBJ {
+public:
+	COBJModel* objecteOBJ;
+	std::string nom;
+	OBJ(const std::string& nombreObjeto);       // Constructor
+	~OBJ();                          // Destructor
+	void render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG, CColor col_object, bool sw_mat[5]);
+};

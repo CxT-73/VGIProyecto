@@ -11,8 +11,12 @@
 #include "objLoader.h"
 #include "coche.h"
 //declaramos el coche
-extern Coche* miCoche;
-
+extern Coche* miCoche; 
+extern OBJ* cono;
+extern OBJ* circuit;
+extern OBJ* barrera;
+extern OBJ* bloc;
+extern OBJ* barril;
 /* ------------------------------------------------------------------------- */
 /*                            Funcions de les escenes                        */
 /* ------------------------------------------------------------------------- */

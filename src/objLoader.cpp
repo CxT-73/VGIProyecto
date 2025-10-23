@@ -14,6 +14,7 @@
 #include "stdafx.h"
 #include "objLoader.h"
 
+#include "material.h"
 // OBJ File string indentifiers
 #define VERTEX_ID		 "v"
 #define TEXCOORD_ID		 "vt"
@@ -1496,4 +1497,117 @@ void _stdcall COBJModel::draw_TriVAO_OBJ(GLuint sh_programID)
 		
 		draw_TriVAO_Object_OBJ(i);							// Dibuix objecte i-èssim
 	}
+}
+
+OBJ::OBJ(const std::string& nombreObjeto) {
+	objecteOBJ = new COBJModel();
+
+	char ruta[256]; // espacio suficiente para la ruta
+
+	// Elegir ruta según el nombre del objeto
+	if (nombreObjeto == "cono") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Cono/Cono.obj");
+	}
+	else if (nombreObjeto == "circuit") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m2/track.obj");
+	}
+	else if (nombreObjeto == "barrera") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Barrera_m1/Barrera_m1.obj");
+	}
+	else if (nombreObjeto == "bloc") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Bloc/Bloc.obj"); 
+	}
+	else if (nombreObjeto == "barril") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Barril/Barril.obj");
+	}
+	else {
+		fprintf(stderr, "ERROR: Nombre de objeto desconocido: %s\n", nombreObjeto.c_str());
+		return;
+	}
+
+	// Cargar modelo
+	if (objecteOBJ->LoadModel(ruta) != 0) {
+		fprintf(stderr, "ERROR: No se pudo cargar %s\n", ruta);
+	}
+	else {
+		printf("OBJ cargado automáticamente: %s\n", ruta);
+	}
+}
+
+
+OBJ::~OBJ() {
+	if (objecteOBJ) delete objecteOBJ;
+}
+
+//z --> azul
+//j --> verde
+//i --> rojo
+
+//coloca el objeto en una cuadrícula 3D separada 15 unidades entre filas (i) y columnas (j), a una altura fija de 160 en el eje Z
+//ModelMatrix = glm::translate(MatriuTG, vec3(i * 15.0f, j * 15.0f, 160.0f));
+
+//Esto es necesario porque las normales deben transformarse sin verse afectadas por escalados o proyecciones no uniformes que distorsionarían la iluminación.
+//NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
+
+//mueve cada objeto 15 unidades en las tres direcciones, según sus índices i, j, k.
+//TransMatrix = glm::translate(MatriuTG, vec3(i * 15.0f, j * 15.0f, k * 15.0f));
+
+//primero se mueve (traslación con TransMatrix), luego se escala el modelo.
+//ModelMatrix = glm::scale(TransMatrix, vec3(5.0f, 5.0f, 5.0f));
+
+void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG, CColor col_object, bool sw_mat[5]) {
+	if (!objecteOBJ) return;
+
+	float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 0.0f;
+	float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
+	float escala=0.0f;
+	// Configurar separaciones según el objeto
+	if (nom == "cono") {
+		sepX = 0.5f;
+		sepY = 0.0f;
+		offsetZ = 0.0f;
+		escala = 0.1f;
+	}
+	else if (nom == "barrera") {
+		sepX = 1.0f;
+		sepY = 0.0f;
+		escala = 0.5f;
+	}
+	else if (nom == "circuit") {
+		sepX = -0.5f;
+		sepY = -0.5f;
+		offsetZ = 0.0f;
+		escala = 135.0f;
+	}
+	else if (nom == "bloc") {
+		sepX = -0.5f;
+		sepY = 0.0f;
+		escala = 0.5f;
+	}
+	else if (nom == "barril") {
+		sepX = -1.0f;
+		sepY = 0.0f;
+		offsetZ = 0.0f;
+		escala = 0.5f;
+	}
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 10; j++) {
+			glm::mat4 TransMatrix = glm::translate(MatriuTG, glm::vec3(i * sepX, j * sepY, offsetZ));
+			glm::mat4 RotMatrix = glm::rotate(TransMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+			glm::mat4 ModelMatrix = glm::scale(RotMatrix, glm::vec3(escala));
+			glm::mat4 NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
+			 
+			glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
+		}
+	}
+
+	SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
+	objecteOBJ->draw_TriVAO_OBJ(sh_programID);
 }
