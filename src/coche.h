@@ -25,3 +25,4 @@ private:
     COBJModel* model;     // apuntador al modelo de la carroceria
     COBJModel* model_rueda;      // Un solo modelo para todas las ruedas
 };
+ 

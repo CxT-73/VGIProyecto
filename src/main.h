@@ -68,13 +68,13 @@
 
 // Entorn VGI: Variables de control per les opcions de menú Projecció, Objecte
 	char projeccio;					// Menú Projecció: Tipus de projeccio
-	static int oProjeccio = 3;		// ImGui: Variable que controla desplegable TIPUS PROJECCIO d'ImGui
+	static int oProjeccio;		// ImGui: Variable que controla desplegable TIPUS PROJECCIO d'ImGui
 	glm::mat4 ProjectionMatrix(1.0);// Matriu de Projecció a passar al shader
 	char objecte;					// Menú Objecte: Tipus d'Objecte
 	static int oObjecte = 0;		// ImGui: Variable que controla desplegable TIPUS OBJECTE d'ImGui
 
 // Entorn VGI: Variables de control Skybox Cube
-	bool SkyBoxCube;			// Booleana que controla si es visualitza Skybox [TRUE] o no [FALSE].
+	bool SkyBoxCube = true;			// Booleana que controla si es visualitza Skybox [TRUE] o no [FALSE].
 	Shader shader_SkyBoxC;		// Shader Skybox Cub
 	GLuint skC_programID;		// Identificador program Skybox Cube
 	CVAO skC_VAOID;				// Identificador VAO List (vaoId, vboId, nVertexs) per a Skybox Cube

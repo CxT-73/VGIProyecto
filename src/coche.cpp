@@ -17,7 +17,7 @@ Coche::Coche() {
     model = new COBJModel();
     model_rueda = new COBJModel();
     //lectura objetos
-    char ruta[] = "../x64/Release/OBJFiles/Car/coche_sr.obj";
+    char ruta[] = "../x64/Release/OBJFiles/Car/coche_mod.obj";
     if (model->LoadModel(ruta) != 0) {
         //mirem si carrega bé
         fprintf(stderr, "ERROR: Could not load car model from %s!\n", ruta);
@@ -43,84 +43,72 @@ Coche::~Coche() {
     model_rueda = nullptr;
 }
 
+
 void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
-    if (!model) return; 
-    // Apliquem transformacions
-    glm::mat4 ModelMatrix = glm::mat4(1.0f); // Inicia matriz modelo (identidad).
+    if (!model) return;
 
-    float scaleFactor = 10.5f;               // Factor de escala para la carrocería.
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(x, y, z)); // Mueve a la posición (x,y,z) del coche.
+    float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 0.0f;
+    float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
+    float escala = 0.0f, y = 0.0f, rad = 90.0f, z = 0.0f, x = 1.0f;
 
-    // Aplica rotación 'psi' (yaw) alrededor del eje Y.
-    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(psi), glm::vec3(0.0f, 1.0f, 0.0f));
-
-    // Guarda estado actual (posición + psi) para usarlo como base para las ruedas.
+    glm::mat4 ModelMatrix = glm::mat4(1.0f);
     glm::mat4 BaseCarMatrix = ModelMatrix;
-    // Aplica rotación fija de -90 grados en Y (concreto de este modelo por como se mostraba al exportarlo al inicio).
-    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 CarOrientationMatrix = ModelMatrix;
 
-    // Aplica la escala final a la carrocería.
-    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(scaleFactor));
+    float scaleFactor = 10.5f;
+    offsetX = 55.0f; //rojo
+    offsetY = -5.0f; //verde
+    offsetZ = -43.0f; //azul
+    escala = 0.8f;
 
-    // Calcula la matriz normal (para iluminación correcta con transformaciones).
-    glm::mat4 NormalMatrix = glm::transpose(glm::inverse(MatriuVista * ModelMatrix));
+    //  TRANSFORMACIONES DEL COCHE 
+    float inclinacion = glm::radians(-8.0f);  
+    glm::mat4 InclinationMatrix = glm::rotate(glm::mat4(1.0f), inclinacion, glm::vec3(1.0f, 0.0f, 0.0f));
+     
+    glm::mat4 TransMatrix = glm::translate(ModelMatrix, glm::vec3(offsetX, offsetY, offsetZ));
+    glm::mat4 RotMatrix = glm::rotate(TransMatrix, glm::radians(rad), glm::vec3(x, y, z));
+     
+    CarOrientationMatrix = InclinationMatrix * RotMatrix;
+     
+    glm::mat4 ModelMatrixCar = glm::scale(CarOrientationMatrix, glm::vec3(escala));
+    glm::mat4 NormalMatrixCar = glm::transpose(glm::inverse(MatriuVista * ModelMatrixCar));
 
-    //Send the matrices to the active shader
-    glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
-
-    //Draw the model
+    //  DIBUJAR COCHE 
+    glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrixCar[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrixCar[0][0]);
     model->draw_TriVAO_OBJ(sh_programID);
 
-    if (model_rueda) { 
+    //  DIBUJAR RUEDAS QUE SIGUEN AL COCHE 
+    if (model_rueda) {
+        glm::vec3 pos_rueda_DI = glm::vec3(-0.76f, -0.4f, -0.15f);
+        glm::vec3 pos_rueda_DD = glm::vec3(0.25f, -0.4f, -0.10f);
+        glm::vec3 pos_rueda_TI = glm::vec3(-0.85f, -0.4f, 1.80f);
+        glm::vec3 pos_rueda_TD = glm::vec3(0.14f, -0.4f, 1.85f); 
+        escala = 1.0;
+        glm::mat4 ModelMatrixCar = glm::scale(CarOrientationMatrix, glm::vec3(escala));
+         
+        ModelMatrixCar = glm::rotate(ModelMatrixCar, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 NormalMatrixCar = glm::transpose(glm::inverse(MatriuVista * ModelMatrixCar));
+         
+        //  Dibujar ruedas 
+        auto dibujarRueda = [&](glm::vec3 pos, glm::vec3 offsetLocal) {
+            glm::mat4 ModelMatrixRueda = ModelMatrixCar;   // Hereda todas las transformaciones del coche
+            ModelMatrixRueda = glm::translate(ModelMatrixRueda, pos + offsetLocal);  // Posición + desplazamiento local
 
-        glm::vec3 pos_rueda_DI = glm::vec3(-0.76f, -0.4f, -0.15f); // Delantera Izquierda 
-        glm::vec3 pos_rueda_DD = glm::vec3(0.25f, -0.4f, -0.10f); // Delantera Derecha 
-        glm::vec3 pos_rueda_TI = glm::vec3(-0.85f, -0.4f, 1.80f); // Trasera Izquierda 
-        glm::vec3 pos_rueda_TD = glm::vec3(0.14f, -0.4f, 1.85f); // Trasera Derecha  
+            glm::mat4 NormalMatrixRueda = glm::transpose(glm::inverse(MatriuVista * ModelMatrixRueda));
+            glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrixRueda[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrixRueda[0][0]);
+            model_rueda->draw_TriVAO_OBJ(sh_programID);
+            };
 
-        
-        float scaleFactorRueda = 0.25f; 
-        glm::vec3 escalaRueda = glm::vec3(scaleFactorRueda);
+        float movAtras = -9.0f;   
+        float movDer = 2.9f;    
+        //(verde,azul,rojo)
+        dibujarRueda(pos_rueda_DI, glm::vec3(0.0f, -1.0f, 0.6f));
+        dibujarRueda(pos_rueda_DD, glm::vec3(movDer, -1.0f, 0.7f));
+        dibujarRueda(pos_rueda_TI, glm::vec3(0.35f, -1.2f, movAtras-0.05));
+        dibujarRueda(pos_rueda_TD, glm::vec3(movDer+0.45, -1.2f, movAtras+0.1));
 
-        // Rueda Delantera Izquierda (DI)
-        glm::mat4 ModelMatrixRuedaDI = BaseCarMatrix; // Partimos de la matriz base del coche (antes de escalar y rotar coche)
-        ModelMatrixRuedaDI = glm::translate(ModelMatrixRuedaDI, pos_rueda_DI);
-   
-        ModelMatrixRuedaDI = glm::scale(ModelMatrixRuedaDI, escalaRueda);
-        glm::mat4 NormalMatrixRuedaDI = glm::transpose(glm::inverse(MatriuVista * ModelMatrixRuedaDI));
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrixRuedaDI[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrixRuedaDI[0][0]);
-        model_rueda->draw_TriVAO_OBJ(sh_programID);
-
-        // Rueda Delantera Derecha (DD)
-        glm::mat4 ModelMatrixRuedaDD = BaseCarMatrix;
-        ModelMatrixRuedaDD = glm::translate(ModelMatrixRuedaDD, pos_rueda_DD);
-
-        ModelMatrixRuedaDD = glm::scale(ModelMatrixRuedaDD, escalaRueda);
-        glm::mat4 NormalMatrixRuedaDD = glm::transpose(glm::inverse(MatriuVista * ModelMatrixRuedaDD));
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrixRuedaDD[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrixRuedaDD[0][0]);
-        model_rueda->draw_TriVAO_OBJ(sh_programID);
-
-        // Rueda Trasera Izquierda (TI)
-        glm::mat4 ModelMatrixRuedaTI = BaseCarMatrix;
-        ModelMatrixRuedaTI = glm::translate(ModelMatrixRuedaTI, pos_rueda_TI);
-
-        ModelMatrixRuedaTI = glm::scale(ModelMatrixRuedaTI, escalaRueda);
-        glm::mat4 NormalMatrixRuedaTI = glm::transpose(glm::inverse(MatriuVista * ModelMatrixRuedaTI));
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrixRuedaTI[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrixRuedaTI[0][0]);
-        model_rueda->draw_TriVAO_OBJ(sh_programID);
-
-        // Rueda Trasera Derecha (TD)
-        glm::mat4 ModelMatrixRuedaTD = BaseCarMatrix;
-        ModelMatrixRuedaTD = glm::translate(ModelMatrixRuedaTD, pos_rueda_TD);
-
-        ModelMatrixRuedaTD = glm::scale(ModelMatrixRuedaTD, escalaRueda);
-        glm::mat4 NormalMatrixRuedaTD = glm::transpose(glm::inverse(MatriuVista * ModelMatrixRuedaTD));
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrixRuedaTD[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrixRuedaTD[0][0]);
-        model_rueda->draw_TriVAO_OBJ(sh_programID);
     }
+
 }

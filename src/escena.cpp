@@ -21,7 +21,7 @@ OBJ* cono = nullptr;
 OBJ* circuit = nullptr;
 OBJ* barrera = nullptr;
 OBJ* bloc = nullptr;
-OBJ* barril = nullptr;
+OBJ* barril = nullptr; 
 // Dibuixa Eixos Coordenades Món i Reixes, activant un shader propi.
 void dibuixa_Eixos(GLuint ax_programID, bool eix, GLuint axis_Id, CMask3D reixa, CPunt3D hreixa, 
 	glm::mat4 MatriuProjeccio, glm::mat4 MatriuVista)
@@ -453,6 +453,7 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 	}
 	//Renderitzat del cotxe
 	if (miCoche) {
+
 		miCoche->render(sh_programID, MatriuVista);
 	}
 	if (cono)
@@ -469,7 +470,7 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 
 	if (barril) 
 		barril->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
-	
+	 
 // Enviar les comandes gràfiques a pantalla
 //	glFlush();
 }

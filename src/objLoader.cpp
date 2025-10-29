@@ -1508,11 +1508,7 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 	if (nombreObjeto == "cono") {
 		nom = nombreObjeto;
 		strcpy(ruta, "../x64/Release/OBJFiles/Cono/Cono.obj");
-	}
-	else if (nombreObjeto == "circuit") {
-		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m2/track.obj");
-	}
+	} 
 	else if (nombreObjeto == "barrera") {
 		nom = nombreObjeto;
 		strcpy(ruta, "../x64/Release/OBJFiles/Barrera_m1/Barrera_m1.obj");
@@ -1524,6 +1520,10 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 	else if (nombreObjeto == "barril") {
 		nom = nombreObjeto;
 		strcpy(ruta, "../x64/Release/OBJFiles/Barril/Barril.obj");
+	}
+	else if (nombreObjeto == "circuit") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m3/track.obj");
 	}
 	else {
 		fprintf(stderr, "ERROR: Nombre de objeto desconocido: %s\n", nombreObjeto.c_str());
@@ -1563,42 +1563,40 @@ OBJ::~OBJ() {
 void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG, CColor col_object, bool sw_mat[5]) {
 	if (!objecteOBJ) return;
 
-	float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 0.0f;
+	float offsetX = 0.0f, offsetY = 0.0f, offsetZ = -46.0f;
 	float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
-	float escala=0.0f;
+	float escala=0.0f, y  = 0.0f, rad = 90.0f,z=0.0f,x=1.0f;
 	// Configurar separaciones según el objeto
 	if (nom == "cono") {
 		sepX = 0.5f;
-		sepY = 0.0f;
-		offsetZ = 0.0f;
-		escala = 0.1f;
+		sepY = 0.0f; 
+		escala = 0.8f;
 	}
 	else if (nom == "barrera") {
 		sepX = 1.0f;
 		sepY = 0.0f;
-		escala = 0.5f;
-	}
-	else if (nom == "circuit") {
-		sepX = -0.5f;
-		sepY = -0.5f;
-		offsetZ = 0.0f;
-		escala = 135.0f;
-	}
+		escala = 1.0f;
+	} 
 	else if (nom == "bloc") {
 		sepX = -0.5f;
 		sepY = 0.0f;
-		escala = 0.5f;
+		escala = 1.0f;
 	}
 	else if (nom == "barril") {
 		sepX = -1.0f;
-		sepY = 0.0f;
-		offsetZ = 0.0f;
-		escala = 0.5f;
+		sepY = 0.0f; 
+		escala = 5.0f;
+	}
+	else if (nom == "circuit") {
+		sepX = 100.0f;
+		sepY = -100.0f;
+		offsetZ = -400.0f;
+		escala = 100.0f;
 	}
 	for (int i = 0; i < 10; i++) {
 		for (int j = 0; j < 10; j++) {
 			glm::mat4 TransMatrix = glm::translate(MatriuTG, glm::vec3(i * sepX, j * sepY, offsetZ));
-			glm::mat4 RotMatrix = glm::rotate(TransMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 RotMatrix = glm::rotate(TransMatrix, glm::radians(rad), glm::vec3(x, y,z));
 
 			glm::mat4 ModelMatrix = glm::scale(RotMatrix, glm::vec3(escala));
 			glm::mat4 NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));

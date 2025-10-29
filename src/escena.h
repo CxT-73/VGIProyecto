@@ -16,7 +16,7 @@ extern OBJ* cono;
 extern OBJ* circuit;
 extern OBJ* barrera;
 extern OBJ* bloc;
-extern OBJ* barril;
+extern OBJ* barril;  
 /* ------------------------------------------------------------------------- */
 /*                            Funcions de les escenes                        */
 /* ------------------------------------------------------------------------- */
