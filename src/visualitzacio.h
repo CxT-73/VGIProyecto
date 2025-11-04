@@ -45,7 +45,7 @@ glm::mat4 Vista_Geode(GLuint sh_programID, CEsfe3D opv, char VPol, bool pant, CP
 	bool eix, CMask3D reixa, CPunt3D hreixa);
 
 // Camera seguiment cotxe
-glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CColor col_fons,
+glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
 	LLUM* lumi, bool ifix, bool il2sides);
 

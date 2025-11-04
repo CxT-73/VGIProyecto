@@ -629,8 +629,9 @@ void OnPaint(GLFWwindow* window)
 				eixos, grid, hgrid);
 		}
 		else if (camera == CAM_FOLLOW) {
-			ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, c_fons, oculta, test_vis, back_line,
-				ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+			ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, OPV, mobil, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
 		}
 
 		// Entorn VGI: Dibuix de l'Objecte o l'Escena
@@ -1597,7 +1598,7 @@ void ShowEntornVGIWindow(bool* p_open)
 			if (camera != CAM_GEODE) OnCameraGeode();
 			break;
 		case 3: // Opció CAMERA Seguiment
-			camera = CAM_FOLLOW;
+			if (camera != CAM_FOLLOW) OnCameraFollow();
 			break;
 		default:
 			// Opció per defecte: CAMERA Esfèrica
@@ -2371,6 +2372,22 @@ void OnCameraOrigenEsferica()
 		OPV.R = 15.0;		OPV.alfa = 0.0;		OPV.beta = 0.0;				// Origen PV en esfèriques
 		mobil = true;		zzoom = true;		satelit = false;
 		Vis_Polar = POLARZ;
+	}
+}
+
+void OnCameraFollow()
+{
+	
+	if (projeccio != ORTO || projeccio != CAP) 
+	{
+		camera = CAM_FOLLOW; 
+
+		
+		OPV.R = 25.0f;     
+		OPV.alfa = 20.0f;  
+		OPV.beta = 0.0f;  
+		mobil = false;
+		//g_FollowCamManual = false;   MUY IMPORTANTE: Resetea a modo automático
 	}
 }
 
@@ -3855,6 +3872,39 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 		else if ((mods == 2) && (action == GLFW_PRESS)) Teclat_Ctrl(key);	// Shortcuts Ctrl Key
 		else if ((objecte == C_BEZIER || objecte == C_BSPLINE || objecte == C_LEMNISCATA || objecte == C_HERMITTE
 			|| objecte == C_CATMULL_ROM) && (action == GLFW_PRESS)) Teclat_PasCorbes(key, action);
+		else if (camera == CAM_FOLLOW)
+		{
+			// Si se PRESIONA una tecla
+			if (action == GLFW_PRESS)
+			{
+				if (key == GLFW_KEY_LEFT) {
+					g_isOrbitingLeft = true; // Activa la bandera izquierda
+					mobil = true; // Pone la cámara en modo manual
+				}
+				if (key == GLFW_KEY_RIGHT) {
+					g_isOrbitingRight = true; // Activa la bandera derecha
+					mobil = true; // Pone la cámara en modo manual
+				}
+			}
+
+			// Si se SUELTA una tecla
+			if (action == GLFW_RELEASE)
+			{
+				if (key == GLFW_KEY_LEFT) {
+					g_isOrbitingLeft = false; // Desactiva la bandera izquierda
+				}
+				if (key == GLFW_KEY_RIGHT) {
+					g_isOrbitingRight = false; // Desactiva la bandera derecha
+				}
+			}
+			if (key == GLFW_KEY_UP) {
+				OPV.R = 25.0f;
+				OPV.alfa = 20.0f;
+				OPV.beta = 0.0f;
+				mobil = false;
+
+			}
+		}
 		else if (camera == CAM_NAVEGA) Teclat_Navega(key, action);
 		else if ((sw_grid) && ((grid.x) || (grid.y) || (grid.z))) Teclat_Grid(key, action);
 		else if (((key == GLFW_KEY_G) && (action == GLFW_PRESS)) && ((grid.x) || (grid.y) || (grid.z))) sw_grid = !sw_grid;
@@ -3883,6 +3933,7 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 
 void OnKeyUp(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+
 }
 
 void OnTextDown(GLFWwindow* window, unsigned int codepoint)
@@ -6503,6 +6554,20 @@ int main(void)
 		// Entorn VGI. Timer: for each timer do this
 		time -= delta;
 		if ((time <= 0.0) && (satelit || anima)) OnTimer();
+
+		if (camera == CAM_FOLLOW && mobil)
+		{
+			// Define la velocidad en GRADOS POR SEGUNDO
+			float orbitSpeedPerSecond = 120.0f; // Ajusta este valor
+
+			if (g_isOrbitingLeft) {
+				// Usa 'delta' (el 'dt') para un movimiento suave
+				OPV.beta -= orbitSpeedPerSecond * delta;
+			}
+			if (g_isOrbitingRight) {
+				OPV.beta += orbitSpeedPerSecond * delta;
+			}
+		}
 
 		// Poll for and process events
 		glfwPollEvents();

@@ -13,6 +13,9 @@
 #include "objLoader.h"	
 
 //-------------- Entorn VGI: Variables globals de main
+//variables para cam follow
+extern bool g_isOrbitingLeft = false;
+extern bool g_isOrbitingRight = false;
 
 // Retrieving main monitor
 	GLFWmonitor* primary;
@@ -241,6 +244,7 @@
 	void OnCameraOrigenNavega();
 	void OnCameraGeode();
 	void OnCameraOrigenGeode();
+	void OnCameraFollow();
 	// Desplegable VISTA
 	void OnVistaFullscreen();
 	void OnVistaPan();

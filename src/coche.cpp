@@ -8,7 +8,7 @@ Coche::Coche() {
     z = 0.0f;
     vx = vy = vz = 0.0f;
     ax = ay = az = 0.0f;
-    psi = 0.0f;
+    psi = 90.0f;
     v_angular = 0.0f;
     angulo_ruedas = 0.0f;   
     rotacion_ruedas = 0.0f; 
@@ -49,24 +49,24 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
 
     float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 0.0f;
     float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
-    float escala = 0.0f, y = 0.0f, rad = 90.0f, z = 0.0f, x = 1.0f;
+    float escala = 0.0f, rad = 90.0f;
 
     glm::mat4 ModelMatrix = glm::mat4(1.0f);
     glm::mat4 BaseCarMatrix = ModelMatrix;
     glm::mat4 CarOrientationMatrix = ModelMatrix;
 
     float scaleFactor = 10.5f;
-    offsetX = 55.0f; //rojo
-    offsetY = -5.0f; //verde
-    offsetZ = -43.0f; //azul
+    x = 55.0f; //rojo
+    y = -5.0f; //verde
+    z = -43.0f; //azul
     escala = 0.8f;
 
     //  TRANSFORMACIONES DEL COCHE 
     float inclinacion = glm::radians(-8.0f);  
     glm::mat4 InclinationMatrix = glm::rotate(glm::mat4(1.0f), inclinacion, glm::vec3(1.0f, 0.0f, 0.0f));
      
-    glm::mat4 TransMatrix = glm::translate(ModelMatrix, glm::vec3(offsetX, offsetY, offsetZ));
-    glm::mat4 RotMatrix = glm::rotate(TransMatrix, glm::radians(rad), glm::vec3(x, y, z));
+    glm::mat4 TransMatrix = glm::translate(ModelMatrix, glm::vec3(x, y, z));
+    glm::mat4 RotMatrix = glm::rotate(TransMatrix, glm::radians(psi), glm::vec3(1.0f, 0.0f, 0.0f));
      
     CarOrientationMatrix = InclinationMatrix * RotMatrix;
      

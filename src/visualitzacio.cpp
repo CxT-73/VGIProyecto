@@ -620,77 +620,67 @@ glm::mat4 Vista_Geode(GLuint sh_programID, CEsfe3D opv, char VPol, bool pant, CP
 // Pega esta función junto a Vista_Esferica, Vista_Navega, etc.
 // AFEGEIX AQUESTA FUNCIÓ AL FINAL DE VISUALITZACIO.CPP
 
-glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CColor col_fons,
+glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
 	LLUM* lumi, bool ifix, bool il2sides)
 {
-	glm::mat4 MatriuVista = glm::mat4(1.0);
-
-	
+	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	Fons(col_fons);
-
-	
 	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
 
-	
-	if (coche != nullptr) 
+	if (coche != nullptr)
 	{
-		float followDistance = 5.0f; //que tan detras nos ponemos del coche
-		float followHeight = 1.5f;   //que tan arriba nos ponemos del coche
-
-		// 1. Obtener la posición actual del coche en coordenadas del mundo.
-		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
-
-		// 2. Crear una matriz de rotación que represente SOLO la orientación horizontal (yaw/psi) del coche.
-		//    Se rota alrededor del eje Y global (0, 1, 0).
-		glm::mat4 carRotation = glm::rotate(glm::mat4(1.0f), glm::radians(coche->psi), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		// 3. Definir cuál es la dirección "adelante" LOCAL del modelo del coche (antes de cualquier rotación).
-		glm::vec3 localForward = glm::vec3(0.0f, 0.0f, -1.0f);
-
-		// 4. Calcular la dirección "adelante" del coche en coordenadas del MUNDO.
-		//    Se transforma el vector localForward usando la rotación del coche (carRotation).
-		//    El glm::vec4(..., 0.0f) asegura que solo se aplica la rotación (no la traslación).
-		//    Se normaliza para obtener un vector de dirección unitario.
-		glm::vec3 worldForward = glm::normalize(glm::vec3(carRotation * glm::vec4(localForward, 0.0f)));
-
-		// 5. Calcular la POSICIÓN de la cámara (`cameraPos`):
-		//    a. Empezar en la posición del coche (`carPos`).
-		//    b. Retroceder (`-`) en la dirección `worldForward` una distancia `followDistance`.
-		//    c. Subir (`+`) verticalmente (`0,1,0`) una altura `followHeight`.
-		glm::vec3 cameraPos = carPos - (worldForward * followDistance) + glm::vec3(0.0f, followHeight, 0.0f);
-
-		// 6. Calcular el PUNTO OBJETIVO al que mirará la cámara (`cameraTarget`):
-		//    a. Empezar en la posición del coche (`carPos`).
-		//    b. Añadir un pequeño desplazamiento hacia adelante (`+ worldForward * 2.0f`) para mirar
-		//       un poco por delante del coche (esto ayuda a ver hacia dónde va).
-		glm::vec3 cameraTarget = carPos + worldForward * 2.0f;
-
-
-		MatriuVista = glm::lookAt(
-			cameraPos,    // Posición de la cámara
-			cameraTarget, // Punto al que mira
-			glm::vec3(0.0f, 1.0f, 0.0f) // Vector "arriba" (eje Y)
-		);
 		
+		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.5f, 0.0f);
+		glm::vec3 pivotPoint = carPos + modelOriginOffset; 
+		//pillamos las variables globales que utilizan las otras camaras
+		float distancia = opv.R;            
+		float elevacion_grados = opv.alfa;    
+		float azimut_grados = opv.beta;     
+
+		float azimut_final_rad;
+		if (!mobil) {
+			
+			azimut_final_rad = glm::radians(coche->psi); //si no movemos la camara
+		}
+		else {
+			
+			azimut_final_rad = glm::radians(azimut_grados); //si movemos la camara
+		}
+
+		//nos colocamos hacia atrás y arriba
+		float elevacion_rad = glm::radians(elevacion_grados);
+		float horizontalDist = distancia * cos(elevacion_rad);
+		float verticalDist = distancia * sin(elevacion_rad);
+
+		glm::vec3 cameraPos;
+		//aplicamos los calculos al punto del coche
+		cameraPos.x = pivotPoint.x + horizontalDist * cosf(azimut_final_rad);
+		cameraPos.y = pivotPoint.y - horizontalDist * sinf(azimut_final_rad);
+		cameraPos.z = pivotPoint.z + verticalDist; 
+
+		
+		glm::vec3 cameraTarget = pivotPoint; 
+
+		
+		MatriuVista = glm::lookAt(
+			cameraPos,
+			cameraTarget,
+			glm::vec3(0.0f, 0.0f, 1.0f) 
+		);
 	}
-	else // Si el cotxe no existeix, fem servir una vista per defecte per evitar errors
+	else 
 	{
-		MatriuVista = glm::lookAt(glm::vec3(0, 5, 15), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		MatriuVista = glm::lookAt(glm::vec3(10, 10, 5), glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
 		printf("No hay coche al que seguir!\n");
 	}
 
-	// Pas Matriu Vista al shader
+	
 	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
-
-	// Iluminacio fixe respecte la camara (després de lookAt)
 	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
-
-	// Gestió d'ocultacions
 	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
 	if (oculta) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
-
-	// Dibuix de les cares back com a línies en Il.luminacio PLANA i SUAU
 	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
 
 	return MatriuVista;
