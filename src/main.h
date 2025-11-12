@@ -107,7 +107,7 @@
 						// o depenent (mobil) respecte el PV (casc miner) (ifixe=0)
 	bool ilum2sides;	// Iluminació de les cares FRONT i BACK [TRUE] o només les FRONT [FALSE]
 	char ilumina;		// Tipus d'il.luminació [FILFERROS 'f',PLANA 'c',SUAU 'c']
-	static int oIlumina = 1;	// Variable que controla desplegable TIPUS ILUMINACIO d'ImGui
+	static int oIlumina = 3;	// Variable que controla desplegable TIPUS ILUMINACIO d'ImGui
 	bool sw_material[5];// Variable que controla els coeficients de reflectivitat del material [TRUE] o no [FALSE]:
 						// [0]: emission, [1]: ambient, [2]: difusa, [3] especular.
 	bool sw_material_old[5]; // Variable que guarda els valors de sw_material mentre no hi ha reflectivitat de material (refl_material=false).
