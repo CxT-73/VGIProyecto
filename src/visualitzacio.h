@@ -20,6 +20,7 @@ void Iluminacio(char ilumin, bool ifix, bool ilu2sides, bool ll_amb, LLUM* lumin
 glm::mat4 Projeccio_Orto();
 // Entorn VGI: Projecció Perspectiva
 glm::mat4 Projeccio_Perspectiva(GLuint sh_programID, int minx, int miny, GLsizei w, GLsizei h, double zoom);
+glm::mat4 Projeccio_Perspectiva(GLsizei w, GLsizei h, double fov_grados);
 
 // ----------- Entorn VGI: CÀMERES
 // Entorn VGI: Càmera Ortogràfica
@@ -48,6 +49,15 @@ glm::mat4 Vista_Geode(GLuint sh_programID, CEsfe3D opv, char VPol, bool pant, CP
 glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
 	LLUM* lumi, bool ifix, bool il2sides);
+
+glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fons,
+	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides);
+
+glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fons,
+	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides);
+
+glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche,bool esIzquierdo, CColor col_fons,
+	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides);
 
 // Entorn VGI: Càrrega TG
 glm::mat4 instancia(bool TR, INSTANCIA tg, INSTANCIA tgF);

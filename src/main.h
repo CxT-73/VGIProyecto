@@ -245,6 +245,7 @@ extern bool g_isOrbitingRight = false;
 	void OnCameraGeode();
 	void OnCameraOrigenGeode();
 	void OnCameraFollow();
+	void OnCameraPrimeraPersona();
 	// Desplegable VISTA
 	void OnVistaFullscreen();
 	void OnVistaPan();

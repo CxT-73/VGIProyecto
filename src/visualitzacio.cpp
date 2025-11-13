@@ -391,6 +391,17 @@ glm::mat4 Projeccio_Perspectiva(GLuint sh_programID, int minx,int miny,GLsizei w
 	return MatriuProjeccio;
 }
 
+glm::mat4 Projeccio_Perspectiva(GLsizei w, GLsizei h, double fov_grados)
+{
+	if (h == 0) h = 1;
+
+	double aspect_ratio = (double)w / (double)h;
+
+	glm::mat4 MatriuProjeccio = glm::perspective(glm::radians(fov_grados), aspect_ratio, p_near, p_far);
+
+	return MatriuProjeccio;
+}
+
 // Vista_Esferica: Definició gluLookAt amb possibilitat de moure el punt de vista interactivament amb el ratolí, 
 //					ilumina i dibuixa l'escena
 glm::mat4 Vista_Esferica(GLuint sh_programID,CEsfe3D opv,char VPol,bool pant,CPunt3D tr,CPunt3D trF,
@@ -642,7 +653,7 @@ glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool
 		float azimut_final_rad;
 		if (!mobil) {
 			
-			azimut_final_rad = glm::radians(coche->psi); //si no movemos la camara
+			azimut_final_rad = glm::radians(coche->psi-15); //si no movemos la camara
 		}
 		else {
 			
@@ -677,6 +688,123 @@ glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool
 	}
 
 	
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+	if (oculta) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
+
+	return MatriuVista;
+}
+
+glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides)
+{
+	glm::mat4 MatriuVista = glm::mat4(1.0);
+	Fons(col_fons); 
+	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+
+	if (coche != nullptr)
+	{
+		
+		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.5f, 0.0f); 
+		glm::vec3 pivotPoint = carPos + modelOriginOffset;
+
+		float a_rad = glm::radians(coche->psi-15); //-15 para centrar correctamente donde miramos
+		glm::vec3 worldForward = glm::normalize(glm::vec3(-sinf(a_rad), cosf(a_rad), 0.0f));
+
+
+		float altura = 2.2f;     
+		float posicio = 1.0f; 
+
+		glm::vec3 cameraPos = pivotPoint - (worldForward * posicio); //ens posicionem on realment volem
+		cameraPos.z = carPos.z + altura; 
+
+		
+		glm::vec3 cameraTarget = cameraPos + (worldForward * 10.0f); 
+
+		
+		MatriuVista = glm::lookAt(
+			cameraPos,
+			cameraTarget,
+			glm::vec3(0.0f, 0.0f, 1.0f) 
+		);
+	}
+	
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+	if (oculta) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
+
+	return MatriuVista;
+}
+
+glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides)
+{
+	glm::mat4 MatriuVista = glm::mat4(1.0f);
+	// ¡NO LIMPIAMOS FONDO (Fons(col_fons))! Dibujamos encima.
+	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+
+	if (coche != nullptr)
+	{
+		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.0f, 0.0f);
+		glm::vec3 pivotPoint = carPos + modelOriginOffset;
+
+		float a_rad = glm::radians(coche->psi);
+		glm::vec3 worldForward = glm::normalize(glm::vec3(-sinf(a_rad), cosf(a_rad), 0.0f));
+
+		float altura = 2.3f; //altura que pillamos (aprox la del retrovisor)
+
+		glm::vec3 cameraPos = pivotPoint + (worldForward * -1.1f); //valor que me posiciona más hacia delante o hacia atras e funncio del origen
+		cameraPos.z = carPos.z + altura;
+
+		
+		glm::vec3 cameraTarget = cameraPos - (worldForward * 10.0f); 
+
+		MatriuVista = glm::lookAt(cameraPos, cameraTarget, glm::vec3(0.0f, 0.0f, 1.0f)); // Z-up
+	}
+
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+	if (oculta) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
+
+	return MatriuVista;
+}
+
+glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche, bool esIzquierdo, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides)
+{
+	glm::mat4 MatriuVista = glm::mat4(1.0f);
+	// ¡NO LIMPIAMOS FONDO (Fons(col_fons))! Dibujamos encima.
+	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+
+	if (coche != nullptr)
+	{
+		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.5f, 0.0f);
+		glm::vec3 pivotPoint = carPos + modelOriginOffset;
+
+		float a_rad = glm::radians(coche->psi);
+		glm::vec3 worldForward = glm::normalize(glm::vec3(-sinf(a_rad), cosf(a_rad), 0.0f));
+		// Vector "derecha" (perpendicular a "adelante" en Z-up)
+		glm::vec3 worldRight = glm::normalize(glm::vec3(worldForward.y, worldForward.x, 0.0f));
+
+		float mirrorHeight = 1.5f;
+		float mirrorWidthOffset = 1.2f; 
+		float side = esIzquierdo ? -2.5f : 2.5f; 
+
+		glm::vec3 cameraPos = pivotPoint + (worldRight * mirrorWidthOffset * side);
+		cameraPos.z = carPos.z + mirrorHeight;
+
+		// Punto de mira: Hacia atrás y ligeramente hacia afuera
+		glm::vec3 cameraTarget = cameraPos - (worldForward * 10.0f) + (worldRight * 2.0f * side);
+
+		MatriuVista = glm::lookAt(cameraPos, cameraTarget, glm::vec3(0.0f, 0.0f, 1.0f)); 
+	}
+
 	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
 	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
 	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);

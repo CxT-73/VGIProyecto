@@ -86,7 +86,7 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 			bool textur, GLuint texturID[NUM_MAX_TEXTURES], bool textur_map, bool flagInvertY,
 			int nptsU, CPunt3D PC_u[MAX_PATCH_CORBA], GLfloat pasCS, bool sw_PC, bool dib_TFrenet,
 			COBJModel* objecteOBJ,
-			glm::mat4 MatriuVista, glm::mat4 MatriuTG)
+			glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool dibuixarCotxe)
 {
 	float altfar = 0;
 	GLint npunts = 0, nvertexs = 0;
@@ -452,9 +452,11 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		break;
 	}
 	//Renderitzat del cotxe
-	if (miCoche) {
+	if (dibuixarCotxe) {
+		if (miCoche) {
 
-		miCoche->render(sh_programID, MatriuVista);
+			miCoche->render(sh_programID, MatriuVista);
+		}
 	}
 	if (cono)
 		cono->render(sh_programID, MatriuVista, MatriuTG, col_object,sw_mat); 

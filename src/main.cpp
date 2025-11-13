@@ -605,6 +605,8 @@ void OnPaint(GLFWwindow* window)
 				front_faces, oculta, test_vis, back_line,
 				ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
 				eixos, grid, hgrid);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 		}
 		else if (camera == CAM_NAVEGA) {
 			if (Vis_Polar == POLARZ) {
@@ -621,22 +623,100 @@ void OnPaint(GLFWwindow* window)
 				front_faces, oculta, test_vis, back_line,
 				ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
 				eixos, grid, hgrid);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 		}
 		else if (camera == CAM_GEODE) {
 			ViewMatrix = Vista_Geode(shader_programID, OPV_G, Vis_Polar, pan, tr_cpv, tr_cpvF, c_fons, col_obj, objecte, mida, pas,
 				front_faces, oculta, test_vis, back_line,
 				ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
 				eixos, grid, hgrid);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 		}
 		else if (camera == CAM_FOLLOW) {
 			ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, OPV, mobil, c_fons,
 				oculta, test_vis, back_line, ilumina, llum_ambient,
 				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 		}
+		else if (camera == CAM_PRIMERA_PERSONA) {
 
+			double fov_principal = 60.0f; 
+			double fov_central = 15.0f;   
+			double fov_lateral = 30.0f;
+			glViewport(0, 0, w, h);
+			
+			ProjectionMatrix = Projeccio_Perspectiva(w, h, fov_principal);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_PrimeraPersona(shader_programID, miCoche, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			
+			configura_Escena();
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, true);
+			int mirrorWidth = w / 4;  
+			int mirrorHeight = h / 5; 
+			int x_center = (w - mirrorWidth) / 2; 
+			int y_top = h - mirrorHeight - 10;    
+
+			
+			glViewport(x_center, y_top, mirrorWidth, mirrorHeight);
+
+			
+			glClear(GL_DEPTH_BUFFER_BIT);
+
+			ProjectionMatrix = Projeccio_Perspectiva(mirrorWidth, mirrorHeight, fov_central);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_Espejo_Central(shader_programID, miCoche, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+
+			
+			configura_Escena();
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, false);
+
+			int x_left = 10;
+			int retrovWidth = w / 5;
+			int retrovHeight = h / 4;
+			int y_top_ret = h - retrovHeight - 10;
+			glViewport(x_left, y_top_ret, retrovWidth, retrovHeight);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			
+			
+			ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_Retrovisor(shader_programID, miCoche,true, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+
+
+			configura_Escena();
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, false);
+
+			int x_right = w-retrovWidth-10;
+			glViewport(x_right, y_top_ret, retrovWidth, retrovHeight);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, false, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+
+
+			configura_Escena();
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, false);
+
+
+		}
 		// Entorn VGI: Dibuix de l'Objecte o l'Escena
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 
 		// Entorn VGI: Transferència del buffer OpenGL a buffer de pantalla
 				//glfwSwapBuffers(window);
@@ -1585,6 +1665,7 @@ void ShowEntornVGIWindow(bool* p_open)
 			if (camera == CAM_GEODE) OnCameraOrigenGeode();
 		}
 		ImGui::RadioButton("Seguimiento Coche", &oCamera, 3);
+		ImGui::RadioButton("Primera Persona", &oCamera, 4);
 		// Entorn VGI. Gestió opcions desplegable CAMERA segons el valor de la variable selected
 		switch (oCamera)
 		{
@@ -1599,6 +1680,9 @@ void ShowEntornVGIWindow(bool* p_open)
 			break;
 		case 3: // Opció CAMERA Seguiment
 			if (camera != CAM_FOLLOW) OnCameraFollow();
+			break;
+		case 4: // Opció CAMERA Primera Persona (¡He asumido el índice 4!)
+			if (camera != CAM_PRIMERA_PERSONA) OnCameraPrimeraPersona();
 			break;
 		default:
 			// Opció per defecte: CAMERA Esfèrica
@@ -2388,6 +2472,16 @@ void OnCameraFollow()
 		OPV.beta = 0.0f;  
 		mobil = false;
 		//g_FollowCamManual = false;   MUY IMPORTANTE: Resetea a modo automático
+	}
+}
+
+void OnCameraPrimeraPersona()
+{
+	// TODO: Agregue aquí su código de controlador de comandos
+	if (projeccio != ORTO || projeccio != CAP) // Mantenemos la misma comprobación
+	{
+		camera = CAM_PRIMERA_PERSONA; // 1. Establece el modo de cámara
+		mobil = false; // 2. Desactiva el modo orbital manual (mobil)
 	}
 }
 
@@ -6557,11 +6651,11 @@ int main(void)
 
 		if (camera == CAM_FOLLOW && mobil)
 		{
-			// Define la velocidad en GRADOS POR SEGUNDO
-			float orbitSpeedPerSecond = 120.0f; // Ajusta este valor
+			
+			float orbitSpeedPerSecond = 120.0f; 
 
 			if (g_isOrbitingLeft) {
-				// Usa 'delta' (el 'dt') para un movimiento suave
+				
 				OPV.beta -= orbitSpeedPerSecond * delta;
 			}
 			if (g_isOrbitingRight) {
