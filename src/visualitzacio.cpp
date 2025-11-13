@@ -316,6 +316,59 @@ void Iluminacio(GLint sh_programID, char ilumin, bool ifix, bool ilu2sides, bool
 	}
 }
 
+
+// -------- Entorn VGI: ORTOGRÀFICA (Funcions Projeccio_Orto i Vista_Ortografica)
+
+// Projeccio_Orto: Definició Viewport i glOrtho 
+// ---- Entorn VGI: ATENCIÓ!!. CAL DEFINIR PARÀMETRES DE LA FUNCIÓ
+glm::mat4 Projeccio_Orto()
+{   
+	glm::dmat4 MatriuProjeccio(1.0);
+// ---- Entorn VGI: ATENCIÓ!!. ESPECIFICACIO FUNCIONS PER A DEFINIR VIEWPORT i PROJECCIO ORTOGRÀFICA
+//			        AMB ELS SEUS PARÀMETRES. CONTINGUT SEMBLANT A FUNCIÓ Projeccio_Perspectiva().
+	return MatriuProjeccio;
+}
+
+// Vista_Ortogràfica: Ilumina i dibuixa l'escena. Crida a la funció gluLookAt segons la variable prj 
+//				(planta, alçat, perfil o axonometrica).
+glm::mat4 Vista_Ortografica(GLuint sh_programID, int prj,GLdouble Raux,CColor col_fons,CColor col_object,char objecte,GLdouble mida,int step,
+				bool frnt_fcs, bool oculta, bool testv, bool bck_ln, 
+				char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides, 
+				bool eix, CMask3D reixa, CPunt3D hreixa)
+{
+	glm::mat4 MatriuVista(1.0);
+
+// Iluminacio movent-se amb la camara (abans gluLookAt)
+	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, objecte, frnt_fcs, bck_ln, step);
+
+// Implementació de planta,alçat,perfil i isomètrica 
+// ---- Entorn VGI: ATENCIÓ!!. ESPECIFICACIO DE LA CÀMERA
+//								Cal definir la càmera (glm::lookAt() ) en funció del
+//								tipus de projecció definit a la variable prj.
+
+// Pas Matriu a shader
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+
+// Neteja dels buffers de color i profunditat
+	Fons(col_fons);
+
+// Iluminacio fixe respecte la camara (després gluLookAt)
+	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, objecte, frnt_fcs, bck_ln, step);
+
+// Test de Visibilitat
+	if (testv) glEnable(GL_CULL_FACE);
+		else glDisable(GL_CULL_FACE);
+
+// Ocultacions (Z-buffer)
+	if (oculta) glEnable(GL_DEPTH_TEST);
+		else glDisable(GL_DEPTH_TEST);
+
+// Dibuix de les cares back com a línies en Il.luminacio PLANA i SUAU
+	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
+	
+	return MatriuVista;
+}
+
 // -------- Entorn VGI: PERSPECTIVA (Funcions Projeccio_Perspectiva i Vista_Esferica)
 
 // Projeccio_Perspectiva: Definició Viewport i gluPerspective
@@ -338,158 +391,424 @@ glm::mat4 Projeccio_Perspectiva(GLuint sh_programID, int minx,int miny,GLsizei w
 	return MatriuProjeccio;
 }
 
-glm::mat4 Vista_Esferica(GLuint sh_programID, CEsfe3D opv, char VPol, bool pant, CPunt3D tr, CPunt3D trF,
-	CColor col_fons, CColor col_object, char objecte, double mida, int step,
-	bool frnt_fcs, bool oculta, bool testv, bool bck_ln,
-	char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides,
-	bool eix, CMask3D reixa, CPunt3D hreixa)
+glm::mat4 Projeccio_Perspectiva(GLsizei w, GLsizei h, double fov_grados)
+{
+	if (h == 0) h = 1;
+
+	double aspect_ratio = (double)w / (double)h;
+
+	glm::mat4 MatriuProjeccio = glm::perspective(glm::radians(fov_grados), aspect_ratio, p_near, p_far);
+
+	return MatriuProjeccio;
+}
+
+// Vista_Esferica: Definició gluLookAt amb possibilitat de moure el punt de vista interactivament amb el ratolí, 
+//					ilumina i dibuixa l'escena
+glm::mat4 Vista_Esferica(GLuint sh_programID,CEsfe3D opv,char VPol,bool pant,CPunt3D tr,CPunt3D trF,
+				 CColor col_fons,CColor col_object,char objecte,double mida,int step, 
+				 bool frnt_fcs, bool oculta, bool testv, bool bck_ln, 
+				 char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides,
+				 bool eix, CMask3D reixa, CPunt3D hreixa)
 {
 	GLdouble cam[3] = { 0.0,0.0,0.0 }, up[3] = { 0.0,0.0,0.0 };
 	glm::mat4 MatriuVista(1.0);
 	glm::mat4 TransMatrix(1.0);	// Matrius Traslació
 
-	// Rectificar paràmetre R si negatiu.
+// Rectificar paràmetre R si negatiu.
 	if (opv.R < 1.0) opv.R = 1.0;
 
-	// Conversió angles radians -> graus
+// Conversió angles radians -> graus
+	opv.alfa=opv.alfa*PI/180;
+	opv.beta=opv.beta*PI/180;
+
+// Neteja dels buffers de color i profunditat
+	Fons(col_fons);
+
+// Posició càmera i vector cap amunt
+	if (VPol==POLARZ) { cam[0]=opv.R*cos(opv.beta)*cos(opv.alfa);
+						cam[1]=opv.R*sin(opv.beta)*cos(opv.alfa);
+						cam[2]=opv.R*sin(opv.alfa);		
+						up[0]=-cos(opv.beta)*sin(opv.alfa);
+						up[1]=-sin(opv.beta)*sin(opv.alfa);
+						up[2]=cos(opv.alfa);	}
+		else if (VPol==POLARY) {	cam[0]=opv.R*sin(opv.beta)*cos(opv.alfa);
+									cam[1]=opv.R*sin(opv.alfa);
+									cam[2]=opv.R*cos(opv.beta)*cos(opv.alfa);		
+									up[0]=-sin(opv.beta)*sin(opv.alfa);
+									up[1]=cos(opv.alfa);
+									up[2]=-cos(opv.beta)*sin(opv.alfa);		}
+			else {	cam[0]=opv.R*sin(opv.alfa);
+					cam[1]=opv.R*cos(opv.beta)*cos(opv.alfa);
+					cam[2]=opv.R*sin(opv.beta)*cos(opv.alfa);		
+					up[0]=cos(opv.alfa);
+					up[1]=-cos(opv.beta)*sin(opv.alfa);
+					up[2]=-sin(opv.beta)*sin(opv.alfa);		}
+
+// Iluminacio movent-se amb la camara (abans glLookAt)
+	if (!ifix) Iluminacio(sh_programID,iluminacio, ifix, il2sides, llum_amb, lumi, objecte, frnt_fcs, bck_ln, step);
+
+// Opció pan: desplaçament del Centre de l'esfera (pant=1)
+	if (pant) TransMatrix = glm::translate(TransMatrix, vec3(tr.x, tr.y, tr.z));	//glTranslatef(tr.x, tr.y, tr.z);
+	TransMatrix = glm::translate(TransMatrix, vec3(trF.x, trF.y, trF.z));	// Traslació fixada amb la INSERT dins l'opció pan
+
+// Especificació del punt de vista
+   //gluLookAt(cam[0],cam[1],cam[2],0.,0.,0.,up[0],up[1],up[2]);
+   MatriuVista = glm::lookAt(
+	   glm::vec3(cam[0], cam[1], cam[2]),	// Camera is here
+	   glm::vec3(0, 0, 0),					// and looks here
+	   glm::vec3(up[0], up[1], up[2])		// Head is up (set to 0,-1,0 to look upside-down)
+	   );
+
+// Concatenar matrius Traslació amb la de càmera per al pan
+	MatriuVista = TransMatrix * MatriuVista;
+
+// Pas Matriu Vista a shader
+   glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+
+// Iluminacio fixe respecte la camara (després glLookAt)
+   if (ifix) Iluminacio(sh_programID,iluminacio, ifix, il2sides, llum_amb, lumi, objecte, frnt_fcs, bck_ln, step);
+
+// Test de Visibilitat
+	if (testv) glEnable(GL_CULL_FACE);
+		else glDisable(GL_CULL_FACE);
+
+// Ocultacions (Z-buffer)
+	if (oculta) glEnable(GL_DEPTH_TEST);
+		else glDisable(GL_DEPTH_TEST);
+
+	return MatriuVista;
+}
+
+
+//Vista_Navega: Definició gluLookAt directament per paràmetre, sense esfèriques.
+//              amb possibilitat de moure el punt de vista interactivament amb les
+//				tecles de cursor per poder navegar.
+glm::mat4 Vista_Navega(GLuint sh_programID, CPunt3D pv, GLdouble n[3],GLdouble v[3],bool pant,CPunt3D tr,CPunt3D trF,
+				  CColor col_fons,CColor col_object,char objecte,bool color, int step,
+				  bool frnt_fcs, bool oculta, bool testv, bool bck_ln, 
+				  char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides,
+				  bool eix, CMask3D reixa, CPunt3D hreixa)
+{   double altfar=0;
+	glm::mat4 MatriuVista(1.0), TransMatrix(1.0);
+
+// Neteja dels buffers de color i profunditat
+	Fons(col_fons);
+
+// Iluminacio movent-se amb la camara (abans glLookAt)
+	if (!ifix) Iluminacio(sh_programID,iluminacio, ifix, il2sides, llum_amb, lumi, objecte, frnt_fcs, bck_ln, step);
+
+// Opció pan: desplaçament del Centre de l'esfera (pant=true)
+	if (pant) TransMatrix = glm::translate(glm::mat4(), vec3(tr.x, tr.y, tr.z)); // glTranslatef(tr.x, tr.y, tr.z);
+	TransMatrix = glm::translate(TransMatrix, vec3(trF.x, trF.y, trF.z)); //glTranslatef(trF.x,trF.y,trF.z);	// Traslació fixada amb la INSERT dins l'opció pan
+
+// Especificació del punt de vista (CÀMERA)
+	//gluLookAt(pv.x,pv.y,pv.z,n[0],n[1],n[2],v[0],v[1],v[2]);
+	MatriuVista = glm::lookAt(
+		glm::vec3(pv.x, pv.y, pv.z), // Camera is here
+		glm::vec3(n[0], n[1], n[2]), // and looks here
+		glm::vec3(v[0], v[1], v[2])  // Head is up (set to 0,-1,0 to look upside-down)
+		);
+
+// Concatenar matrius Traslació amb la de càmera per al pan
+	MatriuVista = TransMatrix * MatriuVista;
+
+// Pas Matriu a shader
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+
+// Iluminacio fixe respecte la camara (després glLookAt)
+	if (ifix) Iluminacio(sh_programID,iluminacio, ifix, il2sides, llum_amb, lumi, objecte, frnt_fcs, bck_ln, step);
+
+// Test de Visibilitat
+	if (testv) glEnable(GL_CULL_FACE);
+		else glDisable(GL_CULL_FACE);
+
+// Ocultacions (Z-buffer)
+	if (oculta) glEnable(GL_DEPTH_TEST);
+		else glDisable(GL_DEPTH_TEST);
+
+	return MatriuVista;
+}
+
+
+//Vista_Geode: Definició gluLookAt a partir de coordenades esfèriques, però situant la càmera a l'origen (0,0,0)
+//              i colocant el punt on mira cap el punt (R,alfa,beta) amb la possibilitat de moure aquest darrer punt
+//				interactivament amb les	tecles de cursor per a veure una cúpula.
+glm::mat4 Vista_Geode(GLuint sh_programID, CEsfe3D opv, char VPol, bool pant, CPunt3D tr, CPunt3D trF,
+	CColor col_fons, CColor col_object, char objecte, double mida, int step,
+	bool frnt_fcs, bool oculta, bool testv, bool bck_ln,
+	char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides,
+	bool eix, CMask3D reixa, CPunt3D hreixa)
+{
+	GLdouble cam[3] = {0.0, 0.0, 0.0}, camN[3] = { 0.0, 0.0, 0.0 }, up[3]{ 0.0, 0.0, 0.0 };
+	glm::mat4 MatriuVista(1.0);
+	glm::mat4 TransMatrix(1.0);	// Matrius Traslació
+
+// Rectificar paràmetre R si negatiu.
+	if (opv.R < 1.0) opv.R = 1.0;
+
+// Conversió angles radians -> graus
 	opv.alfa = opv.alfa * PI / 180;
 	opv.beta = opv.beta * PI / 180;
 
-	// Neteja dels buffers de color i profunditat
+// Neteja dels buffers de color i profunditat
 	Fons(col_fons);
 
-	// Posició càmera i vector cap amunt
+	// Posició càmera i vector cap amunt en GEODE
 	if (VPol == POLARZ) {
 		cam[0] = opv.R * cos(opv.beta) * cos(opv.alfa);
 		cam[1] = opv.R * sin(opv.beta) * cos(opv.alfa);
 		cam[2] = opv.R * sin(opv.alfa);
+		// Vector camp on mira (cap a (R,alfa,beta)
+		camN[0] = cos(opv.beta) * cos(opv.alfa);
+		camN[1] = sin(opv.beta) * cos(opv.alfa);
+		camN[2] = sin(opv.alfa);
+		// Vector tangent (diferencial respecte alfa)
 		up[0] = -cos(opv.beta) * sin(opv.alfa);
 		up[1] = -sin(opv.beta) * sin(opv.alfa);
 		up[2] = cos(opv.alfa);
-	}
+		}
 	else if (VPol == POLARY) {
 		cam[0] = opv.R * sin(opv.beta) * cos(opv.alfa);
 		cam[1] = opv.R * sin(opv.alfa);
 		cam[2] = opv.R * cos(opv.beta) * cos(opv.alfa);
+		// Vector camp on mira (cap a (R,alfa,beta)
+		camN[0] = sin(opv.beta) * cos(opv.alfa);
+		camN[1] = sin(opv.alfa);
+		camN[2] = cos(opv.beta) * cos(opv.alfa);
+		// Vector tangent (diferencial respecte alfa)
 		up[0] = -sin(opv.beta) * sin(opv.alfa);
 		up[1] = cos(opv.alfa);
 		up[2] = -cos(opv.beta) * sin(opv.alfa);
-	}
+		}
 	else {
 		cam[0] = opv.R * sin(opv.alfa);
 		cam[1] = opv.R * cos(opv.beta) * cos(opv.alfa);
 		cam[2] = opv.R * sin(opv.beta) * cos(opv.alfa);
+		// Vector camp on mira (cap a (R,alfa,beta)
+		camN[0] = sin(opv.alfa);
+		camN[1] = cos(opv.beta) * cos(opv.alfa);
+		camN[2] = sin(opv.beta) * cos(opv.alfa);
+		// Vector tangent (diferencial respecte alfa)
 		up[0] = cos(opv.alfa);
 		up[1] = -cos(opv.beta) * sin(opv.alfa);
 		up[2] = -sin(opv.beta) * sin(opv.alfa);
-	}
+		}
 
-	// Iluminacio movent-se amb la camara (abans glLookAt)
+// Iluminacio movent-se amb la camara (abans gluLookAt)
 	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, objecte, frnt_fcs, bck_ln, step);
 
-	// Opció pan: desplaçament del Centre de l'esfera (pant=1)
+// Opció pan: desplaçament del Centre de l'esfera (pant=1)
 	if (pant) TransMatrix = glm::translate(TransMatrix, vec3(tr.x, tr.y, tr.z));	//glTranslatef(tr.x, tr.y, tr.z);
 	TransMatrix = glm::translate(TransMatrix, vec3(trF.x, trF.y, trF.z));	// Traslació fixada amb la INSERT dins l'opció pan
 
-	// Especificació del punt de vista
-	   //gluLookAt(cam[0],cam[1],cam[2],0.,0.,0.,up[0],up[1],up[2]);
+// Especificació de la càmera
 	MatriuVista = glm::lookAt(
-		glm::vec3(cam[0], cam[1], cam[2]),	// Camera is here
-		glm::vec3(0, 0, 0),					// and looks here
-		glm::vec3(up[0], up[1], up[2])		// Head is up (set to 0,-1,0 to look upside-down)
+		glm::vec3(cam[0], cam[1], cam[2]), // Camera is here
+		glm::vec3(cam[0] + camN[0], cam[1] + camN[1], cam[2] + camN[2]), // and looks here
+		glm::vec3(up[0], up[1], up[2])  // Head is up (set to 0,-1,0 to look upside-down)
 	);
 
-	// Concatenar matrius Traslació amb la de càmera per al pan
+// Concatenar matrius Traslació amb la de càmera per al pan
 	MatriuVista = TransMatrix * MatriuVista;
 
-	// Pas Matriu Vista a shader
+// Pas Matriu Vista a shader
 	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
 
-	// Iluminacio fixe respecte la camara (després glLookAt)
+// Iluminacio fixe respecte la camara (després gluLookAt)
 	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, objecte, frnt_fcs, bck_ln, step);
 
-	// Test de Visibilitat
+// Test de Visibilitat
 	if (testv) glEnable(GL_CULL_FACE);
 	else glDisable(GL_CULL_FACE);
 
-	// Ocultacions (Z-buffer)
+// Ocultacions (Z-buffer)
 	if (oculta) glEnable(GL_DEPTH_TEST);
 	else glDisable(GL_DEPTH_TEST);
 
 	return MatriuVista;
 }
 
-glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CColor col_fons,
+// Pega esta función junto a Vista_Esferica, Vista_Navega, etc.
+// AFEGEIX AQUESTA FUNCIÓ AL FINAL DE VISUALITZACIO.CPP
+
+glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
 	LLUM* lumi, bool ifix, bool il2sides)
 {
-	glm::mat4 MatriuVista = glm::mat4(1.0);
-
-	
+	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	Fons(col_fons);
-
-	
 	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
 
-	
-	if (coche != nullptr) 
+	if (coche != nullptr)
 	{
-		float followDistance = 5.0f; //que tan detras nos ponemos del coche
-		float followHeight = 1.5f;   //que tan arriba nos ponemos del coche
-
-		// 1. Obtener la posición actual del coche en coordenadas del mundo.
-		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
-
-		// 2. Crear una matriz de rotación que represente SOLO la orientación horizontal (yaw/psi) del coche.
-		//    Se rota alrededor del eje Y global (0, 1, 0).
-		glm::mat4 carRotation = glm::rotate(glm::mat4(1.0f), glm::radians(coche->psi), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		// 3. Definir cuál es la dirección "adelante" LOCAL del modelo del coche (antes de cualquier rotación).
-		glm::vec3 localForward = glm::vec3(0.0f, 0.0f, -1.0f);
-
-		// 4. Calcular la dirección "adelante" del coche en coordenadas del MUNDO.
-		//    Se transforma el vector localForward usando la rotación del coche (carRotation).
-		//    El glm::vec4(..., 0.0f) asegura que solo se aplica la rotación (no la traslación).
-		//    Se normaliza para obtener un vector de dirección unitario.
-		glm::vec3 worldForward = glm::normalize(glm::vec3(carRotation * glm::vec4(localForward, 0.0f)));
-
-		// 5. Calcular la POSICIÓN de la cámara (`cameraPos`):
-		//    a. Empezar en la posición del coche (`carPos`).
-		//    b. Retroceder (`-`) en la dirección `worldForward` una distancia `followDistance`.
-		//    c. Subir (`+`) verticalmente (`0,1,0`) una altura `followHeight`.
-		glm::vec3 cameraPos = carPos - (worldForward * followDistance) + glm::vec3(0.0f, followHeight, 0.0f);
-
-		// 6. Calcular el PUNTO OBJETIVO al que mirará la cámara (`cameraTarget`):
-		//    a. Empezar en la posición del coche (`carPos`).
-		//    b. Añadir un pequeño desplazamiento hacia adelante (`+ worldForward * 2.0f`) para mirar
-		//       un poco por delante del coche (esto ayuda a ver hacia dónde va).
-		glm::vec3 cameraTarget = carPos + worldForward * 2.0f;
-
-
-		MatriuVista = glm::lookAt(
-			cameraPos,    // Posición de la cámara
-			cameraTarget, // Punto al que mira
-			glm::vec3(0.0f, 1.0f, 0.0f) // Vector "arriba" (eje Y)
-		);
 		
+		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.5f, 0.0f);
+		glm::vec3 pivotPoint = carPos + modelOriginOffset; 
+		//pillamos las variables globales que utilizan las otras camaras
+		float distancia = opv.R;            
+		float elevacion_grados = opv.alfa;    
+		float azimut_grados = opv.beta;     
+
+		float azimut_final_rad;
+		if (!mobil) {
+			
+			azimut_final_rad = glm::radians(coche->psi-15); //si no movemos la camara
+		}
+		else {
+			
+			azimut_final_rad = glm::radians(azimut_grados); //si movemos la camara
+		}
+
+		//nos colocamos hacia atrás y arriba
+		float elevacion_rad = glm::radians(elevacion_grados);
+		float horizontalDist = distancia * cos(elevacion_rad);
+		float verticalDist = distancia * sin(elevacion_rad);
+
+		glm::vec3 cameraPos;
+		//aplicamos los calculos al punto del coche
+		cameraPos.x = pivotPoint.x + horizontalDist * cosf(azimut_final_rad);
+		cameraPos.y = pivotPoint.y - horizontalDist * sinf(azimut_final_rad);
+		cameraPos.z = pivotPoint.z + verticalDist; 
+
+		
+		glm::vec3 cameraTarget = pivotPoint; 
+
+		
+		MatriuVista = glm::lookAt(
+			cameraPos,
+			cameraTarget,
+			glm::vec3(0.0f, 0.0f, 1.0f) 
+		);
 	}
-	else // Si el cotxe no existeix, fem servir una vista per defecte per evitar errors
+	else 
 	{
-		MatriuVista = glm::lookAt(glm::vec3(0, 5, 15), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		MatriuVista = glm::lookAt(glm::vec3(10, 10, 5), glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
 		printf("No hay coche al que seguir!\n");
 	}
 
-	// Pas Matriu Vista al shader
+	
 	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
-
-	// Iluminacio fixe respecte la camara (després de lookAt)
 	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
-
-	// Gestió d'ocultacions
 	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
 	if (oculta) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
 
-	// Dibuix de les cares back com a línies en Il.luminacio PLANA i SUAU
+	return MatriuVista;
+}
+
+glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides)
+{
+	glm::mat4 MatriuVista = glm::mat4(1.0);
+	Fons(col_fons); 
+	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+
+	if (coche != nullptr)
+	{
+		
+		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.5f, 0.0f); 
+		glm::vec3 pivotPoint = carPos + modelOriginOffset;
+
+		float a_rad = glm::radians(coche->psi-15); //-15 para centrar correctamente donde miramos
+		glm::vec3 worldForward = glm::normalize(glm::vec3(-sinf(a_rad), cosf(a_rad), 0.0f));
+
+
+		float altura = 2.2f;     
+		float posicio = 1.0f; 
+
+		glm::vec3 cameraPos = pivotPoint - (worldForward * posicio); //ens posicionem on realment volem
+		cameraPos.z = carPos.z + altura; 
+
+		
+		glm::vec3 cameraTarget = cameraPos + (worldForward * 10.0f); 
+
+		
+		MatriuVista = glm::lookAt(
+			cameraPos,
+			cameraTarget,
+			glm::vec3(0.0f, 0.0f, 1.0f) 
+		);
+	}
+	
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+	if (oculta) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
+
+	return MatriuVista;
+}
+
+glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides)
+{
+	glm::mat4 MatriuVista = glm::mat4(1.0f);
+	// ¡NO LIMPIAMOS FONDO (Fons(col_fons))! Dibujamos encima.
+	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+
+	if (coche != nullptr)
+	{
+		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.0f, 0.0f);
+		glm::vec3 pivotPoint = carPos + modelOriginOffset;
+
+		float a_rad = glm::radians(coche->psi);
+		glm::vec3 worldForward = glm::normalize(glm::vec3(-sinf(a_rad), cosf(a_rad), 0.0f));
+
+		float altura = 2.3f; //altura que pillamos (aprox la del retrovisor)
+
+		glm::vec3 cameraPos = pivotPoint + (worldForward * -1.1f); //valor que me posiciona más hacia delante o hacia atras e funncio del origen
+		cameraPos.z = carPos.z + altura;
+
+		
+		glm::vec3 cameraTarget = cameraPos - (worldForward * 10.0f); 
+
+		MatriuVista = glm::lookAt(cameraPos, cameraTarget, glm::vec3(0.0f, 0.0f, 1.0f)); // Z-up
+	}
+
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+	if (oculta) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
+
+	return MatriuVista;
+}
+
+glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche, bool esIzquierdo, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides)
+{
+	glm::mat4 MatriuVista = glm::mat4(1.0f);
+	// ¡NO LIMPIAMOS FONDO (Fons(col_fons))! Dibujamos encima.
+	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+
+	if (coche != nullptr)
+	{
+		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.5f, 0.0f);
+		glm::vec3 pivotPoint = carPos + modelOriginOffset;
+
+		float a_rad = glm::radians(coche->psi);
+		glm::vec3 worldForward = glm::normalize(glm::vec3(-sinf(a_rad), cosf(a_rad), 0.0f));
+		// Vector "derecha" (perpendicular a "adelante" en Z-up)
+		glm::vec3 worldRight = glm::normalize(glm::vec3(worldForward.y, worldForward.x, 0.0f));
+
+		float mirrorHeight = 1.5f;
+		float mirrorWidthOffset = 1.2f; 
+		float side = esIzquierdo ? -2.5f : 2.5f; 
+
+		glm::vec3 cameraPos = pivotPoint + (worldRight * mirrorWidthOffset * side);
+		cameraPos.z = carPos.z + mirrorHeight;
+
+		// Punto de mira: Hacia atrás y ligeramente hacia afuera
+		glm::vec3 cameraTarget = cameraPos - (worldForward * 10.0f) + (worldRight * 2.0f * side);
+
+		MatriuVista = glm::lookAt(cameraPos, cameraTarget, glm::vec3(0.0f, 0.0f, 1.0f)); 
+	}
+
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+	if (oculta) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
 	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
 
 	return MatriuVista;

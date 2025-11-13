@@ -14,6 +14,7 @@
 #define CAM_GEODE 'G'
 #define CAM_NAVEGA 'N'
 #define CAM_FOLLOW 'F'
+#define CAM_PRIMERA_PERSONA 'P'
 
 //--------------- VGI: Tipus de Projecció
 #define AXONOM 'A'
