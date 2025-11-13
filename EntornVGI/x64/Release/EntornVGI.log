@@ -1,0 +1,6 @@
+﻿  coche.cpp
+     Creando biblioteca C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\x64\Release\EntornVGI.lib y objeto C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\x64\Release\EntornVGI.exp
+  Generando código
+C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\src\main.cpp(2989): warning C4715: 'initGLFW': no todas las rutas de acceso de control devuelven un valor
+  Generación de código finalizada
+  EntornVGI.vcxproj -> C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\x64\Release\EntornVGI.exe

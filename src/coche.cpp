@@ -1,126 +1,177 @@
 #include "coche.h"
-#include "objLoader.h" 
+#include "objLoader.h"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <iostream>
+#include "material.h"
 
-Coche::Coche() {
-    
-    x = 0.3f;
-    y = 0.0f;
-    z = 0.0f;
-    vx = vy = vz = 0.0f;
-    ax = ay = az = 0.0f;
-    psi = 0.0f;
-    v_angular = 0.0f;
-    angulo_ruedas = 0.0f;   
-    rotacion_ruedas = 0.0f; 
+char ruta_coche[] = "../x64/Release/OBJFiles/Car/coche_sr.obj";
+char ruta_rueda[] = "../x64/Release/OBJFiles/Wheel/Rueda.obj";
 
-    // Create a new model object
+Coche::Coche(btDiscreteDynamicsWorld* world) : mundo(world)
+{
+    // Cargar modelos visuales 
     model = new COBJModel();
+    model->LoadModel(ruta_coche);
+
     model_rueda = new COBJModel();
-    //lectura objetos
-    char ruta[] = "../x64/Release/OBJFiles/Car/coche_sr.obj";
-    if (model->LoadModel(ruta) != 0) {
-        //mirem si carrega bé
-        fprintf(stderr, "ERROR: Could not load car model from %s!\n", ruta);
-    }
-    else {
-        printf("S'HA CARREGAT CORRECTAMENT: % s!\n", ruta);
-    }
-    char ruta_rueda[] = "../x64/Release/OBJFiles/Wheel/Rueda.obj"; 
-    if (model_rueda->LoadModel(ruta_rueda) != 0) {
-        fprintf(stderr, "ERROR: No se pudo cargar el modelo de la rueda desde %s!\n", ruta_rueda);
+    model_rueda->LoadModel(ruta_rueda);
 
-    }
-    else {
-        printf("RUEDA CARGADA CORRECTAMENTE: %s!\n", ruta_rueda);
-    }
+    // Crear chasis físico 
+    btCollisionShape* chassisShape = new btBoxShape(btVector3(1.0f, 0.5f, 2.0f));
+    btScalar mass = 800.0f;
+    btVector3 inertia(0, 0, 0);
+    chassisShape->calculateLocalInertia(mass, inertia);
+
+    btTransform startTransform;
+    startTransform.setIdentity();
+    startTransform.setOrigin(btVector3(14, 1, 0.5));
+
+    btDefaultMotionState* motion = new btDefaultMotionState(startTransform);
+    btRigidBody::btRigidBodyConstructionInfo info(mass, motion, chassisShape, inertia);
+    chasis = new btRigidBody(info);
+    chasis->setActivationState(DISABLE_DEACTIVATION);
+    mundo->addRigidBody(chasis);
+
+    //Eliminar una vez fixeado lo de abajo
+    chasis->setActivationState(DISABLE_DEACTIVATION);
+    chasis->setLinearVelocity(btVector3(0, 0, 0));
+    chasis->setAngularVelocity(btVector3(0, 0, 0));
+    // Desactivar gravedad temporalmente
+    mundo->setGravity(btVector3(0, 0, 0));
+
+    // Crear sistema de vehículo 
+    raycaster = new btDefaultVehicleRaycaster(mundo);
+    btRaycastVehicle::btVehicleTuning tuning;
+    vehiculo = new btRaycastVehicle(tuning, chasis, raycaster);
+    vehiculo->setCoordinateSystem(0, 1, 2);
+    mundo->addVehicle(vehiculo);
+
+    // Añadir ruedas 
+    btVector3 wheelDirection(0, 0, -1);   // hacia donde apunta la suspension
+    btVector3 wheelAxle(-1, 0, 0);        // eje de rotación (izquierda-derecha)
+    float suspensionRestLength = 0.3f;
+    float wheelRadius = 0.4f;
+
+    // --- Añadimos las 4 ruedas manualmente ---
+    // Orden: (posición), dirección, eje, suspensión, radio, tuning, delantera/trasera
+
+    // 1. Delantera derecha
+    vehiculo->addWheel(
+        btVector3(0.9f, 0.05f, 0.f),   // X=ancho, Y=frontal, Z=altura
+        wheelDirection,
+        wheelAxle,
+        suspensionRestLength,
+        wheelRadius,
+        tuning,
+        true);
+
+//    // 2. Delantera izquierda
+//    vehiculo->addWheel(
+//        btVector3(-0.9f, -0.3f, 1.7f),
+//        wheelDirection,
+//        wheelAxle,
+//        suspensionRestLength,
+//        wheelRadius,
+//        tuning,
+//        true);
+//
+//    // 3. Trasera derecha
+//    vehiculo->addWheel(
+//        btVector3(0.9f, -0.3f, -1.7f),
+//        wheelDirection,
+//        wheelAxle,
+//        suspensionRestLength,
+//        wheelRadius,
+//        tuning,
+//        false);
+//
+//    // 4. Trasera izquierda
+//    vehiculo->addWheel(
+//        btVector3(-0.9f, -0.3f, -1.7f),
+//        wheelDirection,
+//        wheelAxle,
+//        suspensionRestLength,
+//        wheelRadius,
+//        tuning,
+//        false);
+//}
+//
+//Coche::~Coche() {
+//    mundo->removeRigidBody(chasis);
+//    delete vehiculo;
+//    delete raycaster;
+//    delete chasis;
+//    delete model;
+//    delete model_rueda;
 }
 
-Coche::~Coche() {
+void Coche::update(float dt)
+{
+    mundo->stepSimulation(dt);
 
-    delete model;
-    model = nullptr;
-    delete model_rueda;
-    model_rueda = nullptr;
+    btTransform trans;
+    chasis->getMotionState()->getWorldTransform(trans);
+    btVector3 pos = trans.getOrigin();
+    btScalar yaw, pitch, roll;
+    trans.getBasis().getEulerYPR(yaw, pitch, roll);
+
+    x = pos.getX();
+    y = pos.getY();
+    z = pos.getZ();
+    psi = yaw;
 }
 
-void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
-    if (!model) return; 
-    // Apliquem transformacions
-    glm::mat4 ModelMatrix = glm::mat4(1.0f); // Inicia matriz modelo (identidad).
+//control (WASD o gamepad)
+void Coche::aplicarInput(float motor, float giro, float freno)
+{
+    vehiculo->applyEngineForce(motor, 2); //rear wheels
+    vehiculo->applyEngineForce(motor, 3);
+    vehiculo->setBrake(freno, 2);
+    vehiculo->setBrake(freno, 3);
+    vehiculo->setSteeringValue(giro, 0);//delanteras
+    vehiculo->setSteeringValue(giro, 1);
+}
 
-    float scaleFactor = 10.5f;               // Factor de escala para la carrocería.
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(x, y, z)); // Mueve a la posición (x,y,z) del coche.
+// Render visual usando COBJModel 
+void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG, CColor col_object, bool sw_mat[5])
+{
+    SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
 
-    // Aplica rotación 'psi' (yaw) alrededor del eje Y.
-    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(psi), glm::vec3(0.0f, 1.0f, 0.0f));
+    // Matriz de modelo
+    btTransform trans;
+    chasis->getMotionState()->getWorldTransform(trans);
+    btScalar m[16];
+    trans.getOpenGLMatrix(m);
+    glm::mat4 M = glm::make_mat4(m);
 
-    // Guarda estado actual (posición + psi) para usarlo como base para las ruedas.
-    glm::mat4 BaseCarMatrix = ModelMatrix;
-    // Aplica rotación fija de -90 grados en Y (concreto de este modelo por como se mostraba al exportarlo al inicio).
-    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    // Ajustes de orientación y escala
+    // Rotar el modelo para alinear sus ejes con los de Bullet.
+    //Escalarlo para que coincida con el tamaño del chasis físico.
+    M = glm::rotate(M, glm::radians(90.0f), glm::vec3(1, 0, 0));
+    M = glm::scale(M, glm::vec3(5.f));
 
-    // Aplica la escala final a la carrocería.
-    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(scaleFactor));
-
-    // Calcula la matriz normal (para iluminación correcta con transformaciones).
-    glm::mat4 NormalMatrix = glm::transpose(glm::inverse(MatriuVista * ModelMatrix));
-
-    //Send the matrices to the active shader
-    glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
-
-    //Draw the model
+    //Enviar matriz al shader
+    glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &M[0][0]);
     model->draw_TriVAO_OBJ(sh_programID);
 
-    if (model_rueda) { 
 
-        glm::vec3 pos_rueda_DI = glm::vec3(-0.76f, -0.4f, -0.15f); // Delantera Izquierda 
-        glm::vec3 pos_rueda_DD = glm::vec3(0.25f, -0.4f, -0.10f); // Delantera Derecha 
-        glm::vec3 pos_rueda_TI = glm::vec3(-0.85f, -0.4f, 1.80f); // Trasera Izquierda 
-        glm::vec3 pos_rueda_TD = glm::vec3(0.14f, -0.4f, 1.85f); // Trasera Derecha  
+    // Dibujar ruedas
+    for (int i = 0; i < vehiculo->getNumWheels(); i++)
+    {
+        btWheelInfo& wheel = vehiculo->getWheelInfo(i);
+        btTransform t = wheel.m_worldTransform;
+        btVector3 p = t.getOrigin();
+        btQuaternion q = t.getRotation();
 
-        
-        float scaleFactorRueda = 0.25f; 
-        glm::vec3 escalaRueda = glm::vec3(scaleFactorRueda);
+        glm::mat4 Mw = glm::translate(glm::mat4(1.0f), glm::vec3(p.getX(), p.getY(), p.getZ()));
+        Mw *= glm::mat4_cast(glm::quat(q.getW(), q.getX(), q.getY(), q.getZ()));
 
-        // Rueda Delantera Izquierda (DI)
-        glm::mat4 ModelMatrixRuedaDI = BaseCarMatrix; // Partimos de la matriz base del coche (antes de escalar y rotar coche)
-        ModelMatrixRuedaDI = glm::translate(ModelMatrixRuedaDI, pos_rueda_DI);
-   
-        ModelMatrixRuedaDI = glm::scale(ModelMatrixRuedaDI, escalaRueda);
-        glm::mat4 NormalMatrixRuedaDI = glm::transpose(glm::inverse(MatriuVista * ModelMatrixRuedaDI));
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrixRuedaDI[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrixRuedaDI[0][0]);
-        model_rueda->draw_TriVAO_OBJ(sh_programID);
+        Mw = glm::rotate(Mw, glm::radians(90.f), glm::vec3(0, 1, 0)); 
+        Mw = glm::scale(Mw, glm::vec3(0.1f));                          
 
-        // Rueda Delantera Derecha (DD)
-        glm::mat4 ModelMatrixRuedaDD = BaseCarMatrix;
-        ModelMatrixRuedaDD = glm::translate(ModelMatrixRuedaDD, pos_rueda_DD);
-
-        ModelMatrixRuedaDD = glm::scale(ModelMatrixRuedaDD, escalaRueda);
-        glm::mat4 NormalMatrixRuedaDD = glm::transpose(glm::inverse(MatriuVista * ModelMatrixRuedaDD));
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrixRuedaDD[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrixRuedaDD[0][0]);
-        model_rueda->draw_TriVAO_OBJ(sh_programID);
-
-        // Rueda Trasera Izquierda (TI)
-        glm::mat4 ModelMatrixRuedaTI = BaseCarMatrix;
-        ModelMatrixRuedaTI = glm::translate(ModelMatrixRuedaTI, pos_rueda_TI);
-
-        ModelMatrixRuedaTI = glm::scale(ModelMatrixRuedaTI, escalaRueda);
-        glm::mat4 NormalMatrixRuedaTI = glm::transpose(glm::inverse(MatriuVista * ModelMatrixRuedaTI));
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrixRuedaTI[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrixRuedaTI[0][0]);
-        model_rueda->draw_TriVAO_OBJ(sh_programID);
-
-        // Rueda Trasera Derecha (TD)
-        glm::mat4 ModelMatrixRuedaTD = BaseCarMatrix;
-        ModelMatrixRuedaTD = glm::translate(ModelMatrixRuedaTD, pos_rueda_TD);
-
-        ModelMatrixRuedaTD = glm::scale(ModelMatrixRuedaTD, escalaRueda);
-        glm::mat4 NormalMatrixRuedaTD = glm::transpose(glm::inverse(MatriuVista * ModelMatrixRuedaTD));
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrixRuedaTD[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrixRuedaTD[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &Mw[0][0]);
         model_rueda->draw_TriVAO_OBJ(sh_programID);
     }
 }

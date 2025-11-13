@@ -15,13 +15,52 @@
 #include "material.h"
 #include "visualitzacio.h"
 #include "escena.h"
+#include <btBulletDynamicsCommon.h>
+#include <BulletDynamics/Vehicle/btRaycastVehicle.h>
+#include "Coche.h"
+#include <iostream>
+extern GLFWwindow* window;
 
+// Objetos escena
 Coche* miCoche = nullptr;
 OBJ* cono = nullptr;
 OBJ* circuit = nullptr;
 OBJ* barrera = nullptr;
 OBJ* bloc = nullptr;
 OBJ* barril = nullptr;
+
+//Físicas de Bullet 
+btDiscreteDynamicsWorld* mundoFisico = nullptr;
+btBroadphaseInterface* broadphase = nullptr;
+btCollisionDispatcher* dispatcher = nullptr;
+btSequentialImpulseConstraintSolver* solver = nullptr;
+btDefaultCollisionConfiguration* config = nullptr;
+
+void inicializaFisica()
+{
+	// inicializar componentes base de Bullet
+	config = new btDefaultCollisionConfiguration();
+	dispatcher = new btCollisionDispatcher(config);
+	broadphase = new btDbvtBroadphase();
+	solver = new btSequentialImpulseConstraintSolver();
+	mundoFisico = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, config);
+	mundoFisico->setGravity(btVector3(0, -9.81f, 0));
+
+	// crear coche (usando el constructor de la clase Coche)
+	miCoche = new Coche(mundoFisico);
+
+	// crear suelo físico invisible
+	btCollisionShape* sueloShape = new btBoxShape(btVector3(100, 1, 100));
+	btDefaultMotionState* sueloMotion = new btDefaultMotionState(
+		btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0))
+	);
+	btRigidBody::btRigidBodyConstructionInfo sueloInfo(0, sueloMotion, sueloShape);
+	btRigidBody* sueloBody = new btRigidBody(sueloInfo);
+	mundoFisico->addRigidBody(sueloBody);
+
+	std::cout << "Mundo físico y coche inicializados correctamente.\n";
+}
+
 // Dibuixa Eixos Coordenades Món i Reixes, activant un shader propi.
 void dibuixa_Eixos(GLuint ax_programID, bool eix, GLuint axis_Id, CMask3D reixa, CPunt3D hreixa, 
 	glm::mat4 MatriuProjeccio, glm::mat4 MatriuVista)
@@ -88,66 +127,43 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 			COBJModel* objecteOBJ,
 			glm::mat4 MatriuVista, glm::mat4 MatriuTG)
 {
-	float altfar = 0;
-	GLint npunts = 0, nvertexs = 0;
-	GLdouble tras[3] = { 0.0,0.0,0.0 }; //Sierpinski Sponge
-	CColor color_vermell = { 0.0,0.0,0.0,1.0 }, color_Mar = { 0.0,0.0,0.0,0.0 };
-	bool sw_material[5] = { 0.0,0.0,0.0,0.0,0.0 };
+	if (mundoFisico == nullptr)
+		inicializaFisica();
 	
-// Matrius de Transformació
-	glm::mat4 NormalMatrix(1.0), ModelMatrix(1.0), TransMatrix(1.0), ScaleMatrix(1.0), RotMatrix(1.0);
+	if (miCoche && mundoFisico)
+	{
+		float motor = 0.0f;
+		float giro = 0.0f;
+		float freno = 0.0f;
 
-// VAO
-	CVAO objectVAO = { 0,0,0,0,0 };
-	objectVAO.vaoId = 0;	objectVAO.vboId = 0;	objectVAO.eboId = 0;	 objectVAO.nVertexs = 0; objectVAO.nIndices = 0;
+		// Control por teclado (usa GLFW)
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) motor = 1500.0f;  // Acelerar
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) freno = 50.0f;    // Frenar
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) giro = 0.3f;      // Izquierda
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) giro = -0.3f;     // Derecha
 
-	tras[0] = 0.0;	tras[1] = 0.0; tras[2] = 0.0;
-	color_vermell.r = 1.0;	color_vermell.g = 0.0; color_vermell.b = 0.0; color_vermell.a = 1.0;
-	sw_material[0] = false;	sw_material[1] = true; sw_material[2] = true; sw_material[3] = false;	sw_material[4] = true;
+		miCoche->aplicarInput(motor, giro, freno);
+		miCoche->update(1.0f / 60.0f);
+	}
 
-// Shader Visualització Objectes
 	glUseProgram(sh_programID);
-
-// Parametrització i activació/desactivació de textures
 	if (texturID[0] != 0) SetTextureParameters(0, texturID[0], true, true, textur_map, false);
-	if (textur) {	glUniform1i(glGetUniformLocation(sh_programID, "textur"), GL_TRUE); //glEnable(GL_TEXTURE_2D);
-					glUniform1i(glGetUniformLocation(sh_programID, "modulate"), GL_TRUE); //glEnable(GL_MODULATE);
-				}
-		else {	glUniform1i(glGetUniformLocation(sh_programID, "textur"), GL_FALSE); //glDisable(GL_TEXTURE_2D);
-				glUniform1i(glGetUniformLocation(sh_programID, "modulate"), GL_FALSE); //glDisable(GL_MODULATE);
-			}
+	glUniform1i(glGetUniformLocation(sh_programID, "textur"), textur ? GL_TRUE : GL_FALSE);
+	glUniform1i(glGetUniformLocation(sh_programID, "modulate"), textur ? GL_TRUE : GL_FALSE);
 	glUniform1i(glGetUniformLocation(sh_programID, "flag_invert_y"), flagInvertY);
-
-// Attribute Locations must be setup before calling glLinkProgram()
-	glBindAttribLocation(sh_programID, 0, "in_Vertex");		// Vèrtexs
-	glBindAttribLocation(sh_programID, 1, "in_Color");		// Color
-	glBindAttribLocation(sh_programID, 2, "in_Normal");		// Normals
-	glBindAttribLocation(sh_programID, 3, "in_TexCoord");	// Textura
-
-// Definició propietats de reflexió (emissió, ambient, difusa, especular) del material.
+	glBindAttribLocation(sh_programID, 0, "in_Vertex");
+	glBindAttribLocation(sh_programID, 1, "in_Color");
+	glBindAttribLocation(sh_programID, 2, "in_Normal");
+	glBindAttribLocation(sh_programID, 3, "in_TexCoord");
 	SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
 
-	//Renderitzat del cotxe
-	if (miCoche) {
-		miCoche->render(sh_programID, MatriuVista);
-	}
-	if (cono)
-		cono->render(sh_programID, MatriuVista, MatriuTG, col_object,sw_mat); 
+	if (miCoche) miCoche->Coche::render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
 
-	if (circuit) 
-		circuit->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
-
-	if (barrera) 
-		barrera->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
-
-	if (bloc) 
-		bloc->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
-
-	if (barril) 
-		barril->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
-	
-// Enviar les comandes gràfiques a pantalla
-//	glFlush();
+	if (cono) cono->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
+	if (circuit) circuit->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
+	if (barrera) barrera->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
+	if (bloc) bloc->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
+	if (barril) barril->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
 }
 
 // Mar amb ondulacions

@@ -19,6 +19,7 @@
 #include "main.h"
 
 
+
 void InitGL()
 {
 
@@ -41,7 +42,7 @@ void InitGL()
 	fact_pan = 1;
 	tr_cpv.x = 0;	tr_cpv.y = 0;	tr_cpv.z = 0;		tr_cpvF.x = 0;	tr_cpvF.y = 0;	tr_cpvF.z = 0;
 
-// Entorn VGI: Variables de control Skybox Cube
+// Entorn VGI: Variables de control Skybox int
 	SkyBoxCube = true;		skC_programID = 0;
 	skC_VAOID.vaoId = 0;	skC_VAOID.vboId = 0;	skC_VAOID.nVertexs = 0;
 	cubemapTexture = 0;
@@ -109,7 +110,7 @@ void InitGL()
 	initVAOList();	// Inicialtzar llista de VAO'S.
 	// CREACIÓ DE COTXE
 	if (miCoche == nullptr) {
-		miCoche = new Coche();
+		//miCoche = new Coche();
 	}
 
 	if (cono == nullptr) {
