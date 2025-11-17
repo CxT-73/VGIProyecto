@@ -382,32 +382,6 @@ void OnPaint(GLFWwindow* window)
 		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
 		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 	}
-	else if (camera == CAM_NAVEGA) {
-		if (Vis_Polar == POLARZ) {
-			vpv[0] = 0.0;	vpv[1] = 0.0;	vpv[2] = 1.0;
-		}
-		else if (Vis_Polar == POLARY) {
-			vpv[0] = 0.0;	vpv[1] = 1.0;	vpv[2] = 0.0;
-		}
-		else if (Vis_Polar == POLARX) {
-			vpv[0] = 1.0;	vpv[1] = 0.0;	vpv[2] = 0.0;
-		}
-		ViewMatrix = Vista_Navega(shader_programID, opvN, //false, 
-			n, vpv, pan, tr_cpv, tr_cpvF, c_fons, col_obj, objecte, true, pas,
-			front_faces, oculta, test_vis, back_line,
-			ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
-			eixos, grid, hgrid);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
-	else if (camera == CAM_GEODE) {
-		ViewMatrix = Vista_Geode(shader_programID, OPV_G, Vis_Polar, pan, tr_cpv, tr_cpvF, c_fons, col_obj, objecte, mida, pas,
-			front_faces, oculta, test_vis, back_line,
-			ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
-			eixos, grid, hgrid);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
 	else if (camera == CAM_FOLLOW) {
 		ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, OPV, mobil, c_fons,
 			oculta, test_vis, back_line, ilumina, llum_ambient,
