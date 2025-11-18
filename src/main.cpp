@@ -39,6 +39,8 @@ void InitGL()
 	angleZ = 0.0;
 	ViewMatrix = glm::mat4(1.0);		// Inicialitzar a identitat
 
+
+
 	// Entorn VGI: Variables de control de l'opció Càmera->Geode?
 	OPV_G.R = 15.0;		OPV_G.alfa = 0.0;	OPV_G.beta = 0.0;	// Origen PV en esfèriques per a Vista_Geode
 
@@ -716,6 +718,20 @@ void OnPaint(GLFWwindow* window)
 
 
 		}
+		else if (camera == CAM_LLIURE) {
+			ViewMatrix = Vista_Lliure(shader_programID, c_fons,OPV, g_FreeCamPos,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+		}
+		else if (camera == CAM_PAUSA) {
+			ViewMatrix = Vista_Pausa(shader_programID, miCoche, OPV, mobil, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+			}
 		// Entorn VGI: Dibuix de l'Objecte o l'Escena
 
 		// Entorn VGI: Transferència del buffer OpenGL a buffer de pantalla
@@ -1666,6 +1682,8 @@ void ShowEntornVGIWindow(bool* p_open)
 		}
 		ImGui::RadioButton("Seguimiento Coche", &oCamera, 3);
 		ImGui::RadioButton("Primera Persona", &oCamera, 4);
+		ImGui::RadioButton("Camera Lliure", &oCamera, 5);
+		ImGui::RadioButton("Camera pausa", &oCamera, 6);
 		// Entorn VGI. Gestió opcions desplegable CAMERA segons el valor de la variable selected
 		switch (oCamera)
 		{
@@ -1681,8 +1699,14 @@ void ShowEntornVGIWindow(bool* p_open)
 		case 3: // Opció CAMERA Seguiment
 			if (camera != CAM_FOLLOW) OnCameraFollow();
 			break;
-		case 4: // Opció CAMERA Primera Persona (¡He asumido el índice 4!)
+		case 4: // Opció CAMERA Primera Persona 
 			if (camera != CAM_PRIMERA_PERSONA) OnCameraPrimeraPersona();
+			break;
+		case 5: //opcio camera lliure
+			if (camera != CAM_LLIURE) OnCameraLliure();
+			break;
+		case 6: //opcio camera pausa
+			if (camera != CAM_PAUSA) OnCameraPausa();
 			break;
 		default:
 			// Opció per defecte: CAMERA Esfèrica
@@ -2471,17 +2495,42 @@ void OnCameraFollow()
 		OPV.alfa = 20.0f;  
 		OPV.beta = 0.0f;  
 		mobil = false;
-		//g_FollowCamManual = false;   MUY IMPORTANTE: Resetea a modo automático
+		
 	}
 }
 
 void OnCameraPrimeraPersona()
 {
-	// TODO: Agregue aquí su código de controlador de comandos
-	if (projeccio != ORTO || projeccio != CAP) // Mantenemos la misma comprobación
+	
+	if (projeccio != ORTO || projeccio != CAP) 
 	{
-		camera = CAM_PRIMERA_PERSONA; // 1. Establece el modo de cámara
-		mobil = false; // 2. Desactiva el modo orbital manual (mobil)
+		camera = CAM_PRIMERA_PERSONA; 
+		mobil = false; 
+	}
+}
+
+void OnCameraLliure()
+{
+	if (projeccio != ORTO || projeccio != CAP)
+	{
+		camera = CAM_LLIURE;
+		mobil = true; 
+	}
+}
+
+void OnCameraPausa()
+{
+
+	if (projeccio != ORTO || projeccio != CAP)
+	{
+		camera = CAM_PAUSA;
+
+
+		OPV.R = 25.0f;
+		OPV.alfa = 20.0f;
+		OPV.beta = 0.0f;
+		mobil = true;
+		
 	}
 }
 
@@ -3998,6 +4047,22 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 				mobil = false;
 
 			}
+		}
+		else if (camera == CAM_LLIURE) {
+
+			if (action == GLFW_PRESS) {
+				if (key == GLFW_KEY_UP)    g_isMovingForward = true;
+				if (key == GLFW_KEY_DOWN)  g_isMovingBackward = true;
+				if (key == GLFW_KEY_LEFT)  g_isMovingLeft = true;
+				if (key == GLFW_KEY_RIGHT) g_isMovingRight = true;
+			}
+			if (action == GLFW_RELEASE) {
+				if (key == GLFW_KEY_UP)    g_isMovingForward = false;
+				if (key == GLFW_KEY_DOWN)  g_isMovingBackward = false;
+				if (key == GLFW_KEY_LEFT)  g_isMovingLeft = false;
+				if (key == GLFW_KEY_RIGHT) g_isMovingRight = false;
+			}
+
 		}
 		else if (camera == CAM_NAVEGA) Teclat_Navega(key, action);
 		else if ((sw_grid) && ((grid.x) || (grid.y) || (grid.z))) Teclat_Grid(key, action);
@@ -5975,9 +6040,9 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 		//				horitzontal i vertical de la posició del mouse.
 		gir.cx = m_PosEAvall.x - xpos;		gir.cy = m_PosEAvall.y - ypos;
 		m_PosEAvall.x = xpos;				m_PosEAvall.y = ypos;
-		if (camera == CAM_ESFERICA)
+		if (camera == CAM_ESFERICA || camera == CAM_LLIURE)
 		{	// Càmera Esfèrica
-			OPV.beta = OPV.beta - gir.cx / 2.0;
+			OPV.beta = OPV.beta + gir.cx / 2.0;
 			OPV.alfa = OPV.alfa + gir.cy / 2.0;
 
 			// Entorn VGI: Control per evitar el creixement desmesurat dels angles.
@@ -6132,7 +6197,7 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 		zoomincr.cx = m_PosDAvall.x - xpos;		zoomincr.cy = m_PosDAvall.y - ypos;
 		long int incr = zoomincr.cy / 1.0;
 
-		if (camera == CAM_ESFERICA) {	// Càmera Esfèrica
+		if (camera == CAM_ESFERICA || camera == CAM_LLIURE) {	// Càmera Esfèrica
 			OPV.R = OPV.R + incr;
 			//if (OPV.R < 0.25) OPV.R = 0.25;
 			if (OPV.R < p_near) OPV.R = p_near;
@@ -6662,6 +6727,38 @@ int main(void)
 				OPV.beta += orbitSpeedPerSecond * delta;
 			}
 		}
+		if (camera == CAM_LLIURE)
+		{
+			float velocity = 100.0f; // AUMETAR PARA QUE LA CAMARA VAYA MAS RAPIDO
+			float moveSpeed = velocity * delta; 
+
+			
+			glm::vec3 front;
+			float yaw_rad = glm::radians(OPV.beta);
+			float pitch_rad = glm::radians(OPV.alfa);
+			front.x = -sin(yaw_rad) * cos(pitch_rad);
+			front.y = cos(yaw_rad) * cos(pitch_rad);
+			front.z = sin(pitch_rad);
+
+			glm::vec3 cameraFront = glm::normalize(front);
+			glm::vec3 worldUp = glm::vec3(0.0f, 0.0f, 1.0f);
+			glm::vec3 cameraRight = glm::normalize(glm::cross(cameraFront, worldUp));
+
+			// Mover la posición de la cámara
+			if (g_isMovingForward)  g_FreeCamPos += cameraFront * moveSpeed;
+			if (g_isMovingBackward) g_FreeCamPos -= cameraFront * moveSpeed;
+			if (g_isMovingLeft)     g_FreeCamPos -= cameraRight * moveSpeed;
+			if (g_isMovingRight)    g_FreeCamPos += cameraRight * moveSpeed;
+		}
+		if (camera == CAM_PAUSA)
+		{
+
+			float orbitSpeedPerSecond = 20.0f;
+
+
+			OPV.beta += orbitSpeedPerSecond * delta;
+
+		}
 
 		// Poll for and process events
 		glfwPollEvents();
@@ -6681,6 +6778,7 @@ int main(void)
 		// Entorn VGI: Transferència del buffer OpenGL a buffer de pantalla
 		glfwSwapBuffers(window);
 	}
+
 
 	// Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&

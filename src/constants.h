@@ -15,6 +15,8 @@
 #define CAM_NAVEGA 'N'
 #define CAM_FOLLOW 'F'
 #define CAM_PRIMERA_PERSONA 'P'
+#define CAM_LLIURE 'L'
+#define CAM_PAUSA 'A'
 
 //--------------- VGI: Tipus de Projecció
 #define AXONOM 'A'

@@ -17,6 +17,13 @@
 extern bool g_isOrbitingLeft = false;
 extern bool g_isOrbitingRight = false;
 
+//variables per cam lliure     
+glm::vec3 g_FreeCamPos(23.492f, 0.0f, 8.550f); // Posición inicial (ejemplo: cerca del coche)
+bool g_isMovingForward = false;
+bool g_isMovingBackward = false;
+bool g_isMovingLeft = false;
+bool g_isMovingRight = false;
+
 // Retrieving main monitor
 	GLFWmonitor* primary;
 
@@ -246,6 +253,8 @@ extern bool g_isOrbitingRight = false;
 	void OnCameraOrigenGeode();
 	void OnCameraFollow();
 	void OnCameraPrimeraPersona();
+	void OnCameraLliure();
+	void OnCameraPausa();
 	// Desplegable VISTA
 	void OnVistaFullscreen();
 	void OnVistaPan();

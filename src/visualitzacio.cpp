@@ -814,6 +814,109 @@ glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche, bool esIzquierdo, 
 	return MatriuVista;
 }
 
+glm::mat4 Vista_Lliure(GLuint sh_programID, CColor col_fons, CEsfe3D opv, glm::vec3 g_FreeCamPos,
+	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
+	LLUM* lumi, bool ifix, bool il2sides)
+{
+	glm::mat4 MatriuVista = glm::mat4(1.0f);
+	Fons(col_fons); // Limpia la pantalla
+	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	
+
+	glm::vec3 front;
+	float yaw_rad = glm::radians(opv.beta);    
+	float pitch_rad = glm::radians(opv.alfa); 
+
+	front.x = -sin(yaw_rad) * cos(pitch_rad);
+	front.y = cos(yaw_rad) * cos(pitch_rad);
+	front.z = sin(pitch_rad); 
+
+	glm::vec3 cameraFront = glm::normalize(front);
+	glm::vec3 worldUp = glm::vec3(0.0f, 0.0f, 1.0f);
+	glm::vec3 cameraRight = glm::normalize(glm::cross(cameraFront, worldUp));
+
+	glm::vec3 cameraUp = glm::normalize(glm::cross(cameraRight, cameraFront));
+
+	glm::vec3 cameraTarget = g_FreeCamPos + cameraFront;
+
+	MatriuVista = glm::lookAt(
+		g_FreeCamPos,    
+		cameraTarget,     
+		cameraUp          
+	);
+
+
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+	if (oculta) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
+
+	return MatriuVista;
+}
+
+glm::mat4 Vista_Pausa(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
+	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
+	LLUM* lumi, bool ifix, bool il2sides)
+{
+	glm::mat4 MatriuVista = glm::mat4(1.0f);
+	Fons(col_fons);
+	if (!ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+
+	if (coche != nullptr)
+	{
+
+		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
+		glm::vec3 modelOriginOffset = glm::vec3(3.0f, -7.5f, 0.0f);
+		glm::vec3 pivotPoint = carPos + modelOriginOffset;
+		//pillamos las variables globales que utilizan las otras camaras
+		float distancia = opv.R;
+		float elevacion_grados = opv.alfa;
+		float azimut_grados = opv.beta;
+
+		float azimut_final_rad;
+
+
+		azimut_final_rad = glm::radians(azimut_grados); //si movemos la camara
+		
+
+		//nos colocamos hacia atrás y arriba
+		float elevacion_rad = glm::radians(elevacion_grados);
+		float horizontalDist = distancia * cos(elevacion_rad);
+		float verticalDist = distancia * sin(elevacion_rad);
+
+		glm::vec3 cameraPos;
+		//aplicamos los calculos al punto del coche
+		cameraPos.x = pivotPoint.x + horizontalDist * cosf(azimut_final_rad);
+		cameraPos.y = pivotPoint.y - horizontalDist * sinf(azimut_final_rad);
+		cameraPos.z = pivotPoint.z + verticalDist * 3;
+
+
+		glm::vec3 cameraTarget = pivotPoint;
+
+
+		MatriuVista = glm::lookAt(
+			cameraPos,
+			cameraTarget,
+			glm::vec3(0.0f, 0.0f, 1.0f)
+		);
+	}
+	else
+	{
+		MatriuVista = glm::lookAt(glm::vec3(10, 10, 5), glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
+		printf("No hay coche al que seguir!\n");
+	}
+
+
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
+	if (ifix) Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	if (testv) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+	if (oculta) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
+
+	return MatriuVista;
+}
+
 // instancia: Aplica Transformacions Geometriques d'instanciació, segons els parametres 
 //            definits a la persiana Transformacions
 glm::mat4 instancia(bool TR, INSTANCIA tg, INSTANCIA tgF)
