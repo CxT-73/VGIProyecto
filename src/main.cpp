@@ -732,6 +732,13 @@ void OnPaint(GLFWwindow* window)
 			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
 			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 			}
+		else if (camera == CAM_INICI) {
+			ViewMatrix = Vista_menu_inici(shader_programID, miCoche, OPV, mobil, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+			}
 		// Entorn VGI: Dibuix de l'Objecte o l'Escena
 
 		// Entorn VGI: Transferència del buffer OpenGL a buffer de pantalla
@@ -1684,6 +1691,7 @@ void ShowEntornVGIWindow(bool* p_open)
 		ImGui::RadioButton("Primera Persona", &oCamera, 4);
 		ImGui::RadioButton("Camera Lliure", &oCamera, 5);
 		ImGui::RadioButton("Camera pausa", &oCamera, 6);
+		ImGui::RadioButton("Camera inici", &oCamera, 7);
 		// Entorn VGI. Gestió opcions desplegable CAMERA segons el valor de la variable selected
 		switch (oCamera)
 		{
@@ -1707,6 +1715,9 @@ void ShowEntornVGIWindow(bool* p_open)
 			break;
 		case 6: //opcio camera pausa
 			if (camera != CAM_PAUSA) OnCameraPausa();
+			break;
+		case 7:
+			if (camera != CAM_INICI) OnCameraInici();
 			break;
 		default:
 			// Opció per defecte: CAMERA Esfèrica
@@ -2531,6 +2542,22 @@ void OnCameraPausa()
 		OPV.beta = 0.0f;
 		mobil = true;
 		
+	}
+}
+
+void OnCameraInici()
+{
+
+	if (projeccio != ORTO || projeccio != CAP)
+	{
+		camera = CAM_INICI;
+
+
+		OPV.R = 25.0f;
+		OPV.alfa = 20.0f;
+		OPV.beta = 0.0f;
+		mobil = true;
+
 	}
 }
 
@@ -4078,6 +4105,18 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 		}
 		else if (!sw_color) Teclat_ColorFons(key, action);
 		else Teclat_ColorObjecte(key, action);
+
+		if (key == GLFW_KEY_C && action == GLFW_PRESS)
+		{
+			if (camera == CAM_FOLLOW) {
+				oCamera = 4;
+				
+			}
+			else {	
+				oCamera = 3;
+				
+			}
+		}
 	}
 	// Crida a OnPaint() per redibuixar l'escena
 		//OnPaint(window);
@@ -6759,7 +6798,13 @@ int main(void)
 			OPV.beta += orbitSpeedPerSecond * delta;
 
 		}
+		if (camera == CAM_INICI)
+		{
+			float orbitSpeedPerSecond = 10.0f;
 
+
+			OPV.beta += orbitSpeedPerSecond * delta;
+		}
 		// Poll for and process events
 		glfwPollEvents();
 

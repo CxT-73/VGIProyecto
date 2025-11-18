@@ -255,6 +255,7 @@ bool g_isMovingRight = false;
 	void OnCameraPrimeraPersona();
 	void OnCameraLliure();
 	void OnCameraPausa();
+	void OnCameraInici();
 	// Desplegable VISTA
 	void OnVistaFullscreen();
 	void OnVistaPan();

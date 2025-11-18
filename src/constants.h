@@ -17,6 +17,7 @@
 #define CAM_PRIMERA_PERSONA 'P'
 #define CAM_LLIURE 'L'
 #define CAM_PAUSA 'A'
+#define CAM_INICI 'I'
 
 //--------------- VGI: Tipus de Projecció
 #define AXONOM 'A'
