@@ -1523,7 +1523,7 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 	}
 	else if (nombreObjeto == "circuit") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m3/track.obj");
+		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m4/track.obj");
 	}
 	else {
 		fprintf(stderr, "ERROR: Nombre de objeto desconocido: %s\n", nombreObjeto.c_str());
