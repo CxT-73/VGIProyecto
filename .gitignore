@@ -15,3 +15,9 @@ obj/
 *.tlog
 *.log
 
+/x64/Debug/EntornVGI.exe
+/x64/Debug/EntornVGI.exp
+/x64/Debug/EntornVGI.lib
+/x64/Debug/EntornVGI.pdb
+/x64/Debug/EntornVGI.exe
+/x64/Debug/EntornVGI.exp

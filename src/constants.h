@@ -91,7 +91,7 @@ const double p_far=50000.0;
 #define TEXTURA_FITXERIMA 'I'
 
 // --------------  VGI: NOMBRE DE LLUMS: Nombre de Llums de l'aplicació, les d'OpenGL
-const int NUM_MAX_LLUMS = 8;
+const int NUM_MAX_LLUMS = 20;
 
 // -------------- VGI: SHADERS --> Tipus de Shaders
 #define CAP_SHADER ' '
@@ -202,6 +202,17 @@ struct LLUM
 	CPunt3D spotdirection;	// Vector de direció de la font de llum restringida (x,y,z).
 	GLfloat spotcoscutoff;	// Coseno de l'angle d'obertura de la font de llum restringida.
 	GLfloat spotexponent;	// Exponent que indica l'atenuació de la font del centre de l'eix a l'exterior, segons model de Warn.
+};
+
+struct ControlLuces {
+	bool frenando;       // true = tecla freno pulsada o marcha atras
+	int modoFaros;       // 0 = Apagados, 1 = Cortas, 2 = Largas
+	bool intermitenteIzquierdo;  // Input: Tecla de intermitente izquierdo
+	bool intermitenteDerecho;    // Input: Tecla de intermitente derecho
+	float tiempoTotal;          // Tiempo acumulado (para calcular el parpadeo)
+
+	// Constructor para iniciar todo apagado
+	ControlLuces() : frenando(false), modoFaros(0), intermitenteIzquierdo(false), intermitenteDerecho(false), tiempoTotal(0.0) {}
 };
 
 #endif

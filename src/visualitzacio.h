@@ -59,6 +59,9 @@ glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fon
 glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche,bool esIzquierdo, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides);
 
+//Llums cotxe
+void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin);
+
 // Entorn VGI: Càrrega TG
 glm::mat4 instancia(bool TR, INSTANCIA tg, INSTANCIA tgF);
 

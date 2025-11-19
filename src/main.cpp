@@ -369,6 +369,10 @@ void OnPaint(GLFWwindow* window)
 	// Entorn VGI: Activar shader Visualització Escena
 	glUseProgram(shader_programID);
 
+	//LLUMS COTXE
+	controlLlumsCotxe.tiempoTotal += 1.0f / 90.0f;
+	func_llumsCotxe(miCoche, controlLlumsCotxe, llumGL); //ES MODIFICA llumsCotxe
+
 	// Entorn VGI: Definició de Viewport, Projecció i Càmara
 	ProjectionMatrix = Projeccio_Perspectiva(shader_programID, 0, 0, w, h, OPV.R);
 
@@ -466,7 +470,8 @@ void OnPaint(GLFWwindow* window)
 	}
 
 	//  Actualitzar la barra d'estat de l'aplicació amb els valors R,A,B,PVx,PVy,PVz
-	if (statusB) Barra_Estat();
+	//if (statusB) Barra_Estat();
+	if (true) Barra_Estat();
 }
 
 // configura_Escena: Funcio que configura els parametres de Model i dibuixa les
@@ -727,6 +732,30 @@ void Barra_Estat()
 		sss = "          ";
 		fprintf(stderr, "%s \n", sss.c_str());
 	}
+
+	// -----------------------------------------------------
+	// --- NOU CODI LLUMS: VISUALITZAR ESTAT COTXE ---------
+	// -----------------------------------------------------
+	std::string infoLlums = "COTXE: ";
+
+	// Estat Faros
+	if (controlLlumsCotxe.modoFaros == 0) infoLlums += "[OFF] ";
+	else if (controlLlumsCotxe.modoFaros == 1) infoLlums += "[CURTES] ";
+	else if (controlLlumsCotxe.modoFaros == 2) infoLlums += "[LLARGUES] ";
+
+	// Estat Frens
+	if (controlLlumsCotxe.frenando) infoLlums += " [!!!FRE!!!] ";
+	else infoLlums += "           ";
+
+	// Estat Intermitents
+	if (controlLlumsCotxe.intermitenteIzquierdo) infoLlums += "<< ";
+	else infoLlums += "   ";
+
+	if (controlLlumsCotxe.intermitenteDerecho) infoLlums += ">>";
+	else infoLlums += "  ";
+
+	// Imprimir al final de tot
+	fprintf(stderr, "%s \n--------------------------------\n", infoLlums.c_str());
 }
 
 /* -------------------------------------------------------------------------------- */
@@ -788,7 +817,42 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 	if (!io.WantCaptureKeyboard) { //<Tractament mouse de l'aplicació>}
 		// EntornVGI: Si tecla pulsada és ESCAPE, tancar finestres i aplicació.
 		if (mods == 0 && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
-		else if (camera == CAM_FOLLOW)
+
+		// =====================================================
+		// ZONA DE CONTROL DE LUCES DEL COCHE
+		// =====================================================
+
+		if (key == GLFW_KEY_S) //FRE o MARCHA ENRERE
+		{
+			if (action == GLFW_PRESS) controlLlumsCotxe.frenando = true;
+			else if (action == GLFW_RELEASE) controlLlumsCotxe.frenando = false;
+		}
+
+		if (action == GLFW_PRESS) 
+		{
+			switch (key) 
+			{
+			case GLFW_KEY_L: //LLUMS CURTES I LLARGUES
+				controlLlumsCotxe.modoFaros = (controlLlumsCotxe.modoFaros + 1) % 3;
+				break;
+			case GLFW_KEY_J: // ` //INTERMITENT ESQUERRE
+				controlLlumsCotxe.intermitenteIzquierdo = !controlLlumsCotxe.intermitenteIzquierdo;
+				break;
+			case GLFW_KEY_K: // + //INTERMITENT DRET
+				controlLlumsCotxe.intermitenteDerecho = !controlLlumsCotxe.intermitenteDerecho;
+				break;
+			case GLFW_KEY_P: //DOBLE INTERMITENT
+				bool estado = !(controlLlumsCotxe.intermitenteIzquierdo && controlLlumsCotxe.intermitenteDerecho);
+				controlLlumsCotxe.intermitenteIzquierdo = estado;
+				controlLlumsCotxe.intermitenteDerecho = estado;
+				break;
+			}
+		}
+
+		// FI ZONA DE CONTROL DE LUCES DEL COCHE
+
+		//SISTEMA CAMARA
+		if (camera == CAM_FOLLOW)
 		{
 			// Si se PRESIONA una tecla
 			if (action == GLFW_PRESS)
