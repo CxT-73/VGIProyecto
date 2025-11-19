@@ -1,14 +1,14 @@
-//******** PRACTICA VISUALITZACI” GR¿FICA INTERACTIVA (Escola Enginyeria - UAB)
-//******** Entorn b‡sic VS2022 MONOFINESTRA amb OpenGL 4.6, interfÌcie GLFW 3.4, ImGui i llibreries GLM
-//******** Ferran Poveda, Marc Vivet, Carme Juli‡, DÈbora Gil, Enric MartÌ (Setembre 2025)
+Ôªø//******** PRACTICA VISUALITZACI√ì GR√ÄFICA INTERACTIVA (Escola Enginyeria - UAB)
+//******** Entorn b√†sic VS2022 MONOFINESTRA amb OpenGL 4.6, interf√≠cie GLFW 3.4, ImGui i llibreries GLM
+//******** Ferran Poveda, Marc Vivet, Carme Juli√†, D√©bora Gil, Enric Mart√≠ (Setembre 2025)
 // escena.cpp : Aqui es on ha d'anar el codi de les funcions que 
 //              dibuixin les escenes.
 //
-//    VersiÛ 2.0:	- Objectes Cub, Esfera, Tetera (primitives libreria GLUT)
+//    Versi√≥ 2.0:	- Objectes Cub, Esfera, Tetera (primitives libreria GLUT)
 //
-//	  VersiÛ 2.2:	- Objectes Cub, Esfera, Tetera definides en fitxer font glut_geometry amb altres primitives GLUT
+//	  Versi√≥ 2.2:	- Objectes Cub, Esfera, Tetera definides en fitxer font glut_geometry amb altres primitives GLUT
 //
-//	  VersiÛ 2.5:	- Objectes cubRGB i Tie (nau Star Wars fet per alumnes)
+//	  Versi√≥ 2.5:	- Objectes cubRGB i Tie (nau Star Wars fet per alumnes)
 //
 
 #include "stdafx.h"
@@ -19,6 +19,11 @@
 #include <BulletDynamics/Vehicle/btRaycastVehicle.h>
 #include "Coche.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <algorithm>
 extern GLFWwindow* window;
 
 // Objetos escena
@@ -29,16 +34,110 @@ OBJ* barrera = nullptr;
 OBJ* bloc = nullptr;
 OBJ* barril = nullptr;
 
-//FÌsicas de Bullet 
+//F√≠sicas de Bullet 
 btDiscreteDynamicsWorld* mundoFisico = nullptr;
 btBroadphaseInterface* broadphase = nullptr;
 btCollisionDispatcher* dispatcher = nullptr;
 btSequentialImpulseConstraintSolver* solver = nullptr;
 btDefaultCollisionConfiguration* config = nullptr;
 
+
+// Carga un OBJ (solo usamos "v" y "f") y crea un suelo est√°tico en Bullet
+btRigidBody* crearSueloDesdeOBJ(const char* rutaOBJ,
+	btDiscreteDynamicsWorld* mundo,
+	const btVector3& offset = btVector3(0, 0, 0),
+	float escala = 100)
+{
+	std::ifstream file(rutaOBJ);
+	if (!file.is_open()) {
+		std::cerr << "ERROR al abrir OBJ para fisica: " << rutaOBJ << std::endl;
+		return nullptr;
+	}
+
+	std::vector<btVector3> vertices;
+	std::string line;
+
+	btTriangleMesh* mesh = new btTriangleMesh();
+
+	while (std::getline(file, line)) {
+		if (line.size() < 2) continue;
+
+		std::istringstream ss(line);
+		std::string type;
+		ss >> type;
+
+		// V√©rtices
+		if (type == "v") {
+			float x, y, z;
+			ss >> x >> y >> z;
+			vertices.emplace_back(x * escala, y * escala, z * escala);
+		}
+		// Caras
+		else if (type == "f") {
+			std::string vStr;
+			std::vector<int> idx;
+
+			// Cada token es algo tipo "12/34/56" o "12//56" o "12"
+			while (ss >> vStr) {
+				if (vStr.empty()) continue;
+				std::replace(vStr.begin(), vStr.end(), '/', ' ');
+				std::istringstream vs(vStr);
+				int vi = 0;
+				vs >> vi;                    // √≠ndice de v√©rtice (1-based)
+				if (vi == 0) continue;
+
+				// Soporte √≠ndices negativos (desde el final)
+				if (vi < 0) vi = (int)vertices.size() + vi + 1;
+
+				idx.push_back(vi - 1);       // a 0-based
+			}
+
+			// Si la cara tiene m√°s de 3 v√©rtices, triangulamos en "fan"
+			if (idx.size() < 3) continue;
+			for (size_t i = 1; i + 1 < idx.size(); ++i) {
+				const btVector3& a = vertices[idx[0]];
+				const btVector3& b = vertices[idx[i]];
+				const btVector3& c = vertices[idx[i + 1]];
+
+				mesh->addTriangle(a + offset, b + offset, c + offset);
+			}
+		}
+	}
+
+	file.close();
+
+	if (mesh->getNumTriangles() == 0) {
+		std::cerr << "OBJ sin tri√°ngulos para fisica: " << rutaOBJ << std::endl;
+		delete mesh;
+		return nullptr;
+	}
+
+	bool useQuantizedAabb = true;
+	btBvhTriangleMeshShape* shape =
+		new btBvhTriangleMeshShape(mesh, useQuantizedAabb);
+
+	btTransform tr;
+	tr.setIdentity();
+	tr.setOrigin(btVector3(0, 0, 0));   // ya hemos aplicado offset en los v√©rtices
+
+	btDefaultMotionState* motion = new btDefaultMotionState(tr);
+
+	btRigidBody::btRigidBodyConstructionInfo info(
+		0.0f,          // masa 0 ‚Üí est√°tico
+		motion,
+		shape,
+		btVector3(0, 0, 0)
+	);
+
+	btRigidBody* body = new btRigidBody(info);
+	mundo->addRigidBody(body);
+	return body;
+}
+
+
 void inicializaFisica()
 {
-	// inicializar componentes base de Bullet
+	// ... lo que ya tienes:
 	config = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(config);
 	broadphase = new btDbvtBroadphase();
@@ -46,34 +145,34 @@ void inicializaFisica()
 	mundoFisico = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, config);
 	mundoFisico->setGravity(btVector3(0, -9.81f, 0));
 
-	// crear coche (usando el constructor de la clase Coche)
+	// Crear suelos desde tus OBJ
+	// OJO: ajusta ruta, escala y offset para que coincida con lo que dibujas
+	btRigidBody* sueloCircuito = crearSueloDesdeOBJ(
+		"../x64/Release/OBJFiles/Circuit_m3/track.obj",
+		mundoFisico,
+		btVector3(0, 0, 0),   // mismo origen que el render (de momento)
+		100.0f                // si en el render escalas a 100, pon lo mismo aqu√≠
+	);
+
+	// Crear coche
 	miCoche = new Coche(mundoFisico);
 
-	// crear suelo fÌsico invisible
-	btCollisionShape* sueloShape = new btBoxShape(btVector3(100, 1, 100));
-	btDefaultMotionState* sueloMotion = new btDefaultMotionState(
-		btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0))
-	);
-	btRigidBody::btRigidBodyConstructionInfo sueloInfo(0, sueloMotion, sueloShape);
-	btRigidBody* sueloBody = new btRigidBody(sueloInfo);
-	mundoFisico->addRigidBody(sueloBody);
-
-	std::cout << "Mundo fÌsico y coche inicializados correctamente.\n";
+	std::cout << "Mundo f√≠sico, suelos y coche inicializados.\n";
 }
 
-// Dibuixa Eixos Coordenades MÛn i Reixes, activant un shader propi.
+// Dibuixa Eixos Coordenades M√≥n i Reixes, activant un shader propi.
 void dibuixa_Eixos(GLuint ax_programID, bool eix, GLuint axis_Id, CMask3D reixa, CPunt3D hreixa, 
 	glm::mat4 MatriuProjeccio, glm::mat4 MatriuVista)
 {
-// VisualitzaciÛ Eixos Coordenades MÚn
+// Visualitzaci√≥ Eixos Coordenades M√≤n
 	glUseProgram(ax_programID);
 
-// Pas Matrius ProjecciÛ i Vista Vista a shader
+// Pas Matrius Projecci√≥ i Vista Vista a shader
 	glUniformMatrix4fv(glGetUniformLocation(ax_programID, "projectionMatrix"), 1, GL_FALSE, &MatriuProjeccio[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(ax_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
 
 // Attribute Locations must be setup before calling glLinkProgram()
-	glBindAttribLocation(ax_programID, 0, "in_Vertex"); // VËrtexs
+	glBindAttribLocation(ax_programID, 0, "in_Vertex"); // V√®rtexs
 	glBindAttribLocation(ax_programID, 1, "in_Color");	// Color
 
 //  Dibuix dels eixos
@@ -90,14 +189,14 @@ void dibuixa_Skybox(GLuint sk_programID, GLuint cmTexture, char eix_Polar, glm::
 
 	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 
-// ActivaciÛ shader per a cub skybox
+// Activaci√≥ shader per a cub skybox
 	glUseProgram(sk_programID);
 
-// Pas Matrius ProjecciÛ i Vista a shader
+// Pas Matrius Projecci√≥ i Vista a shader
 	glUniformMatrix4fv(glGetUniformLocation(sk_programID, "projectionMatrix"), 1, GL_FALSE, &MatriuProjeccio[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(sk_programID, "viewMatrix"), 1, GL_FALSE, &MatriuVista[0][0]);
 
-// Rotar skyBox per a orientar sobre eix superior Z o X en Vista EsfËrica (POLARX, POLARY, POLARZ)
+// Rotar skyBox per a orientar sobre eix superior Z o X en Vista Esf√®rica (POLARX, POLARY, POLARZ)
 	if (eix_Polar == POLARZ) ModelMatrix = glm::rotate(ModelMatrix, radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
 	else if (eix_Polar == POLARX) ModelMatrix = glm::rotate(ModelMatrix, radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
 
@@ -110,7 +209,7 @@ void dibuixa_Skybox(GLuint sk_programID, GLuint cmTexture, char eix_Polar, glm::
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cmTexture);
 
 // Attribute Locations must be setup before calling glLinkProgram()
-	glBindAttribLocation(sk_programID, 0, "in_Vertex"); // VËrtexs
+	glBindAttribLocation(sk_programID, 0, "in_Vertex"); // V√®rtexs
 
 //  Dibuix del Skybox
 	drawCubeSkybox();
@@ -177,7 +276,7 @@ CVAO loadSea_VAO(CColor colorM)
 	GLuint vaoId = 0; GLuint vboId = 0;
 	CVAO seaVAO = { 0,0,0,0,0 };
 	seaVAO.vaoId = 0;	seaVAO.vboId = 0;	seaVAO.nVertexs = 0;	seaVAO.eboId = 0; seaVAO.nIndices = 0;
-	std::vector <double> vertices, normals, colors, textures;	// DefiniciÛ vectors din‡mics per a vertexs, normals i textures 
+	std::vector <double> vertices, normals, colors, textures;	// Definici√≥ vectors din√†mics per a vertexs, normals i textures 
 	vertices.resize(0);		normals.resize(0);		colors.resize(0);	textures.resize(0);			// Reinicialitzar vectors
 
 // Aigua amb ondulacions simulades a partir de normals sinusoidals
@@ -197,7 +296,7 @@ CVAO loadSea_VAO(CColor colorM)
 			  angle = 1.0*it2*h * 15;
 			  Nx = -cos(angle);
 			  //glNormal3f(-cos(angle), 0, 1);
-			  //glVertex3f(i, j, 0);			// VËrtex P1
+			  //glVertex3f(i, j, 0);			// V√®rtex P1
 			  colors.push_back(colorM.r);		colors.push_back(colorM.g);		colors.push_back(colorM.b);		colors.push_back(colorM.a);  // Vector Colors
 			  normals.push_back(Nx);			normals.push_back(0.0);			normals.push_back(1.0);			// Vector Normals
 			  textures.push_back(0.0);			textures.push_back(0.0);										// Vector Textures
@@ -206,7 +305,7 @@ CVAO loadSea_VAO(CColor colorM)
 			  angle = 1.0*(it2 + 1.0)*h * 15;
 			  Nx = -cos(angle);
 			  //glNormal3f(-cos(angle), 0, 1);
-			  //glVertex3f(i + step, j, 0);		// VËrtex P2
+			  //glVertex3f(i + step, j, 0);		// V√®rtex P2
 			  colors.push_back(colorM.r);		colors.push_back(colorM.g);		colors.push_back(colorM.b);		colors.push_back(colorM.a);  // Vector Colors
 			  normals.push_back(Nx);			normals.push_back(0.0);			normals.push_back(1.0);			// Vector Normals
 			  textures.push_back(1.0);			textures.push_back(0.0);										// Vector Textures
@@ -215,7 +314,7 @@ CVAO loadSea_VAO(CColor colorM)
 			  angle = 1.0*(it2 + 1.0)*h * 15;
 			  Nx = -cos(angle);
 			  //glNormal3f(-cos(angle), 0, 1);
-			  //glVertex3f(i + step, j + step, 0);// VËrtex P3
+			  //glVertex3f(i + step, j + step, 0);// V√®rtex P3
 			  colors.push_back(colorM.r);		colors.push_back(colorM.g);		colors.push_back(colorM.b);		colors.push_back(colorM.a);  // Vector Colors
 			  normals.push_back(Nx);			normals.push_back(0.0);			normals.push_back(1.0);			// Vector Normals
 			  textures.push_back(1.0);			textures.push_back(1.0);										// Vector Textures
@@ -230,7 +329,7 @@ CVAO loadSea_VAO(CColor colorM)
 			//glBegin(GL_POLYGON);
 			  angle = 1.0*it2*h * 15;
 			  //glNormal3f(-cos(angle), 0, 1);
-			  //glVertex3f(i, j, 0);			// VËrtex P1
+			  //glVertex3f(i, j, 0);			// V√®rtex P1
 			  colors.push_back(colorM.r);		colors.push_back(colorM.g);		colors.push_back(colorM.b);		colors.push_back(colorM.a);  // Vector Colors
 			  normals.push_back(-cos(angle));	normals.push_back(0.0);			normals.push_back(1.0);			// Vector Normals
 			  textures.push_back(1.0);			textures.push_back(1.0);										// Vector Textures
@@ -238,7 +337,7 @@ CVAO loadSea_VAO(CColor colorM)
 
 			  angle = 1.0*(it2 + 1)*h * 15;
 			  //glNormal3f(-cos(angle), 0, 1);
-			  //glVertex3f(i + step, j + step, 0);// VËrtex P2
+			  //glVertex3f(i + step, j + step, 0);// V√®rtex P2
 			  colors.push_back(colorM.r);		colors.push_back(colorM.g);		colors.push_back(colorM.b);		colors.push_back(colorM.a);  // Vector Colors
 			  normals.push_back(-cos(angle));	normals.push_back(0.0);			normals.push_back(1.0);			// Vector Normals
 			  textures.push_back(1.0);			textures.push_back(1.0);										// Vector Textures
@@ -246,7 +345,7 @@ CVAO loadSea_VAO(CColor colorM)
 
 			  angle = 1.0*it2*h * 15;
 			  //glNormal3f(-cos(angle), 0, 1);
-			  //glVertex3f(i, j + step, 0);		// VËrtex P3
+			  //glVertex3f(i, j + step, 0);		// V√®rtex P3
 			  colors.push_back(colorM.r);		colors.push_back(colorM.g);		colors.push_back(colorM.b);		colors.push_back(colorM.a);  // Vector Colors
 			  normals.push_back(-cos(angle));	normals.push_back(0.0);			normals.push_back(1.0);			// Vector Normals
 			  textures.push_back(0.0);			textures.push_back(1.0);										// Vector Textures
@@ -262,7 +361,7 @@ CVAO loadSea_VAO(CColor colorM)
 	std::vector <int>::size_type nv = vertices.size();	// Tamany del vector vertices en elements.
 	//draw_GL_TRIANGLES_VAO(vertices, normals, colors, textures);
 	// 
-// CreaciÛ d'un VAO i un VBO i c‡rrega de la geometria. Guardar identificador VAO identificador VBO a struct CVAO.
+// Creaci√≥ d'un VAO i un VBO i c√†rrega de la geometria. Guardar identificador VAO identificador VBO a struct CVAO.
 	seaVAO = load_TRIANGLES_VAO(vertices, normals, colors, textures);
 	//seaVAO.vaoId = vaoId;
 	//seaVAO.vboId = vboId;

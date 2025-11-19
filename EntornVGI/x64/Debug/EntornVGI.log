@@ -7,22 +7,13 @@
   imgui_widgets.cpp
   coche.cpp
   escena.cpp
-C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\src\coche.h(5,10): error C1083: No se puede abrir el archivo incluir: 'btBulletDynamicsCommon.h': No such file or directory
-  (compilando archivo de origen "../src/coche.cpp")
-  
-C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\src\coche.h(5,10): error C1083: No se puede abrir el archivo incluir: 'btBulletDynamicsCommon.h': No such file or directory
-  (compilando archivo de origen "../src/escena.cpp")
-  
   glut_geometry.cpp
   main.cpp
-C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\src\coche.h(5,10): error C1083: No se puede abrir el archivo incluir: 'btBulletDynamicsCommon.h': No such file or directory
-  (compilando archivo de origen "../src/main.cpp")
-  
   material.cpp
   objLoader.cpp
   shader.cpp
   visualitzacio.cpp
-C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\src\coche.h(5,10): error C1083: No se puede abrir el archivo incluir: 'btBulletDynamicsCommon.h': No such file or directory
-  (compilando archivo de origen "../src/visualitzacio.cpp")
-  
   Generando código...
+C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\src\main.cpp(2989,1): warning C4715: 'initGLFW': no todas las rutas de acceso de control devuelven un valor
+     Creando biblioteca C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\x64\Debug\EntornVGI.lib y objeto C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\x64\Debug\EntornVGI.exp
+  EntornVGI.vcxproj -> C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\x64\Debug\EntornVGI.exe

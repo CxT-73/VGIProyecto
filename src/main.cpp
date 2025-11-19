@@ -284,10 +284,10 @@ void OnPaint(GLFWwindow* window)
 			ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
 			eixos, grid, hgrid);
 	}
-	else if (camera == CAM_FOLLOW) {
+	/*else if (camera == CAM_FOLLOW) {
 		ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, c_fons, oculta, test_vis, back_line,
 			ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
-	}
+	}*/
 
 	// Entorn VGI: Dibuix de l'Objecte o l'Escena
 	configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.

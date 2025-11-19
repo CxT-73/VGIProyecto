@@ -1,11 +1,11 @@
-//******** PRACTICA VISUALITZACI” GR¿FICA INTERACTIVA (Escola Enginyeria - UAB)
-//******** Entorn b‡sic VS2022 MONOFINESTRA amb OpenGL 4.6, interfÌcie GLFW 3.4, ImGui i llibreries GLM
-//******** Enric MartÌ (Setembre 2025)
+Ôªø//******** PRACTICA VISUALITZACI√ì GR√ÄFICA INTERACTIVA (Escola Enginyeria - UAB)
+//******** Entorn b√†sic VS2022 MONOFINESTRA amb OpenGL 4.6, interf√≠cie GLFW 3.4, ImGui i llibreries GLM
+//******** Enric Mart√≠ (Setembre 2025)
 // objLoader.cpp: Implements the class COBJModel.
 //
-//	  VersiÛ 2.0:	- AdaptaciÛ funcions a crear un VAO per a cada material del fitxer
+//	  Versi√≥ 2.0:	- Adaptaci√≥ funcions a crear un VAO per a cada material del fitxer
 //////////////////////////////////////////////////////////////////////////////////////
-//           Wavefront OBJ Loader (C) 2000 Tim C. Schrˆder
+//           Wavefront OBJ Loader (C) 2000 Tim C. Schr√∂der
 // -------------------------------------------------------------------
 //    tcs_web@gmx.de / tcs_web@hotmail.com / tcs@thereisnofate.net
 //                 http://glvelocity.demonews.com
@@ -89,7 +89,7 @@ int _stdcall COBJModel::LoadModel(char* szFileName)
 // Open the OBJ file
 ////////////////////////////////////////////////////////////////////////
 	errno = 0;
-	errno = fopen_s(&hFile, szFileName, "r"); // FunciÛ Visual 2005 i 2010
+	errno = fopen_s(&hFile, szFileName, "r"); // Funci√≥ Visual 2005 i 2010
 	
 // Success ?
 	if (errno != 0)
@@ -494,7 +494,7 @@ CVAO _stdcall COBJModel::RenderToVAOList(const Face* pFaces,
 
 	objVAO.vaoId = 0;	objVAO.vboId = 0;	objVAO.eboId = 0; objVAO.nVertexs = 0; objVAO.nIndices = 0;
 
-	std::vector <double> vertices, colors, normals, textures;		// DefiniciÛ vectors din‡mics per a vertexs i colors 
+	std::vector <double> vertices, colors, normals, textures;		// Definici√≥ vectors din√†mics per a vertexs i colors 
 	vertices.resize(0);		colors.resize(0);	normals.resize(0);		textures.resize(0);// Reinicialitzar vectors
 	
 // Obtenir color actual definit en OpenGL amb glColor();
@@ -716,7 +716,7 @@ CVAO _stdcall COBJModel::RenderToVAOList(const Face* pFaces,
 	//glEndList();
 
 // ----------------------- VAO
-// CreaciÛ d'un VAO i un VBO i c‡rrega de la geometria. Guardar identificador VAO identificador VBO a struct CVAO.
+// Creaci√≥ d'un VAO i un VBO i c√†rrega de la geometria. Guardar identificador VAO identificador VBO a struct CVAO.
 	objVAO = load_TRIANGLES_VAO(vertices, normals, colors, textures);
 
 	return objVAO;
@@ -740,7 +740,7 @@ void _stdcall COBJModel::loadToVAOList(const Face* pFaces,
 	CVAO objVAO;
 	objVAO.vaoId = 0;	objVAO.vboId = 0;	objVAO.eboId = 0;	 objVAO.nVertexs = 0; 	objVAO.nIndices = 0;
 
-	std::vector <double> vertices, colors, normals, textures;		// DefiniciÛ vectors din‡mics per a vertexs i colors 
+	std::vector <double> vertices, colors, normals, textures;		// Definici√≥ vectors din√†mics per a vertexs i colors 
 	vertices.resize(0);		colors.resize(0);	normals.resize(0);		textures.resize(0);// Reinicialitzar vectors
 
 	std::vector <int>::size_type nv = vertices.size();	// Tamany del vector vertices en elements.
@@ -767,7 +767,7 @@ void _stdcall COBJModel::loadToVAOList(const Face* pFaces,
 				if (iPreviousMaterial != (int)pFaces[i].iMaterialIndex)
 				{	// Canvi de material per a les cares del fitxer OBJ
 					if (nv > 0) {
-						// CreaciÛ d'un VAO i un VBO i c‡rrega de la geometria. Guardar identificador VAO identificador VBO a struct CVAO.
+						// Creaci√≥ d'un VAO i un VBO i c√†rrega de la geometria. Guardar identificador VAO identificador VBO a struct CVAO.
 						objVAO = load_TRIANGLES_VAO(vertices, normals, colors, textures);
 						Set_VAOList_OBJ(index_VAO, objVAO);
 						index_VAO = index_VAO + 1;
@@ -961,7 +961,7 @@ void _stdcall COBJModel::loadToVAOList(const Face* pFaces,
 	nv = vertices.size();	// Tamany del vector vertices en elements.
 
 	if (nv != 0) 
-	{	// CreaciÛ del darrer VAO i un VBO i c‡rrega de la geometria. Guardar identificador VAO identificador VBO a struct CVAO.
+	{	// Creaci√≥ del darrer VAO i un VBO i c√†rrega de la geometria. Guardar identificador VAO identificador VBO a struct CVAO.
 		objVAO = load_TRIANGLES_VAO(vertices, normals, colors, textures);
 		Set_VAOList_OBJ(index_VAO, objVAO);
 	}
@@ -1325,8 +1325,8 @@ int COBJModel::LoadTexture2(const char szFileName[_MAX_PATH])
 
 	
 // Open the image file for reading
-// file=fopen(filename,"r");					// FunciÛ Visual Studio 6.0
-   errno=fopen_s(&file,szFileName,"r");			// FunciÛ Visual 2005
+// file=fopen(filename,"r");					// Funci√≥ Visual Studio 6.0
+   errno=fopen_s(&file,szFileName,"r");			// Funci√≥ Visual 2005
 
 // If the file is empty (or non existent) print an error and return false
 // if (file == NULL)
@@ -1338,8 +1338,8 @@ int COBJModel::LoadTexture2(const char szFileName[_MAX_PATH])
 // Close the image file
  fclose(file);
 
-// SOIL_load_OGL_texture: FunciÛ que llegeix la imatge del fitxer filename
-//				si Ès compatible amb els formats SOIL (BMP,JPG,GIF,TIF,TGA,etc.)
+// SOIL_load_OGL_texture: Funci√≥ que llegeix la imatge del fitxer filename
+//				si √©s compatible amb els formats SOIL (BMP,JPG,GIF,TIF,TGA,etc.)
 //				i defineix la imatge com a textura OpenGL retornant l'identificador 
 //				de textura OpenGL.
  iTexture = SOIL_load_OGL_texture
@@ -1388,7 +1388,7 @@ void _stdcall COBJModel::EliminaLlista(int prim_Id)
 	deleteVAOList(prim_Id);
 }
 
-// ------------------------ GESTI” VAOLIST
+// ------------------------ GESTI√ì VAOLIST
 void _stdcall COBJModel::initVAOList_OBJ()
 {
 	int i;
@@ -1493,9 +1493,9 @@ void _stdcall COBJModel::draw_TriVAO_OBJ(GLuint sh_programID)
 	int i;
 
 	for (i = 0; i <= numMaterials; i++)
-	{	UseMaterial_ShaderID(sh_programID, vMaterials[i]);	// ActivaciÛ Material i-Ëssim
+	{	UseMaterial_ShaderID(sh_programID, vMaterials[i]);	// Activaci√≥ Material i-√®ssim
 		
-		draw_TriVAO_Object_OBJ(i);							// Dibuix objecte i-Ëssim
+		draw_TriVAO_Object_OBJ(i);							// Dibuix objecte i-√®ssim
 	}
 }
 
@@ -1504,7 +1504,7 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 
 	char ruta[256]; // espacio suficiente para la ruta
 
-	// Elegir ruta seg˙n el nombre del objeto
+	// Elegir ruta seg√∫n el nombre del objeto
 	if (nombreObjeto == "cono") {
 		nom = nombreObjeto;
 		strcpy(ruta, "../x64/Release/OBJFiles/Cono/Cono.obj");
@@ -1535,7 +1535,7 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 		fprintf(stderr, "ERROR: No se pudo cargar %s\n", ruta);
 	}
 	else {
-		printf("OBJ cargado autom·ticamente: %s\n", ruta);
+		printf("OBJ cargado autom√°ticamente: %s\n", ruta);
 	}
 }
 
@@ -1548,64 +1548,74 @@ OBJ::~OBJ() {
 //j --> verde
 //i --> rojo
 
-//coloca el objeto en una cuadrÌcula 3D separada 15 unidades entre filas (i) y columnas (j), a una altura fija de 160 en el eje Z
+//coloca el objeto en una cuadr√≠cula 3D separada 15 unidades entre filas (i) y columnas (j), a una altura fija de 160 en el eje Z
 //ModelMatrix = glm::translate(MatriuTG, vec3(i * 15.0f, j * 15.0f, 160.0f));
 
-//Esto es necesario porque las normales deben transformarse sin verse afectadas por escalados o proyecciones no uniformes que distorsionarÌan la iluminaciÛn.
+//Esto es necesario porque las normales deben transformarse sin verse afectadas por escalados o proyecciones no uniformes que distorsionar√≠an la iluminaci√≥n.
 //NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
 
-//mueve cada objeto 15 unidades en las tres direcciones, seg˙n sus Ìndices i, j, k.
+//mueve cada objeto 15 unidades en las tres direcciones, seg√∫n sus √≠ndices i, j, k.
 //TransMatrix = glm::translate(MatriuTG, vec3(i * 15.0f, j * 15.0f, k * 15.0f));
 
-//primero se mueve (traslaciÛn con TransMatrix), luego se escala el modelo.
+//primero se mueve (traslaci√≥n con TransMatrix), luego se escala el modelo.
 //ModelMatrix = glm::scale(TransMatrix, vec3(5.0f, 5.0f, 5.0f));
 
-void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG, CColor col_object, bool sw_mat[5]) {
+void OBJ::render(GLuint sh_programID,
+	glm::mat4 MatriuVista,
+	glm::mat4 MatriuTG,
+	CColor col_object,
+	bool sw_mat[5])
+{
 	if (!objecteOBJ) return;
 
-	float offsetX = 0.0f, offsetY = 0.0f, offsetZ = -46.0f;
-	float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
-	float escala=0.0f, y  = 0.0f, rad = 90.0f,z=0.0f,x=1.0f;
-	// Configurar separaciones seg˙n el objeto
-	if (nom == "cono") {
-		sepX = 0.5f;
-		sepY = 0.0f; 
+	float escala = 1.0f;
+	glm::vec3 offset = glm::vec3(0.0f);
+	float rotY_deg = 0.0f;
+
+	// --- CONFIGURACI√ìN POR OBJETO ---
+	if (nom == "circuit") {
+		escala = 100.0f;            // MISMA que en crearSueloDesdeOBJ(...)
+		offset = glm::vec3(0, 0, 0);  // igual que antes si lo necesitas
+		rotY_deg = 0.0f;
+	}
+	else if (nom == "cono") {
 		escala = 0.8f;
+		offset = glm::vec3(0, 0, 0);
 	}
 	else if (nom == "barrera") {
-		sepX = 1.0f;
-		sepY = 0.0f;
 		escala = 1.0f;
-	} 
+		offset = glm::vec3(0, 0, 0);
+	}
 	else if (nom == "bloc") {
-		sepX = -0.5f;
-		sepY = 0.0f;
 		escala = 1.0f;
+		offset = glm::vec3(0, 0, 0);
 	}
 	else if (nom == "barril") {
-		sepX = -1.0f;
-		sepY = 0.0f; 
 		escala = 5.0f;
+		offset = glm::vec3(0, 0, 0);
 	}
-	else if (nom == "circuit") {
-		sepX = 100.0f;
-		sepY = -100.0f;
-		offsetZ = -400.0f;
-		escala = 100.0f;
-	}
-	for (int i = 0; i < 10; i++) {
-		for (int j = 0; j < 10; j++) {
-			glm::mat4 TransMatrix = glm::translate(MatriuTG, glm::vec3(i * sepX, j * sepY, offsetZ));
-			glm::mat4 RotMatrix = glm::rotate(TransMatrix, glm::radians(rad), glm::vec3(x, y,z));
 
-			glm::mat4 ModelMatrix = glm::scale(RotMatrix, glm::vec3(escala));
-			glm::mat4 NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
-			 
-			glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
-			glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
-		}
-	}
+	// --- MATRIZ FINAL DEL OBJETO ---
+	glm::mat4 ModelMatrix = MatriuTG;
+
+	// Posici√≥n igual que f√≠sica
+	ModelMatrix = glm::translate(ModelMatrix, offset);
+
+	// Rotaci√≥n necesaria para pasar Y-up ‚Üí Z-up
+	ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+
+	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(escala));
+
+	glm::mat4 NormalMatrix = glm::transpose(glm::inverse(MatriuVista * ModelMatrix));
+
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"),
+		1, GL_FALSE, &ModelMatrix[0][0]);
+
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"),
+		1, GL_FALSE, &NormalMatrix[0][0]);
 
 	SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
+
 	objecteOBJ->draw_TriVAO_OBJ(sh_programID);
 }
+

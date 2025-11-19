@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\bullet3-master\bullet3-master\src\Bullet3Geometry\b3ConvexHullComputer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\bullet3-master\bullet3-master\src\Bullet3Geometry\b3GeometryUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\bullet3-master\bullet3-master\src\Bullet3Geometry\b3AabbUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\bullet3-master\bullet3-master\src\Bullet3Geometry\b3ConvexHullComputer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\bullet3-master\bullet3-master\src\Bullet3Geometry\b3GeometryUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\bullet3-master\bullet3-master\src\Bullet3Geometry\b3GrahamScan2dConvexHull.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\bullet3-master\bullet3-master\src\Bullet3Geometry\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{A47D4C32-02AF-3959-B602-0E56BE2D656B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{515F301E-7499-3794-89C5-53D31ED408DC}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

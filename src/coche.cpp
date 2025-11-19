@@ -26,7 +26,7 @@ Coche::Coche(btDiscreteDynamicsWorld* world) : mundo(world)
 
     btTransform startTransform;
     startTransform.setIdentity();
-    startTransform.setOrigin(btVector3(14, 1, 0.5));
+    startTransform.setOrigin(btVector3(0, 0, 0));
 
     btDefaultMotionState* motion = new btDefaultMotionState(startTransform);
     btRigidBody::btRigidBodyConstructionInfo info(mass, motion, chassisShape, inertia);
@@ -39,18 +39,18 @@ Coche::Coche(btDiscreteDynamicsWorld* world) : mundo(world)
     chasis->setLinearVelocity(btVector3(0, 0, 0));
     chasis->setAngularVelocity(btVector3(0, 0, 0));
     // Desactivar gravedad temporalmente
-    mundo->setGravity(btVector3(0, 0, 0));
+    mundo->setGravity(btVector3(0, 0, -9.81f));
 
     // Crear sistema de vehículo 
     raycaster = new btDefaultVehicleRaycaster(mundo);
     btRaycastVehicle::btVehicleTuning tuning;
     vehiculo = new btRaycastVehicle(tuning, chasis, raycaster);
-    vehiculo->setCoordinateSystem(0, 1, 2);
     mundo->addVehicle(vehiculo);
 
     // Añadir ruedas 
     btVector3 wheelDirection(0, 0, -1);   // hacia donde apunta la suspension
     btVector3 wheelAxle(-1, 0, 0);        // eje de rotación (izquierda-derecha)
+    vehiculo->setCoordinateSystem(0, 1, 2);
     float suspensionRestLength = 0.3f;
     float wheelRadius = 0.4f;
 
@@ -149,7 +149,7 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuT
     // Ajustes de orientación y escala
     // Rotar el modelo para alinear sus ejes con los de Bullet.
     //Escalarlo para que coincida con el tamaño del chasis físico.
-    M = glm::rotate(M, glm::radians(90.0f), glm::vec3(1, 0, 0));
+    //M = glm::rotate(M, glm::radians(90.0f), glm::vec3(1, 0, 0));
     M = glm::scale(M, glm::vec3(5.f));
 
     //Enviar matriz al shader
