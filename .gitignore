@@ -4,7 +4,7 @@
 *.suo
 
 # Build artifacts
-EntornVGI/x64/
+# EntornVGI/x64/
 x64/
 bin/
 obj/
