@@ -1569,41 +1569,41 @@ void OBJ::render(GLuint sh_programID,
 	if (!objecteOBJ) return;
 
 	float escala = 1.0f;
-	glm::vec3 offset = glm::vec3(0.0f);
+	glm::vec3 offset = glm::vec3(0.0f);   // Aquí añadiremos la altura
 	float rotY_deg = 0.0f;
 
-	// --- CONFIGURACIÓN POR OBJETO ---
+	// -------- CONFIGURACIÓN OBJETO --------
 	if (nom == "circuit") {
-		escala = 100.0f;            // MISMA que en crearSueloDesdeOBJ(...)
-		offset = glm::vec3(0, 0, 0);  // igual que antes si lo necesitas
+		escala = 100.0f;
+
+		float alturaZ =  300.0f;     // <-- SUBE o BAJA el OBJ en Z
+		offset = glm::vec3(0.0f, 500.0f, alturaZ);
+
 		rotY_deg = 0.0f;
 	}
 	else if (nom == "cono") {
 		escala = 0.8f;
-		offset = glm::vec3(0, 0, 0);
 	}
 	else if (nom == "barrera") {
 		escala = 1.0f;
-		offset = glm::vec3(0, 0, 0);
 	}
 	else if (nom == "bloc") {
 		escala = 1.0f;
-		offset = glm::vec3(0, 0, 0);
 	}
 	else if (nom == "barril") {
 		escala = 5.0f;
-		offset = glm::vec3(0, 0, 0);
 	}
 
-	// --- MATRIZ FINAL DEL OBJETO ---
+	// -------- MATRIZ DEL OBJETO --------
 	glm::mat4 ModelMatrix = MatriuTG;
 
-	// Posición igual que física
+	// Trasladar por offset (incluye ALTURA)
 	ModelMatrix = glm::translate(ModelMatrix, offset);
 
-	// Rotación necesaria para pasar Y-up → Z-up
+	// Ajuste de orientación si tu OBJ salió Y-up en Blender
 	ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-90.0f), glm::vec3(1, 0, 0));
 
+	// Escala
 	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(escala));
 
 	glm::mat4 NormalMatrix = glm::transpose(glm::inverse(MatriuVista * ModelMatrix));
@@ -1618,4 +1618,5 @@ void OBJ::render(GLuint sh_programID,
 
 	objecteOBJ->draw_TriVAO_OBJ(sh_programID);
 }
+
 

@@ -1,5 +1,4 @@
-﻿  coche.cpp
-  visualitzacio.cpp
+﻿  objLoader.cpp
      Creando biblioteca C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\x64\Release\EntornVGI.lib y objeto C:\Users\oussa\Desktop\Carpetas\UAB\4 curso\1 cuatri\VGI\VGIProyecto\x64\Release\EntornVGI.exp
 LINK : warning LNK4098: la biblioteca predeterminada'MSVCRTD' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
   Generando código
