@@ -9,7 +9,9 @@
 #include "visualitzacio.h"
 #include "escena.h"
 #include "main.h"
-
+#include "zones.h"
+#include "colocarObjeto.h"
+ 
 
 void InitGL()
 {
@@ -22,7 +24,7 @@ void InitGL()
 	// Entorn VGI: Variables de control per Menú Càmera: Esfèrica, Navega, Mòbil, Zoom, Satelit, Polars... 
 	camera = CAM_FOLLOW;
 	mobil = true;	zzoom = true;		zzoomO = false;		satelit = false;
-
+ 
 
 
 	OPV.R = 25.0f;      
@@ -322,6 +324,12 @@ void InitGL()
 	if (barril == nullptr) {
 		barril = new OBJ("barril");
 	}
+	if (punt == nullptr) {
+		punt = new OBJ("punt");
+	}
+	if (zonas == nullptr) {
+		zonas = new Zones("punt");
+	}
 	 
 }
 
@@ -523,7 +531,7 @@ void dibuixa_Escena() {
 
 	// Escalat d'objectes, per adequar-los a les vistes ortogràfiques (Pràctica 2)
 	//	GTMatrix = glm::scale();
-
+ 
 	//	Dibuix geometria de l'escena amb comandes GL.
 	dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
 		textura, texturesID, textura_map, tFlag_invert_Y,
@@ -1491,6 +1499,9 @@ int main(void)
 	float time = elapsedTime;
 	float now;
 	float delta;
+	 
+
+	
 
 	// glfw: initialize and configure
 	// ------------------------------
@@ -1608,6 +1619,11 @@ int main(void)
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 130");
 	// Entorn VGI.ImGui: End Setup Dear ImGui context
+	  
+
+
+
+
 
 	// Loop until the user closes the window
 	while (!glfwWindowShouldClose(window))
@@ -1674,6 +1690,10 @@ int main(void)
 
 			OPV.beta += orbitSpeedPerSecond * delta;
 		}
+
+
+
+
 		// Poll for and process events
 		glfwPollEvents();
 
@@ -1682,6 +1702,8 @@ int main(void)
 
 		// Entorn VGI: Activa la finestra actual
 		glfwMakeContextCurrent(window);
+		 
+  
 
 		// Entorn VGI: Transferència del buffer OpenGL a buffer de pantalla
 		glfwSwapBuffers(window);

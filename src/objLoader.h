@@ -131,9 +131,22 @@ class COBJModel;
 
 class OBJ {
 public:
-	COBJModel* objecteOBJ;
 	std::string nom;
-	OBJ(const std::string& nombreObjeto);       // Constructor
-	~OBJ();                          // Destructor
-	void render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG, CColor col_object, bool sw_mat[5]);
+	COBJModel* objecteOBJ;
+
+	glm::vec3 posicion;   // traslación
+	glm::vec3 rotacion;   // rotación en grados (x,y,z)
+	glm::vec3 escala;  
+
+	OBJ(const std::string& nombreObjeto);
+	~OBJ();
+
+	void setTransform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scl) {
+		posicion = pos;
+		rotacion = rot;
+		escala = scl;
+	}
+
+	void render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
+		CColor col_object, bool sw_mat[5]);
 };

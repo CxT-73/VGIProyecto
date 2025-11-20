@@ -14,14 +14,20 @@
 #include "stdafx.h"
 #include "material.h"
 #include "visualitzacio.h"
+#include "zones.h"
 #include "escena.h"
+#include "colocarObjeto.h"
 
 Coche* miCoche = nullptr;
 OBJ* cono = nullptr;
 OBJ* circuit = nullptr;
 OBJ* barrera = nullptr;
 OBJ* bloc = nullptr;
-OBJ* barril = nullptr; 
+OBJ* barril = nullptr;
+OBJ* punt = nullptr;
+
+Zones* zonas = nullptr;
+
 // Dibuixa Eixos Coordenades Món i Reixes, activant un shader propi.
 void dibuixa_Eixos(GLuint ax_programID, bool eix, GLuint axis_Id, CMask3D reixa, CPunt3D hreixa, 
 	glm::mat4 MatriuProjeccio, glm::mat4 MatriuVista)
@@ -458,6 +464,12 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 			miCoche->render(sh_programID, MatriuVista);
 		}
 	}
+
+	//offset
+	//eje X ? izquierda / derecha.
+	//eje Y ? adelante / atrás.
+	//eje Z ? arriba / abajo.
+
 	if (cono)
 		cono->render(sh_programID, MatriuVista, MatriuTG, col_object,sw_mat); 
 
@@ -470,8 +482,20 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 	if (bloc) 
 		bloc->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
 
-	if (barril) 
-		barril->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
+	if (barril) {
+		ObjetoSeguidor barrilSeguidor(barril, zonas, 3);
+		glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 scl = glm::vec3(100.0f);
+		barrilSeguidor.colocarEnZona(offset, rot, scl);
+		barrilSeguidor.invisible = false;
+		barrilSeguidor.render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
+	}
+	if (punt && zonas) {   
+		 
+		zonas->renderTodos(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
+
+	}
 	 
 // Enviar les comandes gràfiques a pantalla
 //	glFlush();

@@ -9,14 +9,17 @@
 
 // Entorn VGI: OBJECTE OBJ. Include per la definició de l'objecte Obj_OBJ
 #include "objLoader.h"
-#include "coche.h"
+#include "coche.h" 
+#include "zones.h" 
 //declaramos el coche
 extern Coche* miCoche; 
 extern OBJ* cono;
 extern OBJ* circuit;
 extern OBJ* barrera;
 extern OBJ* bloc;
-extern OBJ* barril;  
+extern OBJ* barril;
+extern OBJ* punt;
+extern Zones* zonas;
 /* ------------------------------------------------------------------------- */
 /*                            Funcions de les escenes                        */
 /* ------------------------------------------------------------------------- */
