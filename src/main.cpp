@@ -85,7 +85,7 @@ void InitGL()
 	llumGL[0].spotcoscutoff = cos(25.0 * PI / 180);		llumGL[0].spotexponent = 1.0;		// llumGL[0].spotexponent = 45.0; Model de Warn (10, 500)
 
 	// Activació font de llum: ENCESA
-	llumGL[0].encesa = true;
+	llumGL[0].encesa = false;
 
 	// ---------------- LLUM #1 - (+X) no restringida, amb atenuació constant (a,b,c) = (0,0,1)
 	// Posició de la font de llum (x,y,z)=(75,0,0):
@@ -165,11 +165,11 @@ void InitGL()
 
 	// ---------------- LLUM #5 - (-Z), direccional, no restringida, amb atenuació constant (a,b,c) = (0,0,1)
 	// Vector de la font de llum direccional (x,y,z)=(-1,-1,-1):
-	llumGL[5].posicio.x = -1.0;			llumGL[5].posicio.y = -1.0;			llumGL[5].posicio.z = -1.0;		llumGL[5].posicio.w = 0.0;
+	llumGL[5].posicio.x = -1.0;			llumGL[5].posicio.y = 0.2;			llumGL[5].posicio.z = 0.0;		llumGL[5].posicio.w = 0.0;
 
 	// Intensitats difusa i especular de la font de llum (r,g,b) = (1,0,0):
-	llumGL[5].difusa.r = 1.0f;			llumGL[5].difusa.g = 0.0f;			llumGL[5].difusa.b = 0.0f;		llumGL[5].difusa.a = 1.0f;
-	llumGL[5].especular.r = 1.0f;		llumGL[5].especular.g = 0.0f;		llumGL[5].especular.b = 0.0f;	llumGL[5].especular.a = 1.0f;
+	llumGL[5].difusa.r = 1.0f;			llumGL[5].difusa.g = 0.95f;			llumGL[5].difusa.b = 0.8f;		llumGL[5].difusa.a = 1.0f;
+	llumGL[5].especular.r = 1.0f;		llumGL[5].especular.g = 1.0f;		llumGL[5].especular.b = 1.0f;	llumGL[5].especular.a = 1.0f;
 
 	// Coeficients factor atenuació f_att=1/(ad2+bd+c). Llum sense atenuació per distància (a,b,c)=(0,0,1):
 	llumGL[5].atenuacio.a = 0.0;		llumGL[5].atenuacio.b = 0.0;		llumGL[5].atenuacio.c = 1.0;
@@ -180,7 +180,7 @@ void InitGL()
 	llumGL[5].spotcoscutoff = 0.0;		llumGL[5].spotexponent = 0.0;
 
 	// Activació font de llum: APAGADA
-	llumGL[5].encesa = false;
+	llumGL[5].encesa = true;
 
 	// ---------------- LLUM #6 - Llum Vaixell, configurada a la funció vaixell() en escena.cpp.
 	// Posició de la font de llum (x,y,z)=(-75,75,75):

@@ -25,10 +25,15 @@
 void Iluminacio(GLint sh_programID, char ilumin, bool ifix, bool ilu2sides, bool ll_amb, LLUM* lumin, char obj, bool frnt_fcs,
 	bool bc_lin, int step)
 {
+	GLfloat luz_mañana[] = { 0.2, 0.2, 0.2, 1.0 };
+	GLfloat luz_mediodia[] = { 0.3, 0.3, 0.3, 1.0 };
+	GLfloat anochecer[] = { 0.1f ,0.1f, 0.4f ,1.0 };
+	GLfloat atardecer[] = { 0.4f,0.3f,0.2f,1.0 };
+	GLfloat noche[] = { 0.05f,0.05f,0.05f,1.0 };
 
 // Variables per a configurar paràmetres de les fonts de llum
 	GLfloat especular[] = { 0.0,0.0,0.0,1.0 };
-	GLfloat ambientg[] = { .5,.5,.5,1.0 };
+	GLfloat* ambientg = anochecer;
 
 // Definició de llum ambient segons booleana ll_amb
 //	if (ll_amb) glLightModelfv(GL_LIGHT_MODEL_AMBIENT,ambientg);	// Codi OpenGL 1.1
