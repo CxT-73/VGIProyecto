@@ -10,6 +10,8 @@
 #include "escena.h"
 #include "main.h"
 
+ShadowMapData shadowData;            // VARIABLE OMBRES
+GLuint simpleDepthShaderID = 0; // VARIABLE OMBRES
 
 void InitGL()
 {
@@ -313,6 +315,8 @@ void InitGL()
 	if (barril == nullptr) {
 		barril = new OBJ("barril");
 	}
+
+	initShadowMapData();
 	 
 }
 
@@ -354,8 +358,50 @@ void OnSize(GLFWwindow* window, int width, int height)
 // OnPaint: Funció de dibuix i visualització en frame buffer del frame
 void OnPaint(GLFWwindow* window)
 {
+	//OMBRES INICI
+	controlLlumsCotxe.tiempoTotal += 1.0f / 90.0f;
+	func_llumsCotxe(miCoche, controlLlumsCotxe, llumGL);
+
+	glm::vec3 lightPos(llumGL[0].posicio.x, llumGL[0].posicio.y, llumGL[0].posicio.z);
+	glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, 1.0f, 100.0f);
+	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
+	glViewport(0, 0, shadowData.width, shadowData.height);
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowData.FBO); 
+	glClear(GL_DEPTH_BUFFER_BIT); 
+	glUseProgram(simpleDepthShaderID);
+
+	glUniformMatrix4fv(glGetUniformLocation(simpleDepthShaderID, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+	configura_Escena();
+
+	dibuixa_EscenaGL(simpleDepthShaderID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+		textura, texturesID, textura_map, tFlag_invert_Y,
+		npts_T, PC_t, pas_CS, sw_Punts_Control, false,
+		ObOBJ, lightView, GTMatrix, false);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+
+	glViewport(0, 0, w, h);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// FI OMBRES
 	// TODO: Agregue aquí su código de controlador de mensajes
 	GLdouble vpv[3] = { 0.0, 0.0, 1.0 };
+
+	if ((c_fons.r < 0.5) || (c_fons.g < 0.5) || (c_fons.b < 0.5)) ImGui::StyleColorsLight();
+	else ImGui::StyleColorsDark();
+
+	glDisable(GL_SCISSOR_TEST);
+
+	// Activem shader principal
+	glUseProgram(shader_programID);
+
+	glUniformMatrix4fv(glGetUniformLocation(shader_programID, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+
+	glActiveTexture(GL_TEXTURE1); // Slot 1
+	glBindTexture(GL_TEXTURE_2D, shadowData.texture);
+	glUniform1i(glGetUniformLocation(shader_programID, "shadowMap"), 1);
 
 	// Entorn VGI.ImGui: Menú ImGui condicionat al color de fons
 	if ((c_fons.r < 0.5) || (c_fons.g < 0.5) || (c_fons.b < 0.5))

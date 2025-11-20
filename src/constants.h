@@ -215,4 +215,15 @@ struct ControlLuces {
 	ControlLuces() : frenando(false), modoFaros(0), intermitenteIzquierdo(false), intermitenteDerecho(false), tiempoTotal(0.0) {}
 };
 
+//STRUCT SOMBRES
+
+struct ShadowMapData {
+	unsigned int FBO;       // El Framebuffer Object
+	unsigned int texture;   // La textura de profunditat
+	const unsigned int width = 1024;
+	const unsigned int height = 1024;
+};
+extern ShadowMapData shadowData;
+extern GLuint simpleDepthShaderID;
+
 #endif

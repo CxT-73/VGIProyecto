@@ -1051,6 +1051,80 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 	else { lumin[15].encesa = false; lumin[17].encesa = false; }
 }
 
+// INICIALITZACIO OMBRES (Framebuffer + Shader)
+ShadowMapData initShadowMapData()
+{
+	// ---------------------------------------------------------
+	// PART 1: CREAR FRAMEBUFFER I TEXTURA
+	// ---------------------------------------------------------
+
+	glGenFramebuffers(1, &shadowData.FBO);
+
+	glGenTextures(1, &shadowData.texture);
+	glBindTexture(GL_TEXTURE_2D, shadowData.texture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowData.width, shadowData.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowData.FBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowData.texture, 0);
+
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	// ---------------------------------------------------------
+	// PART 2: COMPILAR EL SHADER D'OMBRES 
+	// ---------------------------------------------------------
+
+	const char* depthVertexSource = R"(
+        #version 330 core
+        layout (location = 0) in vec3 aPos;
+        uniform mat4 lightSpaceMatrix;
+        uniform mat4 model;
+        void main()
+        {
+            gl_Position = lightSpaceMatrix * model * vec4(aPos, 1.0);
+        }
+    )";
+
+	const char* depthFragmentSource = R"(
+        #version 330 core
+        void main()
+        {             
+            // No fem res
+        }
+    )";
+
+	unsigned int depthVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(depthVertexShader, 1, &depthVertexSource, NULL);
+	glCompileShader(depthVertexShader);
+
+	unsigned int depthFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(depthFragmentShader, 1, &depthFragmentSource, NULL);
+	glCompileShader(depthFragmentShader);
+
+	// Guardem la ID a la variable Global 'simpleDepthShaderID'
+	simpleDepthShaderID = glCreateProgram();
+	glAttachShader(simpleDepthShaderID, depthVertexShader);
+	glAttachShader(simpleDepthShaderID, depthFragmentShader);
+	glLinkProgram(simpleDepthShaderID);
+
+	// Neteja
+	glDeleteShader(depthVertexShader);
+	glDeleteShader(depthFragmentShader);
+
+	return shadowData;
+}
+
 // instancia: Aplica Transformacions Geometriques d'instanciació, segons els parametres 
 //            definits a la persiana Transformacions
 glm::mat4 instancia(bool TR, INSTANCIA tg, INSTANCIA tgF)
