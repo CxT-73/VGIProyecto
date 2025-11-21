@@ -51,6 +51,7 @@ _stdcall COBJModel::COBJModel()
 {
 // Inicialitzar la llista de VAO's.
 	initVAOList_OBJ();
+	m_pTriangleMesh = nullptr;
 }
 
 _stdcall COBJModel::~COBJModel()
@@ -229,7 +230,43 @@ int _stdcall COBJModel::LoadModel(char* szFileName)
 // Render all faces into a VAO
 	//auxVAO = RenderToVAOList(pFaces, OBJInfo.iFaceCount, pMaterials, prim_Id);
 	loadToVAOList(pFaces, OBJInfo.iFaceCount, pMaterials);
+	// ==========================================================================
+	// GENERACIÓN DE MALLA DE COLISIÓN PARA BULLET PHYSICS
+	// ==========================================================================
+	// Si ya existía una malla, la borramos para no dejar basura
+	if (m_pTriangleMesh) {
+		delete m_pTriangleMesh;
+		m_pTriangleMesh = nullptr;
+	}
 
+	// Creamos la nueva malla
+	m_pTriangleMesh = new btTriangleMesh();
+
+	// Recorremos todas las caras del modelo cargado
+	for (int i = 0; i < (int)OBJInfo.iFaceCount; i++)
+	{
+		for (int j = 1; j < (int)pFaces[i].iNumVertices - 1; j++)
+		{
+			// Vértice 0 
+			btVector3 v0(pFaces[i].pVertices[0].fX,
+				pFaces[i].pVertices[0].fY,
+				pFaces[i].pVertices[0].fZ);
+
+			// Vértice J
+			btVector3 v1(pFaces[i].pVertices[j].fX,
+				pFaces[i].pVertices[j].fY,
+				pFaces[i].pVertices[j].fZ);
+
+			// Vértice J+1
+			btVector3 v2(pFaces[i].pVertices[j + 1].fX,
+				pFaces[i].pVertices[j + 1].fY,
+				pFaces[i].pVertices[j + 1].fZ);
+
+			// Añadir el triángulo a la malla física
+			m_pTriangleMesh->addTriangle(v0, v1, v2);
+		}
+	}
+	printf("Bullet: Malla de colision generada con exito dentro de LoadModel.\n");
 ////////////////////////////////////////////////////////////////////////
 // Free structures that hold the model data
 ////////////////////////////////////////////////////////////////////////

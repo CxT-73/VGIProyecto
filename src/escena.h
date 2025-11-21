@@ -49,4 +49,10 @@ void Motor(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_ma
 void Canon(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_mat[4]);
 void Cuerpo(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_mat[4]);
 void Cabina(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_mat[4]);
+// FUNCIONES BULLET PHYSICS
+void initFisicas();
+void stepFisicas();
+void cleanFisicas();
+void crearColisionadorEstatico(OBJ* objetoJuego);
+void iniciarFisicasCoche();
 #endif

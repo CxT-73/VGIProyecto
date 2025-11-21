@@ -45,9 +45,6 @@ using namespace glm;
 #include <time.h>
 #include <vector>
 #include <string>
-#include <algorithm> 
-#include <fstream>
-#include <sstream> 
 
 // VGI: Constants de l'aplicació EntornVGI
 #include "constants.h"
