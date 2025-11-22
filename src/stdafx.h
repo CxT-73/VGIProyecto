@@ -48,6 +48,8 @@ using namespace glm;
 #include <algorithm> 
 #include <fstream>
 #include <sstream> 
+#include <map>
+
 
 // VGI: Constants de l'aplicació EntornVGI
 #include "constants.h"

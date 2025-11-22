@@ -3,15 +3,15 @@
 Zones::Zones(const std::string& nombreObjeto) {
 
     std::vector<glm::vec3> coords = {
-        { 1.0f, 0.0f, 0.0f }, // zona 0
-        { 15.0f, 0.0f, 0.0f }, //zona 1
-        { 15.0f, 0.0f, 0.0f }, //zona 2
+        { -400.0f, 1000.0f, 180.0f }, // zona 0
+        { 500.0f, 630.0f, 150.0f }, //zona 1
+        { 600.0f, 100.0f, 100.0f }, //zona 2
         { -35.0f, 150.0f, 40.0f }, // zona 3
-        { 1.0f, 0.0f, 0.0f }, // zona 4
-        { 1.0f, 0.0f, 0.0f }, // zona 5
-        { 1.0f, 0.0f, 0.0f }, // zona 6
-        { 1.0f, 0.0f, 0.0f },// zona 7
-        { 1.0f, 0.0f, 0.0f } // zona 8
+        { 1000.0f, 50.0f, 140.0f }, // zona 4
+        { 550.0f, -350.0f, 60.0f }, // zona 5
+        { -350.0f, 600.0f, 100.0f }, // zona 6
+        { -650.0f, 600.0f, 100.0f },// zona 7
+        { -650.0f, 950.0f, 180.0f } // zona 8
     };
 
     for (const glm::vec3& pos : coords) {

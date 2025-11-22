@@ -482,14 +482,29 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		bloc->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
 
 	if (barril) {
-		ObjetoSeguidor barrilSeguidor(barril, zonas, 3);
-		glm::vec3 offset = glm::vec3(0.0f, -100.0f, 0.0f);
-		glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f);
-		glm::vec3 scl = glm::vec3(10.0f);
-		barrilSeguidor.colocarEnZona(offset, rot, scl);
-		barrilSeguidor.invisible = false;
-		barrilSeguidor.render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
-	} 
+		ObjetoSeguidor barrilSeguidor(barril, zonas, 0);
+		 
+		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
+			{8, {2, { {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} }}}, // 2 duplicados en zona 3
+			{0, {3, { {0.0f, 0.0f, 0.0f}, {0.0f, 5.0f, 0.0f}, {10.0f, 0.0f, 0.0f} }}} // 3 duplicados en zona 5
+		};
+		 
+		std::map<int, std::vector<int>> invisiblesPorZona = {
+			{5, {1}} // el segundo duplicado (índice 1) en la zona 5 es invisible
+		};
+
+		barrilSeguidor.colocarDuplicadosEnZonas(zonasConfig,
+			invisiblesPorZona,
+			glm::vec3(0.0f),   // rotación
+			glm::vec3(10.0f),  // escala
+			sh_programID,
+			MatriuVista,
+			MatriuTG,
+			col_object,
+			sw_mat);
+	}
+
+
 	 
 // Enviar les comandes gràfiques a pantalla
 //	glFlush();
