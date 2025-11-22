@@ -23,8 +23,7 @@ OBJ* cono = nullptr;
 OBJ* circuit = nullptr;
 OBJ* barrera = nullptr;
 OBJ* bloc = nullptr;
-OBJ* barril = nullptr;
-OBJ* punt = nullptr;
+OBJ* barril = nullptr; 
 
 Zones* zonas = nullptr;
 
@@ -484,18 +483,13 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 
 	if (barril) {
 		ObjetoSeguidor barrilSeguidor(barril, zonas, 3);
-		glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 offset = glm::vec3(0.0f, -100.0f, 0.0f);
 		glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f);
-		glm::vec3 scl = glm::vec3(100.0f);
+		glm::vec3 scl = glm::vec3(10.0f);
 		barrilSeguidor.colocarEnZona(offset, rot, scl);
 		barrilSeguidor.invisible = false;
 		barrilSeguidor.render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
-	}
-	if (punt && zonas) {   
-		 
-		zonas->renderTodos(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
-
-	}
+	} 
 	 
 // Enviar les comandes gràfiques a pantalla
 //	glFlush();

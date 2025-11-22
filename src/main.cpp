@@ -323,10 +323,7 @@ void InitGL()
 	}
 	if (barril == nullptr) {
 		barril = new OBJ("barril");
-	}
-	if (punt == nullptr) {
-		punt = new OBJ("punt");
-	}
+	} 
 	if (zonas == nullptr) {
 		zonas = new Zones("punt");
 	}
