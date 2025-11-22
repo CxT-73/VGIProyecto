@@ -86,12 +86,12 @@ void dibuixa_Skybox(GLuint sk_programID, GLuint cmTexture, char eix_Polar, glm::
 
 
 // dibuixa_EscenaGL: Dibuix de l'escena amb comandes GL
-void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D reixa, CPunt3D hreixa, char objecte, 
-			CColor col_object, bool sw_mat[5],
-			bool textur, GLuint texturID[NUM_MAX_TEXTURES], bool textur_map, bool flagInvertY,
-			int nptsU, CPunt3D PC_u[MAX_PATCH_CORBA], GLfloat pasCS, bool sw_PC, bool dib_TFrenet,
-			COBJModel* objecteOBJ,
-			glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool dibuixarCotxe)
+void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D reixa, CPunt3D hreixa, char objecte,
+	CColor col_object, bool sw_mat[5],
+	bool textur, GLuint texturID[NUM_MAX_TEXTURES], bool textur_map, bool flagInvertY,
+	int nptsU, CPunt3D PC_u[MAX_PATCH_CORBA], GLfloat pasCS, bool sw_PC, bool dib_TFrenet,
+	COBJModel* objecteOBJ,
+	glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool dibuixarCotxe)
 {
 	float altfar = 0;
 	GLint npunts = 0, nvertexs = 0;
@@ -99,11 +99,11 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 	GLdouble tras[3] = { 0.0,0.0,0.0 }; //Sierpinski Sponge
 	CColor color_vermell = { 0.0,0.0,0.0,1.0 }, color_Mar = { 0.0,0.0,0.0,0.0 };
 	bool sw_material[5] = { 0.0,0.0,0.0,0.0,0.0 };
-	
-// Matrius de Transformació
+
+	// Matrius de Transformació
 	glm::mat4 NormalMatrix(1.0), ModelMatrix(1.0), TransMatrix(1.0), ScaleMatrix(1.0), RotMatrix(1.0);
 
-// VAO
+	// VAO
 	CVAO objectVAO = { 0,0,0,0,0 };
 	objectVAO.vaoId = 0;	objectVAO.vboId = 0;	objectVAO.eboId = 0;	 objectVAO.nVertexs = 0; objectVAO.nIndices = 0;
 
@@ -111,32 +111,34 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 	color_vermell.r = 1.0;	color_vermell.g = 0.0; color_vermell.b = 0.0; color_vermell.a = 1.0;
 	sw_material[0] = false;	sw_material[1] = true; sw_material[2] = true; sw_material[3] = false;	sw_material[4] = true;
 
-// Shader Visualització Objectes
+	// Shader Visualització Objectes
 	glUseProgram(sh_programID);
 
-// Parametrització i activació/desactivació de textures
+	// Parametrització i activació/desactivació de textures
 	if (texturID[0] != 0) SetTextureParameters(0, texturID[0], true, true, textur_map, false);
-	if (textur) {	glUniform1i(glGetUniformLocation(sh_programID, "textur"), GL_TRUE); //glEnable(GL_TEXTURE_2D);
-					glUniform1i(glGetUniformLocation(sh_programID, "modulate"), GL_TRUE); //glEnable(GL_MODULATE);
-				}
-		else {	glUniform1i(glGetUniformLocation(sh_programID, "textur"), GL_FALSE); //glDisable(GL_TEXTURE_2D);
-				glUniform1i(glGetUniformLocation(sh_programID, "modulate"), GL_FALSE); //glDisable(GL_MODULATE);
-			}
+	if (textur) {
+		glUniform1i(glGetUniformLocation(sh_programID, "textur"), GL_TRUE); //glEnable(GL_TEXTURE_2D);
+		glUniform1i(glGetUniformLocation(sh_programID, "modulate"), GL_TRUE); //glEnable(GL_MODULATE);
+	}
+	else {
+		glUniform1i(glGetUniformLocation(sh_programID, "textur"), GL_FALSE); //glDisable(GL_TEXTURE_2D);
+		glUniform1i(glGetUniformLocation(sh_programID, "modulate"), GL_FALSE); //glDisable(GL_MODULATE);
+	}
 	glUniform1i(glGetUniformLocation(sh_programID, "flag_invert_y"), flagInvertY);
 
-// Attribute Locations must be setup before calling glLinkProgram()
+	// Attribute Locations must be setup before calling glLinkProgram()
 	glBindAttribLocation(sh_programID, 0, "in_Vertex");		// Vèrtexs
 	glBindAttribLocation(sh_programID, 1, "in_Color");		// Color
 	glBindAttribLocation(sh_programID, 2, "in_Normal");		// Normals
 	glBindAttribLocation(sh_programID, 3, "in_TexCoord");	// Textura
 
-// Definició propietats de reflexió (emissió, ambient, difusa, especular) del material.
+	// Definició propietats de reflexió (emissió, ambient, difusa, especular) del material.
 	SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
 
 	switch (objecte)
 	{
 
-// Arc
+		// Arc
 	case ARC:
 		// Definició propietats de reflexió (emissió, ambient, difusa, especular) del material pel color de l'objecte.
 		SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
@@ -161,12 +163,12 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		glDisable(GL_BLEND);
 		break;
 
-// Dibuix de l'objecte TIE (Nau enemiga Star Wars)
+		// Dibuix de l'objecte TIE (Nau enemiga Star Wars)
 	case TIE:
 		tie(sh_programID, MatriuVista, MatriuTG, sw_mat);
 		break;
 
-// Dibuix de l'objecte OBJ
+		// Dibuix de l'objecte OBJ
 	case OBJOBJ:
 		ModelMatrix = MatriuTG;
 		// Pas ModelView Matrix a shader
@@ -181,7 +183,7 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		objecteOBJ->draw_TriVAO_OBJ(sh_programID);	// Dibuixar VAO a pantalla
 		break;
 
-// Corba Bezier
+		// Corba Bezier
 	case C_BEZIER:
 		// Dibuixar Punts de Control
 		if (sw_PC)
@@ -191,13 +193,13 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 			for (int i = 0; i < nptsU; i++)
 			{	//glPushMatrix();
 				  //glTranslatef(PC_u[i].x, PC_u[i].y, PC_u[i].z);
-				  ModelMatrix = glm::translate(MatriuTG, vec3(PC_u[i].x, PC_u[i].y, PC_u[i].z));
-				  // Pas ModelViewMatrix a shader
-				  glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
-				  // Pas NormalMatrix a shader
-				  NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
-				  glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
-				  draw_TriEBO_Object(GLU_SPHERE); //drawgluSphere(npunts);	//gluSphere(5.0, 20, 20);
+				ModelMatrix = glm::translate(MatriuTG, vec3(PC_u[i].x, PC_u[i].y, PC_u[i].z));
+				// Pas ModelViewMatrix a shader
+				glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
+				// Pas NormalMatrix a shader
+				NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
+				glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
+				draw_TriEBO_Object(GLU_SPHERE); //drawgluSphere(npunts);	//gluSphere(5.0, 20, 20);
 				//glPopMatrix();
 			}
 
@@ -214,7 +216,7 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		if (dib_TFrenet) draw_TFBezier_Curve(sh_programID, PC_u, nptsU, pasCS, false); // Dibuixar Triedre de Frenet
 		break;
 
-// Corba Lemniscata
+		// Corba Lemniscata
 	case C_LEMNISCATA:
 		// Definició propietats de reflexió (emissió, ambient, difusa, especular) del material pel color de l'objecte.
 		SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
@@ -228,7 +230,7 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		if (dib_TFrenet) draw_TFLemniscata3D(sh_programID, 800, pasCS * 20.0);
 		break;
 
-// Corba Spline
+		// Corba Spline
 	case C_BSPLINE:
 		// Dibuixar Punts de Control
 		if (sw_PC)
@@ -260,7 +262,7 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		if (dib_TFrenet) draw_TFBSpline_Curve(sh_programID, PC_u, nptsU, pasCS); // Dibuixar Triedre de Frenet
 		break;
 
-// Corba Hermitte
+		// Corba Hermitte
 	case C_HERMITTE:
 		// Dibuixar Punts de Control
 		if (sw_PC)
@@ -292,7 +294,7 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		if (dib_TFrenet) draw_TFHermitte_Curve(sh_programID, PC_u, nptsU, pasCS); // Dibuixar Triedre de Frenet
 		break;
 
-// Corba Catmull-Rom
+		// Corba Catmull-Rom
 	case C_CATMULL_ROM:
 		// Dibuixar Punts de Control
 		if (sw_PC)
@@ -324,7 +326,7 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		if (dib_TFrenet) draw_TFCatmullRom_Curve(sh_programID, PC_u, nptsU, pasCS); // Dibuixar Triedre de Frenet
 		break;
 
-// Matriu de Primitives SENSE pre-compilació prèvia en VBO (precompilació, draw i alliberació VBO en una funció)
+		// Matriu de Primitives SENSE pre-compilació prèvia en VBO (precompilació, draw i alliberació VBO en una funció)
 	case MATRIUP:
 		SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
 		for (i = 0; i < 10; i++)
@@ -363,9 +365,9 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 				// Pas NormalMatrix a shader
 				NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
 				glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
-				  //glScaled(5.0, 5.0, 5.0);
-				  //glutSolidCube(1.0);
-				glutSolidTorus(2.0,3.0,20,20);
+				//glScaled(5.0, 5.0, 5.0);
+				//glutSolidCube(1.0);
+				glutSolidTorus(2.0, 3.0, 20, 20);
 				//glutSolidOctahedron();
 				//glutSolidTetrahedron();
 				//glutSolidIcosahedron();
@@ -376,10 +378,10 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 				//gluSphere(1.0, 20, 20);
 				//glPopMatrix();
 			}
-// Dibuix una esfera
-		//glPushMatrix();
-		  //glTranslated(200.0, 200.0, 200.0);
-		  //glScaled(5.0, 5.0, 5.0);
+		// Dibuix una esfera
+				//glPushMatrix();
+				  //glTranslated(200.0, 200.0, 200.0);
+				  //glScaled(5.0, 5.0, 5.0);
 		TransMatrix = glm::translate(MatriuTG, vec3(200.0f, 200.0f, 200.0f));
 		ModelMatrix = glm::scale(TransMatrix, vec3(5.0f, 5.0f, 5.0f));
 		// Pas ModelView Matrix a shader
@@ -391,8 +393,8 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		//glPopMatrix();
 		break;
 
-// Matriu de Primitives AMB pre-compilació prèvia en VBO 
-//	(separació en 3 funcions: *_VBO() per precompilació, draw*() per dibuix i deleteVBO() per alliberar VBO)
+		// Matriu de Primitives AMB pre-compilació prèvia en VBO 
+		//	(separació en 3 funcions: *_VBO() per precompilació, draw*() per dibuix i deleteVBO() per alliberar VBO)
 	case MATRIUP_VAO:
 		SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
 		//glutSolidCube_VAO(1.0);		// Càrrega de la geometria del Cub al VAO
@@ -403,15 +405,15 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 				{	//glPushMatrix();
 					  //glTranslated(i * 15.0, j * 15.0, k * 15.0);
 					  //glScaled(5.0, 5.0, 5.0);
-					  TransMatrix = glm::translate(MatriuTG, vec3(i * 15.0f, j * 15.0f, k * 15.0f));
-					  ModelMatrix = glm::scale(TransMatrix, vec3(5.0f, 5.0f, 5.0f));
-					  // Pas ModelView Matrix a shader
-					  glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
-					  // Pas NormalMatrix a shader
-					  NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
-					  glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
-					  
-					  draw_TriEBO_Object(GLUT_CUBE); //drawSolidCube();	// Dibuix del cub dins VBO.
+					TransMatrix = glm::translate(MatriuTG, vec3(i * 15.0f, j * 15.0f, k * 15.0f));
+					ModelMatrix = glm::scale(TransMatrix, vec3(5.0f, 5.0f, 5.0f));
+					// Pas ModelView Matrix a shader
+					glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
+					// Pas NormalMatrix a shader
+					NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
+					glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
+
+					draw_TriEBO_Object(GLUT_CUBE); //drawSolidCube();	// Dibuix del cub dins VBO.
 
 				}
 		//deleteVAO(GLUT_CUBE);	// Eliminació del VAO cub.
@@ -438,22 +440,22 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		//glPushMatrix();
 		  //glTranslated(200.0, 200.0, 200.0);
 		  //glScaled(5.0, 5.0, 5.0);
-		  TransMatrix = glm::translate(MatriuTG, vec3(200.0f, 200.0f, 200.0f));
-		  ModelMatrix = glm::scale(TransMatrix, vec3(5.0f, 5.0f, 5.0f));
-		  // Pas ModelView Matrix a shader
-		  glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
-		  NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
-		  // Pas NormalMatrix a shader
-		  glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
-		  draw_TriEBO_Object(GLU_SPHERE); //gluSphere(1.0, 20, 20);
+		TransMatrix = glm::translate(MatriuTG, vec3(200.0f, 200.0f, 200.0f));
+		ModelMatrix = glm::scale(TransMatrix, vec3(5.0f, 5.0f, 5.0f));
+		// Pas ModelView Matrix a shader
+		glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
+		NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
+		// Pas NormalMatrix a shader
+		glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
+		draw_TriEBO_Object(GLU_SPHERE); //gluSphere(1.0, 20, 20);
 		//glPopMatrix();
 		break;
 
-// Dibuix de la resta d'objectes
+		// Dibuix de la resta d'objectes
 	default:
 		// Definició propietats de reflexió (emissió, ambient, difusa, especular) del material.
 		SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
-		dibuixa(sh_programID, objecte,MatriuVista, MatriuTG);
+		dibuixa(sh_programID, objecte, MatriuVista, MatriuTG);
 		break;
 	}
 	//Renderitzat del cotxe
@@ -469,24 +471,88 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 	//eje Y ? adelante / atrás.
 	//eje Z ? arriba / abajo.
 
-	if (cono)
-		cono->render(sh_programID, MatriuVista, MatriuTG, col_object,sw_mat); 
+	if (cono) {
+		ObjetoSeguidor conoSeguidor(cono, zonas, 0);
 
-	if (circuit) 
+		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
+			{4, {1, { {120.0f, -100.0f, -75.0f} } }}, // 1 duplicado en zona 4
+			{3, {2, { {-105.0f, -60.0f, -40.0f}, {60.0f, -140.0f, -40.0f} }}} // 2 duplicados en zona 3
+		};
+
+		std::map<int, std::vector<int>> invisiblesPorZona = {
+			{5, {1}} // el segundo duplicado (índice 1) en la zona 5 es invisible
+		};
+
+		conoSeguidor.colocarDuplicadosEnZonas(zonasConfig,
+			invisiblesPorZona,
+			glm::vec3(0.0f),   // rotación
+			glm::vec3(10.0f),  // escala
+			sh_programID,
+			MatriuVista,
+			MatriuTG,
+			col_object,
+			sw_mat);
+	}
+
+
+	if (circuit)
 		circuit->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
 
-	if (barrera) 
-		barrera->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
+	if (barrera) {
+		ObjetoSeguidor barreraSeguidor(barrera, zonas, 0);
 
-	if (bloc) 
-		bloc->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
+		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
+			{4, {1, { {-15.0f, -400.0f, -85.0f} } }}, // 1 duplicado en zona 4
+			{3, {1, { {-65.0f, -130.0f, -40.0f} }}}, // 1 duplicado en zona 3
+			{1, {1, { {0.0f, 10.0f, -55.0f} }} } // 1 duplicado en zona 1
+		};
+
+		std::map<int, std::vector<int>> invisiblesPorZona = {
+			{5, {1}} // el segundo duplicado (índice 1) en la zona 5 es invisible
+		};
+
+		barreraSeguidor.colocarDuplicadosEnZonas(zonasConfig,
+			invisiblesPorZona,
+			glm::vec3(0.0f),   // rotación
+			glm::vec3(10.0f),  // escala
+			sh_programID,
+			MatriuVista,
+			MatriuTG,
+			col_object,
+			sw_mat);
+	}
+
+
+	if (bloc) {
+		ObjetoSeguidor blocSeguidor(bloc, zonas, 0);
+
+		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
+			{4, {2, {  {140.0f, 0.0f, -65.0f} , {120.0f, 100.0f, -65.0f}} }}, // 2 duplicados en zona 4 (+x --> +adelante, +y --> +izquierda, +z --> +arriba)
+			{5, {2, { {-60.0f, -180.0f, -50.0f}, {-150.0f, -60.0f, -80.0f}}}} // 2 duplicados en zona 5
+		};
+
+		std::map<int, std::vector<int>> invisiblesPorZona = {
+			{0, {1}} // el segundo duplicado (índice 1) en la zona 0 es invisible
+		};
+
+		blocSeguidor.colocarDuplicadosEnZonas(zonasConfig,
+			invisiblesPorZona,
+			glm::vec3(0.0f),   // rotación
+			glm::vec3(10.0f),  // escala
+			sh_programID,
+			MatriuVista,
+			MatriuTG,
+			col_object,
+			sw_mat); 
+	}
+
 
 	if (barril) {
 		ObjetoSeguidor barrilSeguidor(barril, zonas, 0);
 		 
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{8, {2, { {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} }}}, // 2 duplicados en zona 3
-			{0, {3, { {0.0f, 0.0f, 0.0f}, {0.0f, 5.0f, 0.0f}, {10.0f, 0.0f, 0.0f} }}} // 3 duplicados en zona 5
+			{4, {2, { {-90.0f, -500.0f, -95.0f}, {120.0f, 50.0f, -65.0f} }}}, // 2 duplicados en zona 4
+			{6, {1, { {80.0f, 120.0f, -10.0f} }}} // 1 duplicados en zona 6
 		};
 		 
 		std::map<int, std::vector<int>> invisiblesPorZona = {

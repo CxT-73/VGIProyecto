@@ -17,7 +17,7 @@ Coche::Coche() {
     model = new COBJModel();
     model_rueda = new COBJModel();
     //lectura objetos
-    char ruta[] = "../x64/Release/OBJFiles/Car/coche_mod.obj";
+    char ruta[] = "../x64/Release/OBJFiles/Car_metalic/coche_mod.obj";
     if (model->LoadModel(ruta) != 0) {
         //mirem si carrega bé
         fprintf(stderr, "ERROR: Could not load car model from %s!\n", ruta);
