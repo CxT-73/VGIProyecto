@@ -643,7 +643,7 @@ glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool
 	{
 		
 		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
-		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.5f, 0.0f);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 pivotPoint = carPos + modelOriginOffset; 
 		//pillamos las variables globales que utilizan las otras camaras
 		float distancia = opv.R;            
@@ -653,7 +653,7 @@ glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool
 		float azimut_final_rad;
 		if (!mobil) {
 			
-			azimut_final_rad = glm::radians(coche->psi-15); //si no movemos la camara
+			azimut_final_rad = glm::radians(coche->psi); //si no movemos la camara
 		}
 		else {
 			
@@ -666,10 +666,12 @@ glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool
 		float verticalDist = distancia * sin(elevacion_rad);
 
 		glm::vec3 cameraPos;
-		//aplicamos los calculos al punto del coche
-		cameraPos.x = pivotPoint.x + horizontalDist * cosf(azimut_final_rad);
-		cameraPos.y = pivotPoint.y - horizontalDist * sinf(azimut_final_rad);
-		cameraPos.z = pivotPoint.z + verticalDist; 
+
+		cameraPos.x = pivotPoint.x - horizontalDist * sinf(azimut_final_rad);
+
+		cameraPos.y = pivotPoint.y - horizontalDist * cosf(azimut_final_rad);
+
+		cameraPos.z = pivotPoint.z + verticalDist;
 
 		
 		glm::vec3 cameraTarget = pivotPoint; 
@@ -707,15 +709,15 @@ glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fon
 	{
 		
 		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
-		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.5f, 0.0f); 
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, 0.0f, 0.0f); 
 		glm::vec3 pivotPoint = carPos + modelOriginOffset;
 
-		float a_rad = glm::radians(coche->psi-15); //-15 para centrar correctamente donde miramos
-		glm::vec3 worldForward = glm::normalize(glm::vec3(-sinf(a_rad), cosf(a_rad), 0.0f));
+		float a_rad = glm::radians(coche->psi); 
+		glm::vec3 worldForward = glm::normalize(glm::vec3(sinf(a_rad), cosf(a_rad), 0.0f));
 
 
 		float altura = 2.2f;     
-		float posicio = 1.0f; 
+		float posicio = 2.0f; 
 
 		glm::vec3 cameraPos = pivotPoint - (worldForward * posicio); //ens posicionem on realment volem
 		cameraPos.z = carPos.z + altura; 
@@ -749,11 +751,11 @@ glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fon
 	if (coche != nullptr)
 	{
 		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
-		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.0f, 0.0f);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f,0.0f, 0.0f);
 		glm::vec3 pivotPoint = carPos + modelOriginOffset;
 
 		float a_rad = glm::radians(coche->psi);
-		glm::vec3 worldForward = glm::normalize(glm::vec3(-sinf(a_rad), cosf(a_rad), 0.0f));
+		glm::vec3 worldForward = glm::normalize(glm::vec3(sinf(a_rad), cosf(a_rad), 0.0f));
 
 		float altura = 2.3f; //altura que pillamos (aprox la del retrovisor)
 
@@ -784,11 +786,11 @@ glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche, bool esIzquierdo, 
 	if (coche != nullptr)
 	{
 		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
-		glm::vec3 modelOriginOffset = glm::vec3(0.0f, -7.5f, 0.0f);
+		glm::vec3 modelOriginOffset = glm::vec3(0.0f, 0.5f, 0.0f);
 		glm::vec3 pivotPoint = carPos + modelOriginOffset;
 
 		float a_rad = glm::radians(coche->psi);
-		glm::vec3 worldForward = glm::normalize(glm::vec3(-sinf(a_rad), cosf(a_rad), 0.0f));
+		glm::vec3 worldForward = glm::normalize(glm::vec3(sinf(a_rad), cosf(a_rad), 0.0f));
 		// Vector "derecha" (perpendicular a "adelante" en Z-up)
 		glm::vec3 worldRight = glm::normalize(glm::vec3(worldForward.y, worldForward.x, 0.0f));
 
@@ -866,7 +868,7 @@ glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool 
 	if (coche != nullptr)
 	{
 
-		glm::vec3 puntMig = glm::vec3(200.0f, 300.0f, 0.0f);
+		glm::vec3 puntMig = glm::vec3(0.0f, 300.0f, 0.0f);
 
 		//pillamos las variables globales que utilizan las otras camaras
 		float distancia = opv.R;
@@ -888,7 +890,7 @@ glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool 
 		//aplicamos los calculos al punto del coche
 		cameraPos.x = puntMig.x + horizontalDist * cosf(azimut_final_rad) * 30;
 		cameraPos.y = puntMig.y - horizontalDist * sinf(azimut_final_rad) * 30;
-		cameraPos.z = puntMig.z + verticalDist * 90;
+		cameraPos.z = puntMig.z + verticalDist * 160;
 
 
 		glm::vec3 cameraTarget = puntMig;
@@ -928,7 +930,7 @@ glm::mat4 Vista_Pausa(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil
 	{
 
 		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
-		glm::vec3 modelOriginOffset = glm::vec3(3.0f, -7.5f, 0.0f);
+		glm::vec3 modelOriginOffset = glm::vec3(3.0f, 0.0f, 0.0f);
 		glm::vec3 pivotPoint = carPos + modelOriginOffset;
 		//pillamos las variables globales que utilizan las otras camaras
 		float distancia = opv.R;
