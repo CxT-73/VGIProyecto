@@ -17,6 +17,9 @@
 #include "zones.h"
 #include "escena.h"
 #include "colocarObjeto.h"
+#include <btBulletDynamicsCommon.h>
+#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
+#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
 
 Coche* miCoche = nullptr;
 OBJ* cono = nullptr;
@@ -26,6 +29,12 @@ OBJ* bloc = nullptr;
 OBJ* barril = nullptr; 
 
 Zones* zonas = nullptr;
+// ===== BULLET: SISTEMA FÍSICO =====
+btDiscreteDynamicsWorld* mundo = nullptr;
+btBroadphaseInterface* broadphase = nullptr;
+btDefaultCollisionConfiguration* collisionConfiguration = nullptr;
+btCollisionDispatcher* dispatcher = nullptr;
+btSequentialImpulseConstraintSolver* solver = nullptr;
 
 // Dibuixa Eixos Coordenades Món i Reixes, activant un shader propi.
 void dibuixa_Eixos(GLuint ax_programID, bool eix, GLuint axis_Id, CMask3D reixa, CPunt3D hreixa, 
@@ -1485,5 +1494,92 @@ void Cabina(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_m
 
 // Desactivar transparència
 	glDisable(GL_BLEND);
+}
+
+void initFisicas() {
+	//Configuración de colisiones predeterminada
+	collisionConfiguration = new btDefaultCollisionConfiguration();
+
+	//Dispatcher: gestiona los algoritmos de colisión
+	dispatcher = new btCollisionDispatcher(collisionConfiguration);
+
+	//Broadphase: detección "grosa" de colisiones (cajas envolventes)
+	broadphase = new btDbvtBroadphase();
+
+	//Solver: resuelve las restricciones (físicas, contactos, articulaciones)
+	solver = new btSequentialImpulseConstraintSolver;
+
+	//Crear el mundo físico
+	mundo = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+
+	//Establecer gravedad.
+	mundo->setGravity(btVector3(0, 0, -9.81f));
+
+	printf("Bullet Physics inicializado correctamente.\n");
+}
+
+// Función para convertir un objeto gráfico OBJ en un colisionador estático para el suelo
+void crearColisionadorEstatico(OBJ* objetoJuego) {
+	if (!objetoJuego || !objetoJuego->objecteOBJ || !objetoJuego->objecteOBJ->m_pTriangleMesh) {
+		printf("Error: El objeto no tiene malla fisica generada.\n");
+		return;
+	}
+
+	//Crear la forma de colisión optimizada para mallas estáticas
+	btBvhTriangleMeshShape* formaSuelo = new btBvhTriangleMeshShape(objetoJuego->objecteOBJ->m_pTriangleMesh, true);
+
+	//Configurar la posición y escala inicial
+	btTransform transformacion;
+	transformacion.setIdentity();
+
+	// IMPORTANTE: Usamos la posición que hemos definido en OBJ::render para 'circuit'
+	transformacion.setOrigin(btVector3(710.0f, 120.0f, 1650.0f));
+
+	//Crear el estado de movimiento
+	btDefaultMotionState* estadoMovimiento = new btDefaultMotionState(transformacion);
+
+	// Construir el RigidBody
+	// Masa = 0.0f significa "ESTÁTICO"
+	btRigidBody::btRigidBodyConstructionInfo infoCuerpo(0.0f, estadoMovimiento, formaSuelo, btVector3(0, 0, 0));
+	btRigidBody* cuerpoRigido = new btRigidBody(infoCuerpo);
+
+	//Aplicar la escala GIGANTE que tienes en el render
+	cuerpoRigido->getCollisionShape()->setLocalScaling(btVector3(100.0f, 100.0f, 100.0f));
+
+	//Añadir al mundo
+	if (mundo) {
+		mundo->addRigidBody(cuerpoRigido);
+		printf("Suelo añadido al mundo fisico.\n");
+	}
+}
+
+void stepFisicas() {
+	if (mundo) {
+		mundo->stepSimulation(1.0f / 60.0f, 10);
+	}
+	if (miCoche) miCoche->update();
+}
+
+void cleanFisicas() {
+	// Borrar en orden inverso a la creación
+	if (mundo) {
+		delete mundo;
+		mundo = nullptr;
+	}
+	if (solver) { delete solver; solver = nullptr; }
+	if (broadphase) { delete broadphase; broadphase = nullptr; }
+	if (dispatcher) { delete dispatcher; dispatcher = nullptr; }
+	if (collisionConfiguration) { delete collisionConfiguration; collisionConfiguration = nullptr; }
+
+	printf("Bullet Physics limpiado correctamente.\n");
+}
+// Añade esto al final de escena.cpp
+void iniciarFisicasCoche() {
+	if (miCoche != nullptr && mundo != nullptr) {
+		miCoche->initFisicas(mundo);
+	}
+	else {
+		printf("Error: No se pudo iniciar el coche (miCoche o mundo son nulos)\n");
+	}
 }
 // FI OBJECTE TIE: FETS PER ALUMNES -----------------------------------------------------------------

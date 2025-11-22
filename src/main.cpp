@@ -1497,7 +1497,6 @@ int main(void)
 	float now;
 	float delta;
 	 
-
 	
 
 	// glfw: initialize and configure
@@ -1591,6 +1590,18 @@ int main(void)
 
 	OnVistaSkyBox();
 
+	initFisicas();
+
+	if (circuit != nullptr) crearColisionadorEstatico(circuit);
+	iniciarFisicasCoche();
+	// Convertimos el circuito gráfico en suelo físico
+	if (circuit != nullptr) {
+		crearColisionadorEstatico(circuit);
+	}
+	else {
+		printf("ALERTA: La variable circuit es nula. Revisa dond haces new OBJ.\n");
+	}
+	
 	// ------------- Entorn VGI: Callbacks
 	// Set GLFW event callbacks. I removed glfwSetWindowSizeCallback for conciseness
 	glfwSetWindowSizeCallback(window, OnSize);										// - Windows Size in screen Coordinates
@@ -1631,6 +1642,7 @@ int main(void)
 		delta = now - previous;
 		previous = now;
 
+		stepFisicas();
 		// Entorn VGI. Timer: for each timer do this
 		time -= delta;
 		if ((time <= 0.0) && (satelit || anima)) OnTimer();
@@ -1710,7 +1722,7 @@ int main(void)
 	// Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
 		glfwWindowShouldClose(window) == 0);
-
+	cleanFisicas();
 	// Entorn VGI.ImGui: Cleanup ImGui
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
