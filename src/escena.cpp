@@ -1457,14 +1457,13 @@ void crearColisionadorEstatico(OBJ* objetoJuego) {
 	btTransform transformacion;
 	transformacion.setIdentity();
 
-	// IMPORTANTE: Usamos la posición que hemos definido en OBJ::render para 'circuit'
+	//uUsamos la posición que hemos definido en OBJ::render para 'circuit'
 	transformacion.setOrigin(btVector3(710.0f, 120.0f, 1650.0f));
 
 	//Crear el estado de movimiento
 	btDefaultMotionState* estadoMovimiento = new btDefaultMotionState(transformacion);
 
 	// Construir el RigidBody
-	// Masa = 0.0f significa "ESTÁTICO"
 	btRigidBody::btRigidBodyConstructionInfo infoCuerpo(0.0f, estadoMovimiento, formaSuelo, btVector3(0, 0, 0));
 	btRigidBody* cuerpoRigido = new btRigidBody(infoCuerpo);
 
