@@ -23,7 +23,7 @@ void InitGL()
 
 	// Entorn VGI: Variables de control per Menú Càmera: Esfèrica, Navega, Mòbil, Zoom, Satelit, Polars... 
 	camera = CAM_FOLLOW;
-	mobil = true;	zzoom = true;		zzoomO = false;		satelit = false;
+	mobil = false;	zzoom = true;		zzoomO = false;		satelit = false;
  
 
 
@@ -858,7 +858,7 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 				OPV.R = 25.0f;
 				OPV.alfa = 20.0f;
 				OPV.beta = 0.0f;
-				mobil = true;
+				mobil = false;
 
 			}
 		}
@@ -1500,7 +1500,7 @@ int main(void)
 	float now;
 	float delta;
 	 
-	
+
 
 	// glfw: initialize and configure
 	// ------------------------------

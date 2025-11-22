@@ -3,9 +3,9 @@
 
 Coche::Coche() {
     
-    x = 0.3f;
-    y = 0.0f;
-    z = 0.0f;
+    x = -80;
+    y = -50;
+    z = 295;
     vx = vy = vz = 0.0f;
     ax = ay = az = 0.0f;
     psi = 90.0f;
@@ -172,6 +172,20 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
         btTransform trans;
         // Le pedimos a Bullet la posición interpolada (suave)
         m_chassisBody->getMotionState()->getWorldTransform(trans);
+
+        // 2. Obtener el vector de origen (posición)
+        btVector3 bulletPos = trans.getOrigin();
+
+        // 3. Convertir a glm::vec3
+        x = bulletPos.getX();
+        y = bulletPos.getY();
+        z = bulletPos.getZ();
+
+        btMatrix3x3 basis = trans.getBasis();
+        btVector3 bulletForward = basis.getColumn(1);
+        float radians = atan2(bulletForward.getX(), bulletForward.getY());
+        float degrees = glm::degrees(radians);
+        psi = degrees;
 
         // Convertimos la matriz de Bullet a OpenGL
         float mat[16];
