@@ -12,7 +12,7 @@ Coche::Coche() {
     v_angular = 0.0f;
     angulo_ruedas = 0.0f;   
     rotacion_ruedas = 0.0f; 
-
+    activadoABS = true;
     // Create a new model object
     model = new COBJModel();
     model_rueda = new COBJModel();
@@ -47,7 +47,7 @@ Coche::~Coche() {
 void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
 
     //FORMA DEL COCHE , EL CHASSIS
-    btCollisionShape* chassisShape = new btBoxShape(btVector3(1.1f, 4.0f, 0.5f));
+    btCollisionShape* chassisShape = new btBoxShape(btVector3(2.f, 6.1f, 0.5f));
 
     //CONFIGURACIÓN DE MASA E INERCIA
     btScalar masa = 1800.0f; // 800 Kg
@@ -93,16 +93,16 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
     // Z = Altura 
 
     // Rueda 0: Delantera Izquierda
-    btVector3 posDI(1.7f, 4.7f, 0.1f);
+    btVector3 posDI(1.7f, 4.f, 0.1f);
 
     // Rueda 1: Delantera Derecha
-    btVector3 posDD(-1.7f, 4.7f, 0.1f);
+    btVector3 posDD(-1.7f, 4.f, 0.1f);
 
     // Rueda 2: Trasera Izquierda
-    btVector3 posTI(1.7f, -2.7f, 0.0f);
+    btVector3 posTI(1.7f, -3.3f, 0.0f);
 
     // Rueda 3: Trasera Derecha
-    btVector3 posTD(-1.7f, -2.7f, 0.0f);
+    btVector3 posTD(-1.7f, -3.3f, 0.0f);
 
 
 
@@ -127,12 +127,12 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
         wheel.m_wheelsDampingCompression = 15.0f; 
 
         //AGARRE Y SEGURIDAD
-        wheel.m_frictionSlip = 50.0f;
-        wheel.m_rollInfluence = 0.1f;
+        wheel.m_frictionSlip = 1.5f;
+        wheel.m_rollInfluence = 0.0f;
 
         //FUERZA MÁXIMA
         wheel.m_maxSuspensionForce = 40000.0f;
-
+        wheel.m_maxSuspensionTravelCm = 500.0f;
         //RIGIDEZ
         if (i == 2 || i == 3) {
             wheel.m_suspensionStiffness = 120.0f; // Prueba con 150. Si rebota mucho, baja a 120.
@@ -152,23 +152,103 @@ extern GLFWwindow* window; // Asumiendo que window es global en main o accesible
 void Coche::update() {
     if (!m_vehicle) return;
 
-    float engineForce = 0.0f;
-    float steering = 0.0f;
+    static bool kPressed = false;
+    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+        if (!kPressed) {
+            activadoABS = !activadoABS;
+            printf("Sistema ABS: %s\n", activadoABS ? "ACTIVADO" : "DESACTIVADO");
+            kPressed = true;
+        }
+    }
+    else {
+        kPressed = false;
+    }
 
-    // Controles básicos (W/S acelera, A/D gira)
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) engineForce = -7000.0f;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) engineForce = 5000.0f;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) steering = 0.5f;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) steering = -0.5f;
+    // DATOS
+    float velocidadActual = m_vehicle->getCurrentSpeedKmHour();
+    float fuerzaMotor = 0.0f;
+    float fuerzaFreno = 0.0f;
+    float giroVolante = 0.0f;
 
-    // Aplicar al motor (Tracción trasera: ruedas 2 y 3)
-    m_vehicle->applyEngineForce(engineForce, 2);
-    m_vehicle->applyEngineForce(engineForce, 3);
+    //CONFIGURACIÓN DE FUERZAS
+    float potAcelerar = -7000.0f; // Fuerza para ir adelante
+    float potAtras = 5000.0f;     // Fuerza para ir atrás
 
-    // Aplicar dirección (Ruedas delanteras: 0 y 1)
-    m_vehicle->setSteeringValue(steering, 0);
-    m_vehicle->setSteeringValue(steering, 1);
+    float frenoABS = 300.0f;       // Freno suave
+    float frenoBloqueo = 3300.0f; // Bloqueo salvaje
+
+    // INPUTS
+    bool W = (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS);
+    bool S = (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS);
+    bool A = (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS);
+    bool D = (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
+    bool Espacio = (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS); // Freno
+
+    if (W) {
+        fuerzaMotor = potAcelerar;
+    }
+    else if (S) {
+        fuerzaMotor = potAtras;
+    }
+    if (Espacio) {
+        if (activadoABS) {
+            fuerzaFreno = frenoABS;
+        }
+        else {
+            fuerzaFreno = frenoBloqueo;
+        }
+    }
+
+    // DIRECCIÓN
+    if (A) giroVolante = 0.5f;
+    if (D) giroVolante = -0.5f;
+
+
+    // Motor 
+    m_vehicle->applyEngineForce(fuerzaMotor, 2);
+    m_vehicle->applyEngineForce(fuerzaMotor, 3);
+
+    // Aseguramos que las delanteras no tengan motor
+    m_vehicle->applyEngineForce(0, 0);
+    m_vehicle->applyEngineForce(0, 1);
+
+    // Frenos
+    if (fuerzaFreno > 0.0f) {
+
+        if (activadoABS) {
+            m_vehicle->setBrake(fuerzaFreno * 0.6f, 0);
+            m_vehicle->setBrake(fuerzaFreno * 0.6f, 1);
+            m_vehicle->setBrake(fuerzaFreno * 0.4f, 2);
+            m_vehicle->setBrake(fuerzaFreno * 0.4f, 3);
+        }
+        else {
+            m_vehicle->setBrake(0.0f, 0);
+            m_vehicle->setBrake(0.0f, 1);
+
+            m_vehicle->setBrake(fuerzaFreno, 2);
+            m_vehicle->setBrake(fuerzaFreno, 3);
+        }
+
+    }
+    else {
+        // Liberar frenos si soltamos la tecla
+        m_vehicle->setBrake(0, 0);
+        m_vehicle->setBrake(0, 1);
+        m_vehicle->setBrake(0, 2);
+        m_vehicle->setBrake(0, 3);
+    }
+
+    // Dirección con penalización si bloqueamos ruedas 
+    float anguloFinal = giroVolante;
+
+    if (!activadoABS && Espacio && std::abs(velocidadActual) > 1.0f) {
+        anguloFinal *= 0.05f; // El volante apenas responde
+    }
+
+    m_vehicle->setSteeringValue(anguloFinal, 0);
+    m_vehicle->setSteeringValue(anguloFinal, 1);
 }
+
 
 void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
     if (!model) return;
@@ -181,10 +261,10 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
         // Le pedimos a Bullet la posición interpolada (suave)
         m_chassisBody->getMotionState()->getWorldTransform(trans);
 
-        // 2. Obtener el vector de origen (posición)
+        // Obtener el vector de origen (posición)
         btVector3 bulletPos = trans.getOrigin();
 
-        // 3. Convertir a glm::vec3
+        //Convertir a glm::vec3
         x = bulletPos.getX();
         y = bulletPos.getY();
         z = bulletPos.getZ();

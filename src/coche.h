@@ -15,7 +15,7 @@ public:
     float v_angular;      // velocidad angular
     float angulo_ruedas;   // ángulo de giro
     float rotacion_ruedas; // rotación por movimiento (gira mas rapido contra haya mas velocidad)
-
+    bool activadoABS;
     
     Coche();              // Constructor
     ~Coche();             // Destructor to free memory
