@@ -47,20 +47,17 @@ Coche::~Coche() {
 void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
 
     //FORMA DEL COCHE , EL CHASSIS
-    // He puesto valores aproximados para un coche deportivo. Ajustaremos luego.
     btCollisionShape* chassisShape = new btBoxShape(btVector3(1.1f, 4.0f, 0.5f));
 
     //CONFIGURACIÓN DE MASA E INERCIA
-    btScalar masa = 800.0f; // 800 Kg
+    btScalar masa = 1800.0f; // 800 Kg
     btVector3 inerciaLocal(0, 0, 0);
     chassisShape->calculateLocalInertia(masa, inerciaLocal);
 
     //POSICIÓN INICIAL
-    // Usamos la posición donde tienes el coche en el render (-80, -50, 295) -80,-50 297
-    // Le sumo un poco en Z (+2) para que caiga sobre el suelo y no lo atraviese al nacer.
     btTransform tr;
     tr.setIdentity();
-    tr.setOrigin(btVector3(-80.0f, -80.0f, 300.0f));
+    tr.setOrigin(btVector3(-80.0f, -50.0f, 297.0f));
 
     //CREAR EL cuerpo físico
     btDefaultMotionState* motionState = new btDefaultMotionState(tr);
@@ -87,51 +84,65 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
 
     mundo->addVehicle(m_vehicle);
 
-    // AÑADIR LAS RUEDAS
-    // Necesitamos saber dónde van respecto al centro del coche.
-    // Usaremos valores aproximados basados en tus glm::translate del render.
-
-    float halfWidth = 2.f; // Antes era 0.9f (más estrecho)
-    float connectionHeight = -0.3f; // Antes -0.2f. Al subir esto, el rayo nace más arriba.
-    float wheelRadius = 0.6f;
-    
-    float frontLen = 0.5f; // Distancia al eje delantero
-    float backLen = -6.7f; // Distancia al eje trasero
-    // Direcciones para Z-UP
     btVector3 wheelDirectionCS0(0, 0, -1); // La rueda apunta hacia abajo (en Z negativo)
     btVector3 wheelAxleCS(-1, 0, 0);       // El eje de la rueda es X (izquierda/derecha)
+    float wheelRadius = 0.9f;
 
-    // Posición relativa al centro del coche (X, Y, Z)
-    // --- Rueda Delantera Izquierda (0) ---
-    btVector3 connectionPointCS0(halfWidth, frontLen, connectionHeight);
-    m_vehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, true);
+    // X = Ancho 
+    // Y = Largo 
+    // Z = Altura 
 
-    // --- Rueda Delantera Derecha (1) ---
-    btVector3 connectionPointCS1(-halfWidth, frontLen, connectionHeight);
-    m_vehicle->addWheel(connectionPointCS1, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, true);
+    // Rueda 0: Delantera Izquierda
+    btVector3 posDI(1.7f, 4.7f, 0.1f);
 
-    // --- Rueda Trasera Izquierda (2) ---
-    btVector3 connectionPointCS2(halfWidth, backLen, connectionHeight);
-    m_vehicle->addWheel(connectionPointCS2, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, false);
+    // Rueda 1: Delantera Derecha
+    btVector3 posDD(-1.7f, 4.7f, 0.1f);
 
-    // --- Rueda Trasera Derecha (3) ---
-    btVector3 connectionPointCS3(-halfWidth, backLen, connectionHeight);
-    m_vehicle->addWheel(connectionPointCS3, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, false);
+    // Rueda 2: Trasera Izquierda
+    btVector3 posTI(1.7f, -2.7f, 0.0f);
 
-    // 7. CONFIGURACIÓN DE SUSPENSIÓN (MÁS DURA)
+    // Rueda 3: Trasera Derecha
+    btVector3 posTD(-1.7f, -2.7f, 0.0f);
+
+
+
+    //Delantera Izq
+    m_vehicle->addWheel(posDI, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, true);
+
+    //Delantera Der
+    m_vehicle->addWheel(posDD, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, true);
+
+    //Trasera Izq
+    m_vehicle->addWheel(posTI, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, false);
+
+    //Trasera Der
+    m_vehicle->addWheel(posTD, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, false);
+    
+    //CONFIGURACIÓN DE SUSPENSIÓN
     for (int i = 0; i < m_vehicle->getNumWheels(); i++) {
         btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
 
-        wheel.m_suspensionStiffness = 30.0f; // Antes 20. Más duro para que no se hunda.
-        wheel.m_wheelsDampingRelaxation = 5.f;
-        wheel.m_wheelsDampingCompression = 6.f;
-        wheel.m_frictionSlip = 1000.0f;
+        //AMORTIGUACIÓN
+        wheel.m_wheelsDampingRelaxation = 15.0f;   
+        wheel.m_wheelsDampingCompression = 15.0f; 
+
+        //AGARRE Y SEGURIDAD
+        wheel.m_frictionSlip = 50.0f;
         wheel.m_rollInfluence = 0.1f;
 
-        // IMPORTANTE: Longitud de la suspensión
-        // Si el rayo es muy corto, no toca el suelo. Dale margen.
-        wheel.m_maxSuspensionTravelCm = 500.0f;
-        wheel.m_suspensionRestLength1 = 0.6f; // Longitud del muelle en reposo
+        //FUERZA MÁXIMA
+        wheel.m_maxSuspensionForce = 40000.0f;
+
+        //RIGIDEZ
+        if (i == 2 || i == 3) {
+            wheel.m_suspensionStiffness = 120.0f; // Prueba con 150. Si rebota mucho, baja a 120.
+            wheel.m_suspensionRestLength1 = 0.7f;
+        }
+        else {
+            //DELANTERAS 
+            wheel.m_suspensionStiffness = 90.0f;
+            wheel.m_suspensionRestLength1 = 0.65f;
+        }
     }
 }
 
@@ -145,8 +156,8 @@ void Coche::update() {
     float steering = 0.0f;
 
     // Controles básicos (W/S acelera, A/D gira)
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) engineForce = -4000.0f;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) engineForce = 2000.0f;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) engineForce = -7000.0f;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) engineForce = 5000.0f;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) steering = 0.5f;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) steering = -0.5f;
 
@@ -165,9 +176,6 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
     glm::mat4 ModelMatrix = glm::mat4(1.0f);
     float escala = 0.8f;
 
-    // ===========================================================
-    // PARTE NUEVA: OBTENER POSICIÓN DE BULLET
-    // ===========================================================
     if (m_chassisBody && m_chassisBody->getMotionState()) {
         btTransform trans;
         // Le pedimos a Bullet la posición interpolada (suave)
@@ -193,17 +201,11 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
 
         // Creamos la matriz de modelo a partir de la física
         ModelMatrix = glm::make_mat4(mat);
-        ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-90.0f), glm::vec3(0, 0, 1));
-        // Bullet usa el centro de masa. Si tu modelo 3D no está centrado en (0,0,0),
-        // quizás necesites un ajuste aquí. Por ahora lo probamos tal cual.
     }
     else {
-        // Si no hay físicas, usamos el método antiguo (fallback)
-        // PERO OJO: Quitamos las líneas que forzaban x,y,z fijos
         glm::mat4 TransMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z));
         ModelMatrix = TransMatrix;
     }
-    // ===========================================================
 
     // Aplicamos el escalado (el coche visual suele ser más grande/pequeño que el físico)
     glm::mat4 ModelMatrixCar = glm::scale(ModelMatrix, glm::vec3(escala));
@@ -218,7 +220,7 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
     // Dibujamos la carrocería
     model->draw_TriVAO_OBJ(sh_programID);
 
-    // DIBUJAR LAS RUEDAS (Sincronizadas con Bullet)
+    // DIBUJAR LAS RUEDAS 
     if (model_rueda && m_vehicle) {
         for (int i = 0; i < m_vehicle->getNumWheels(); i++) {
             // Bullet actualiza la posición de la rueda automáticamente
@@ -230,10 +232,8 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
             wheelTrans.getOpenGLMatrix(matWheel);
 
             glm::mat4 WheelMatrix = glm::make_mat4(matWheel);
-            WheelMatrix = glm::scale(WheelMatrix, glm::vec3(escala));
-
-            float ajuste = -0.3f;
-            WheelMatrix = glm::translate(WheelMatrix, glm::vec3(ajuste, 0.0f, 0.0f));
+            float escala_ruedas = 1.f;
+            WheelMatrix = glm::scale(WheelMatrix, glm::vec3(escala_ruedas));
 
             WheelMatrix = glm::rotate(WheelMatrix, glm::radians(90.0f), glm::vec3(0, 0, 1));
 
@@ -248,26 +248,19 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
 }
 
 glm::mat4 Coche::getModelMatrixCar(float escala) const {
-    glm::mat4 ModelMatrix = glm::mat4(1.0f);
-
-    // Si el chasis físico existe, usar su transform (igual que en render)
+    glm::mat4 M(1.0f);
     if (m_chassisBody && m_chassisBody->getMotionState()) {
         btTransform trans;
         m_chassisBody->getMotionState()->getWorldTransform(trans);
         float mat[16];
         trans.getOpenGLMatrix(mat);
-        ModelMatrix = glm::make_mat4(mat);
-        // Importante: en render rotas -90º sobre Z después de la matriz de Bullet
-        ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-90.0f), glm::vec3(0, 0, 1));
+        M = glm::make_mat4(mat); 
     }
     else {
-        // Fallback: usar posición/psi para construir una transform simple
         glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z));
-        glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(psi), glm::vec3(0.0f, 0.0f, 1.0f));
-        ModelMatrix = T * R;
+        glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(psi), glm::vec3(0, 0, 1));
+        M = T * R;
     }
-
-    // Escala final (igual que render)
-    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(escala));
-    return ModelMatrix;
+    M = glm::scale(M, glm::vec3(escala));
+    return M;
 }

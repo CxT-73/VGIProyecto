@@ -18,7 +18,7 @@ extern bool g_isOrbitingLeft = false;
 extern bool g_isOrbitingRight = false;
 
 //variables per cam lliure     
-glm::vec3 g_FreeCamPos(23.492f, 0.0f, 8.550f); // Posición inicial (ejemplo: cerca del coche)
+glm::vec3 g_FreeCamPos(23.492f, 0.0f, 350.550f); // Posición inicial (ejemplo: cerca del coche)
 bool g_isMovingForward = false;
 bool g_isMovingBackward = false;
 bool g_isMovingLeft = false;

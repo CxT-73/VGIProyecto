@@ -748,29 +748,36 @@ glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fon
 
 	if (coche != nullptr)
 	{
-		
+		glm::mat4 ModelMatrixCar = coche->getModelMatrixCar();
+
+		glm::mat3 Rot3 = glm::mat3(ModelMatrixCar);
+		{
+			glm::vec3 c0 = glm::normalize(glm::vec3(Rot3[0]));
+			glm::vec3 c1 = glm::normalize(glm::vec3(Rot3[1]));
+			glm::vec3 c2 = glm::normalize(glm::vec3(Rot3[2]));
+			Rot3[0] = c0; Rot3[1] = c1; Rot3[2] = c2;
+		}
+
 		glm::vec3 carPos = glm::vec3(coche->x, coche->y, coche->z);
 		glm::vec3 modelOriginOffset = glm::vec3(0.0f, 0.0f, 0.0f); 
 		glm::vec3 pivotPoint = carPos + modelOriginOffset;
-
+		glm::vec3 cameraUp = glm::normalize(Rot3 * glm::vec3(0.0f, 0.0f, 1.0f));
 		float a_rad = glm::radians(coche->psi); 
-		glm::vec3 worldForward = glm::normalize(glm::vec3(sinf(a_rad), cosf(a_rad), 0.0f));
+		glm::vec3 worldForward = glm::normalize(Rot3 * glm::vec3(0.0f, 1.0f, 0.0f));
 
 
-		float altura = 2.2f;     
-		float posicio = 2.0f; 
+		float altura = 2.5f;     
+		float posicio = -2.8f; 
 
 		glm::vec3 cameraPos = pivotPoint - (worldForward * posicio); //ens posicionem on realment volem
 		cameraPos.z = carPos.z + altura; 
-
-		
 		glm::vec3 cameraTarget = cameraPos + (worldForward * 10.0f); 
 
 		
 		MatriuVista = glm::lookAt(
 			cameraPos,
 			cameraTarget,
-			glm::vec3(0.0f, 0.0f, 1.0f) 
+			cameraUp
 		);
 	}
 	
@@ -800,7 +807,7 @@ glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fon
 
 		float altura = 2.3f; //altura que pillamos (aprox la del retrovisor)
 
-		glm::vec3 cameraPos = pivotPoint + (worldForward * -1.1f); //valor que me posiciona más hacia delante o hacia atras e funncio del origen
+		glm::vec3 cameraPos = pivotPoint + (worldForward * 1.1f); //valor que me posiciona más hacia delante o hacia atras e funncio del origen
 		cameraPos.z = carPos.z + altura;
 
 		

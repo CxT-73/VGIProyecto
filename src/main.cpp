@@ -417,7 +417,7 @@ void OnPaint(GLFWwindow* window)
 		double fov_central = 15.0f;
 		double fov_lateral = 30.0f;
 		glViewport(0, 0, w, h);
-
+		
 		ProjectionMatrix = Projeccio_Perspectiva(w, h, fov_principal);
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
 		ViewMatrix = Vista_PrimeraPersona(shader_programID, miCoche, c_fons,
@@ -425,6 +425,7 @@ void OnPaint(GLFWwindow* window)
 			llumGL, ifixe, ilum2sides);
 
 		configura_Escena();
+		if (SkyBoxCube) dibuixa_Skybox(skC_programID, cubemapTexture, Vis_Polar, ProjectionMatrix, ViewMatrix);
 		dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
 			textura, texturesID, textura_map, tFlag_invert_Y,
 			npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
@@ -438,7 +439,7 @@ void OnPaint(GLFWwindow* window)
 		glViewport(x_center, y_top, mirrorWidth, mirrorHeight);
 
 
-		glClear(GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_DEPTH_BUFFER_BIT);
 
 		ProjectionMatrix = Projeccio_Perspectiva(mirrorWidth, mirrorHeight, fov_central);
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
@@ -456,7 +457,7 @@ void OnPaint(GLFWwindow* window)
 		int retrovHeight = h / 4;
 		int y_top_ret = h - retrovHeight - 10;
 		glViewport(x_left, y_top_ret, retrovWidth, retrovHeight);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_DEPTH_BUFFER_BIT);
 
 
 		ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
@@ -472,7 +473,7 @@ void OnPaint(GLFWwindow* window)
 
 		int x_right = w - retrovWidth - 10;
 		glViewport(x_right, y_top_ret, retrovWidth, retrovHeight);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_DEPTH_BUFFER_BIT);
 		ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
 		ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, false, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
@@ -508,7 +509,7 @@ void OnPaint(GLFWwindow* window)
 			llumGL, ifixe, ilum2sides);
 		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
 		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-		}
+	}
 
 	//  Actualitzar la barra d'estat de l'aplicació amb els valors R,A,B,PVx,PVy,PVz
 	if (true) Barra_Estat();
