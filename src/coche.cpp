@@ -50,7 +50,7 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
     btCollisionShape* chassisShape = new btBoxShape(btVector3(1.1f, 4.0f, 0.5f));
 
     //CONFIGURACIÓN DE MASA E INERCIA
-    btScalar masa = 800.0f; // 800 Kg
+    btScalar masa = 1800.0f; // 800 Kg
     btVector3 inerciaLocal(0, 0, 0);
     chassisShape->calculateLocalInertia(masa, inerciaLocal);
 
@@ -86,50 +86,63 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
 
     btVector3 wheelDirectionCS0(0, 0, -1); // La rueda apunta hacia abajo (en Z negativo)
     btVector3 wheelAxleCS(-1, 0, 0);       // El eje de la rueda es X (izquierda/derecha)
-    float wheelRadius = 0.6f;
+    float wheelRadius = 0.9f;
 
     // X = Ancho 
     // Y = Largo 
     // Z = Altura 
 
     // Rueda 0: Delantera Izquierda
-    btVector3 posDI(2.0f, 4.7f, 0.1f);
+    btVector3 posDI(1.7f, 4.7f, 0.1f);
 
     // Rueda 1: Delantera Derecha
-    btVector3 posDD(-2.0f, 4.7f, 0.1f);
+    btVector3 posDD(-1.7f, 4.7f, 0.1f);
 
     // Rueda 2: Trasera Izquierda
-    btVector3 posTI(2.0f, -2.7f, 0.1f);
+    btVector3 posTI(1.7f, -2.7f, 0.0f);
 
     // Rueda 3: Trasera Derecha
-    btVector3 posTD(-2.0f, -2.7f, 0.1f);
+    btVector3 posTD(-1.7f, -2.7f, 0.0f);
 
 
 
-    // 0: Delantera Izq
+    //Delantera Izq
     m_vehicle->addWheel(posDI, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, true);
 
-    // 1: Delantera Der
+    //Delantera Der
     m_vehicle->addWheel(posDD, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, true);
 
-    // 2: Trasera Izq
+    //Trasera Izq
     m_vehicle->addWheel(posTI, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, false);
 
-    // 3: Trasera Der
+    //Trasera Der
     m_vehicle->addWheel(posTD, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, false);
     
-    // 7. CONFIGURACIÓN DE SUSPENSIÓN (MÁS DURA)
+    //CONFIGURACIÓN DE SUSPENSIÓN
     for (int i = 0; i < m_vehicle->getNumWheels(); i++) {
         btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
 
-        wheel.m_suspensionStiffness = 30.0f; // Antes 20. Más duro para que no se hunda.
-        wheel.m_wheelsDampingRelaxation = 5.f;
-        wheel.m_wheelsDampingCompression = 6.f;
-        wheel.m_frictionSlip = 1000.0f;
+        //AMORTIGUACIÓN
+        wheel.m_wheelsDampingRelaxation = 15.0f;   
+        wheel.m_wheelsDampingCompression = 15.0f; 
+
+        //AGARRE Y SEGURIDAD
+        wheel.m_frictionSlip = 50.0f;
         wheel.m_rollInfluence = 0.1f;
 
-        wheel.m_maxSuspensionTravelCm = 500.0f;
-        wheel.m_suspensionRestLength1 = 0.6f; // Longitud del muelle en reposo
+        //FUERZA MÁXIMA
+        wheel.m_maxSuspensionForce = 40000.0f;
+
+        //RIGIDEZ
+        if (i == 2 || i == 3) {
+            wheel.m_suspensionStiffness = 120.0f; // Prueba con 150. Si rebota mucho, baja a 120.
+            wheel.m_suspensionRestLength1 = 0.7f;
+        }
+        else {
+            //DELANTERAS 
+            wheel.m_suspensionStiffness = 90.0f;
+            wheel.m_suspensionRestLength1 = 0.65f;
+        }
     }
 }
 
@@ -143,7 +156,7 @@ void Coche::update() {
     float steering = 0.0f;
 
     // Controles básicos (W/S acelera, A/D gira)
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) engineForce = -10000.0f;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) engineForce = -7000.0f;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) engineForce = 5000.0f;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) steering = 0.5f;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) steering = -0.5f;
@@ -219,7 +232,8 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
             wheelTrans.getOpenGLMatrix(matWheel);
 
             glm::mat4 WheelMatrix = glm::make_mat4(matWheel);
-            WheelMatrix = glm::scale(WheelMatrix, glm::vec3(escala));
+            float escala_ruedas = 1.f;
+            WheelMatrix = glm::scale(WheelMatrix, glm::vec3(escala_ruedas));
 
             WheelMatrix = glm::rotate(WheelMatrix, glm::radians(90.0f), glm::vec3(0, 0, 1));
 

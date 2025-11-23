@@ -1479,7 +1479,7 @@ void crearColisionadorEstatico(OBJ* objetoJuego) {
 
 void stepFisicas() {
 	if (mundo) {
-		mundo->stepSimulation(1.0f / 60.0f, 10);
+		mundo->stepSimulation(1.0f / 60.0f, 10, 1.0f / 120.0f);
 	}
 	if (miCoche) miCoche->update();
 }
