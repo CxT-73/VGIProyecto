@@ -137,6 +137,9 @@ bool g_isMovingRight = false;
 	bool sw_llambient;		// Booleana que controla modus de configurar el color de la llum ambient [TRUE] o no [FALSE]
 	CColor col_llambient;	// Color llum ambient.
 
+	//LLUMS COTXE
+	ControlLuces controlLlumsCotxe;
+
 // Entorn VGI: Variables de control del menú Shaders
 	char shader;				// Tipus de shader [FLAT, GOURAUD, PHONG, FILE, PROG_BINARY_SHADER]
 	static int oShader = 1;		// Variable que controla desplegable SHADER d'ImGui

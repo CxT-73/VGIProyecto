@@ -69,6 +69,8 @@ glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool 
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
 	LLUM* lumi, bool ifix, bool il2sides);
 
+void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin);
+
 // Entorn VGI: Càrrega TG
 glm::mat4 instancia(bool TR, INSTANCIA tg, INSTANCIA tgF);
 

@@ -56,11 +56,11 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
     chassisShape->calculateLocalInertia(masa, inerciaLocal);
 
     //POSICIÓN INICIAL
-    // Usamos la posición donde tienes el coche en el render (-80, -50, 295)
+    // Usamos la posición donde tienes el coche en el render (-80, -50, 295) -80,-50 297
     // Le sumo un poco en Z (+2) para que caiga sobre el suelo y no lo atraviese al nacer.
     btTransform tr;
     tr.setIdentity();
-    tr.setOrigin(btVector3(-80.0f, -50.0f, 297.0f));
+    tr.setOrigin(btVector3(-80.0f, -80.0f, 300.0f));
 
     //CREAR EL cuerpo físico
     btDefaultMotionState* motionState = new btDefaultMotionState(tr);
@@ -245,4 +245,29 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
             model_rueda->draw_TriVAO_OBJ(sh_programID);
         }
     }
+}
+
+glm::mat4 Coche::getModelMatrixCar(float escala) const {
+    glm::mat4 ModelMatrix = glm::mat4(1.0f);
+
+    // Si el chasis físico existe, usar su transform (igual que en render)
+    if (m_chassisBody && m_chassisBody->getMotionState()) {
+        btTransform trans;
+        m_chassisBody->getMotionState()->getWorldTransform(trans);
+        float mat[16];
+        trans.getOpenGLMatrix(mat);
+        ModelMatrix = glm::make_mat4(mat);
+        // Importante: en render rotas -90º sobre Z después de la matriz de Bullet
+        ModelMatrix = glm::rotate(ModelMatrix, glm::radians(-90.0f), glm::vec3(0, 0, 1));
+    }
+    else {
+        // Fallback: usar posición/psi para construir una transform simple
+        glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z));
+        glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(psi), glm::vec3(0.0f, 0.0f, 1.0f));
+        ModelMatrix = T * R;
+    }
+
+    // Escala final (igual que render)
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(escala));
+    return ModelMatrix;
 }

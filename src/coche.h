@@ -22,6 +22,7 @@ public:
     void initFisicas(btDiscreteDynamicsWorld* mundo);
     void update();
     void render(GLuint sh_programID, glm::mat4 MatriuVista);
+    glm::mat4 getModelMatrixCar(float escala = 0.8f) const;
 
 private:
     COBJModel* model;     // apuntador al modelo de la carroceria
