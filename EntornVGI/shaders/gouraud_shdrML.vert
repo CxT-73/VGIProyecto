@@ -47,6 +47,7 @@ uniform mat4 normalMatrix;	// “the transpose of the inverse of the ModelViewMatr
 uniform mat4 projectionMatrix;	// Projection Matrix.
 uniform mat4 viewMatrix; 	// View Matrix.
 uniform mat4 modelMatrix;	// Model Matrix.
+uniform mat4 lightSpaceMatrix; //AFEGIT
 
 uniform sampler2D texture0;	// Imatge textura
 uniform bool textur;		// Booleana d’activació (TRUE) de textures o no (FALSE).
@@ -61,6 +62,7 @@ uniform Material material;	// Vector de coeficients reflectivitat de materials.
 // --- L60- Variables out
 out vec4 VertexColor;
 out vec2 VertexTexCoord;
+out vec4 FragPosLightSpace; //AFEGIT
 
 void main ()	// --- L64-
 {
@@ -70,6 +72,10 @@ void main ()	// --- L64-
     N = normalize(N);
     vec3 vertexPV = vec3(viewMatrix * modelMatrix * vec4(in_Vertex,1.0));
     vec3 V = normalize(-vertexPV);
+
+// --- AFEGIT: CALCULAR POSICIÓ EN L'ESPAI DE LA LLUM ---
+    // Això transforma el vèrtex actual com si el veiés la llum
+    FragPosLightSpace = lightSpaceMatrix * modelMatrix * vec4(in_Vertex, 1.0);
 
 // --- L73- Multiples llums
     vec3 ILlums = vec3 (0.0,0.0,0.0);		// Intensitat acumulada per a totes les fonts de llum.

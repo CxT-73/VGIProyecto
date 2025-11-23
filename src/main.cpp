@@ -363,27 +363,37 @@ void OnPaint(GLFWwindow* window)
 	func_llumsCotxe(miCoche, controlLlumsCotxe, llumGL);
 
 	glm::vec3 lightPos(llumGL[0].posicio.x, llumGL[0].posicio.y, llumGL[0].posicio.z);
-	glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, 1.0f, 100.0f);
+	glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, 1.0f, 300.0f);
 	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
 	glViewport(0, 0, shadowData.width, shadowData.height);
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowData.FBO); 
-	glClear(GL_DEPTH_BUFFER_BIT); 
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowData.FBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
 	glUseProgram(simpleDepthShaderID);
-
 	glUniformMatrix4fv(glGetUniformLocation(simpleDepthShaderID, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
-	configura_Escena();
 
+	configura_Escena();
 	dibuixa_EscenaGL(simpleDepthShaderID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
 		textura, texturesID, textura_map, tFlag_invert_Y,
 		npts_T, PC_t, pas_CS, sw_Punts_Control, false,
 		ObOBJ, lightView, GTMatrix, false);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	glViewport(0, 0, w, h);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if ((c_fons.r < 0.5) || (c_fons.g < 0.5) || (c_fons.b < 0.5)) ImGui::StyleColorsLight();
+	else ImGui::StyleColorsDark();
+
+	glUseProgram(shader_programID);
+	glUniformMatrix4fv(glGetUniformLocation(shader_programID, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, shadowData.texture);
+	glUniform1i(glGetUniformLocation(shader_programID, "shadowMap"), 1);
+	glActiveTexture(GL_TEXTURE0);
 
 	// FI OMBRES
 	// TODO: Agregue aquí su código de controlador de mensajes
