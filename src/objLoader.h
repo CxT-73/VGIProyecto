@@ -15,7 +15,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
+#include <vector>
+#include <btBulletDynamicsCommon.h>
 // Màxima mida vector VAOList
 #define MAX_SIZE_VAOLIST 125
 
@@ -63,51 +64,55 @@ struct Material
   float fShininess;			 // Specular exponent
 };
 
-class OBJLOADER_CLASS_DECL COBJModel  
+class OBJLOADER_CLASS_DECL COBJModel
 {
-  public:
-	void _stdcall DrawModel(int prim_Id);
-	int _stdcall LoadModel(char* szFileName);
-	_stdcall COBJModel();
-	virtual _stdcall ~COBJModel();
-	void _stdcall EliminaLlista(int prim_Id);
+public:
+    // Funcions existents (SOLO UNA VEZ CADA UNA)
+    void _stdcall DrawModel(int prim_Id);
+    int _stdcall LoadModel(char* szFileName);
+    _stdcall COBJModel();
+    virtual _stdcall ~COBJModel();
+    void _stdcall EliminaLlista(int prim_Id);
 
-// Funcions CVAO
-	void _stdcall netejaVAOList_OBJ();
-	void _stdcall netejaTextures_OBJ();
-	void _stdcall draw_TriVAO_OBJ(GLuint sh_programID);
+    // Funcions CVAO
+    void _stdcall netejaVAOList_OBJ();
+    void _stdcall netejaTextures_OBJ();
+    void _stdcall draw_TriVAO_OBJ(GLuint sh_programID);
+
+    // --- NUEVO: Variable para Bullet (SOLO ESTO ES LO NUEVO) ---
+    btTriangleMesh* m_pTriangleMesh = nullptr;
+    // -----------------------------------------------------------
 
 private:
-	void _stdcall ReadNextString(char szString[], FILE *hStream);
-//	  int _stdcall LoadTexture(const char szFileName[_MAX_PATH]);
-	  int _stdcall LoadTexture2(const char szFileName[_MAX_PATH]);
-	  void _stdcall UseMaterial(const Material *pMaterial);
-	  void _stdcall UseMaterial_ShaderID(GLuint sh_programID, Material pMaterial);
-	  void _stdcall GetTokenParameter(char szString[], const unsigned int iStrSize, FILE *hFile);
-	  void _stdcall MakePath(char szFileAndPath[]);
-	  bool _stdcall LoadMaterialLib(const char szFileName[], Material *pMaterials,
-				unsigned int *iCurMaterialIndex, char szBasePath[]);
-	CVAO _stdcall RenderToVAOList(const Face* pFaces, const unsigned int iFaceCount,
-				const Material *pMaterials);
-	void _stdcall loadToVAOList(const Face* pFaces, const unsigned int iFaceCount,
-				const Material* pMaterials);
-	void _stdcall GetFaceNormal(float fNormalOut[3], const Face *pFace);
-	void _stdcall ParseFaceString(char szFaceString[], Face *FaceOut, const Vector3D *pVertices,
-			  const Vector3D *pNormals, const Vector2D *pTexCoords, const unsigned int iMaterialIndex);
-	void _stdcall GetFileInfo(FILE *hStream, OBJFileInfo *Stat, const char szConstBasePath[]);
- 	void _stdcall GenTexCoords();
+    void _stdcall ReadNextString(char szString[], FILE* hStream);
+    int _stdcall LoadTexture2(const char szFileName[_MAX_PATH]);
+    void _stdcall UseMaterial(const Material* pMaterial);
+    void _stdcall UseMaterial_ShaderID(GLuint sh_programID, Material pMaterial);
+    void _stdcall GetTokenParameter(char szString[], const unsigned int iStrSize, FILE* hFile);
+    void _stdcall MakePath(char szFileAndPath[]);
+    bool _stdcall LoadMaterialLib(const char szFileName[], Material* pMaterials,
+        unsigned int* iCurMaterialIndex, char szBasePath[]);
+    CVAO _stdcall RenderToVAOList(const Face* pFaces, const unsigned int iFaceCount,
+        const Material* pMaterials);
+    void _stdcall loadToVAOList(const Face* pFaces, const unsigned int iFaceCount,
+        const Material* pMaterials);
+    void _stdcall GetFaceNormal(float fNormalOut[3], const Face* pFace);
+    void _stdcall ParseFaceString(char szFaceString[], Face* FaceOut, const Vector3D* pVertices,
+        const Vector3D* pNormals, const Vector2D* pTexCoords, const unsigned int iMaterialIndex);
+    void _stdcall GetFileInfo(FILE* hStream, OBJFileInfo* Stat, const char szConstBasePath[]);
+    void _stdcall GenTexCoords();
 
-// CVAO
-	GLint numMaterials = 0;
-	int vector_Materials[MAX_SIZE_VAOLIST];
-	CVAO VAOList_OBJ[MAX_SIZE_VAOLIST];
-	Material vMaterials[MAX_SIZE_VAOLIST];
+    // CVAO
+    GLint numMaterials = 0;
+    int vector_Materials[MAX_SIZE_VAOLIST];
+    CVAO VAOList_OBJ[MAX_SIZE_VAOLIST];
+    Material vMaterials[MAX_SIZE_VAOLIST];
 
-// Funcions CVAO
-	void _stdcall initVAOList_OBJ();
-	void _stdcall Set_VAOList_OBJ(GLint k, CVAO auxVAO);
-	void _stdcall deleteVAOList_OBJ(GLint k);
-	void _stdcall draw_TriVAO_Object_OBJ(GLint k);
+    // Funcions CVAO
+    void _stdcall initVAOList_OBJ();
+    void _stdcall Set_VAOList_OBJ(GLint k, CVAO auxVAO);
+    void _stdcall deleteVAOList_OBJ(GLint k);
+    void _stdcall draw_TriVAO_Object_OBJ(GLint k);
 };
 
 // Callback function for comparing two faces with qsort
@@ -131,9 +136,22 @@ class COBJModel;
 
 class OBJ {
 public:
-	COBJModel* objecteOBJ;
 	std::string nom;
-	OBJ(const std::string& nombreObjeto);       // Constructor
-	~OBJ();                          // Destructor
-	void render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG, CColor col_object, bool sw_mat[5]);
+	COBJModel* objecteOBJ;
+
+	glm::vec3 posicion;   // traslación
+	glm::vec3 rotacion;   // rotación en grados (x,y,z)
+	glm::vec3 escala;  
+
+	OBJ(const std::string& nombreObjeto);
+	~OBJ();
+
+	void setTransform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scl) {
+		posicion = pos;
+		rotacion = rot;
+		escala = scl;
+	}
+
+	void render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
+		CColor col_object, bool sw_mat[5]);
 };

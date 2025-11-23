@@ -1,0 +1,17 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build artifacts
+EntornVGI/x64/
+x64/
+bin/
+obj/
+
+# Debug files
+*.pdb
+*.idb
+*.tlog
+*.log
+

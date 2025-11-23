@@ -13,6 +13,16 @@
 #include "objLoader.h"	
 
 //-------------- Entorn VGI: Variables globals de main
+//variables para cam follow
+extern bool g_isOrbitingLeft = false;
+extern bool g_isOrbitingRight = false;
+
+//variables per cam lliure     
+glm::vec3 g_FreeCamPos(23.492f, 0.0f, 8.550f); // Posición inicial (ejemplo: cerca del coche)
+bool g_isMovingForward = false;
+bool g_isMovingBackward = false;
+bool g_isMovingLeft = false;
+bool g_isMovingRight = false;
 
 // Retrieving main monitor
 	GLFWmonitor* primary;
@@ -68,13 +78,13 @@
 
 // Entorn VGI: Variables de control per les opcions de menú Projecció, Objecte
 	char projeccio;					// Menú Projecció: Tipus de projeccio
-	static int oProjeccio = 3;		// ImGui: Variable que controla desplegable TIPUS PROJECCIO d'ImGui
+	static int oProjeccio;		// ImGui: Variable que controla desplegable TIPUS PROJECCIO d'ImGui
 	glm::mat4 ProjectionMatrix(1.0);// Matriu de Projecció a passar al shader
 	char objecte;					// Menú Objecte: Tipus d'Objecte
 	static int oObjecte = 0;		// ImGui: Variable que controla desplegable TIPUS OBJECTE d'ImGui
 
 // Entorn VGI: Variables de control Skybox Cube
-	bool SkyBoxCube;			// Booleana que controla si es visualitza Skybox [TRUE] o no [FALSE].
+	bool SkyBoxCube = true;			// Booleana que controla si es visualitza Skybox [TRUE] o no [FALSE].
 	Shader shader_SkyBoxC;		// Shader Skybox Cub
 	GLuint skC_programID;		// Identificador program Skybox Cube
 	CVAO skC_VAOID;				// Identificador VAO List (vaoId, vboId, nVertexs) per a Skybox Cube
@@ -241,6 +251,11 @@
 	void OnCameraOrigenNavega();
 	void OnCameraGeode();
 	void OnCameraOrigenGeode();
+	void OnCameraFollow();
+	void OnCameraPrimeraPersona();
+	void OnCameraLliure();
+	void OnCameraPausa();
+	void OnCameraInici();
 	// Desplegable VISTA
 	void OnVistaFullscreen();
 	void OnVistaPan();

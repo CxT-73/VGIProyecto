@@ -9,7 +9,8 @@
 
 // Entorn VGI: OBJECTE OBJ. Include per la definició de l'objecte Obj_OBJ
 #include "objLoader.h"
-#include "coche.h"
+#include "coche.h" 
+#include "zones.h" 
 //declaramos el coche
 extern Coche* miCoche; 
 extern OBJ* cono;
@@ -17,6 +18,8 @@ extern OBJ* circuit;
 extern OBJ* barrera;
 extern OBJ* bloc;
 extern OBJ* barril;
+extern OBJ* punt;
+extern Zones* zonas;
 /* ------------------------------------------------------------------------- */
 /*                            Funcions de les escenes                        */
 /* ------------------------------------------------------------------------- */
@@ -29,7 +32,7 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 	bool textur, GLuint texturID[NUM_MAX_TEXTURES], bool textur_map, bool flagInvertY,
 	int nptsU, CPunt3D PC_u[MAX_PATCH_CORBA], GLfloat pasCS, bool sw_PC, bool dib_TFrenet,
 	COBJModel* objecteOBJ,
-	glm::mat4 MatriuVista, glm::mat4 MatriuTG);
+	glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool dibuixarCotxe = true);
 
 // Entorn VGI: dibuixa -> Funció que dibuixa objectes simples de la llibreria GLUT segons obj
 void dibuixa(GLuint sh_programID, char obj, glm::mat4 MatriuVista, glm::mat4 MatriuTG);
@@ -46,4 +49,10 @@ void Motor(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_ma
 void Canon(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_mat[4]);
 void Cuerpo(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_mat[4]);
 void Cabina(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_mat[4]);
+// FUNCIONES BULLET PHYSICS
+void initFisicas();
+void stepFisicas();
+void cleanFisicas();
+void crearColisionadorEstatico(OBJ* objetoJuego);
+void iniciarFisicasCoche();
 #endif

@@ -51,6 +51,7 @@ _stdcall COBJModel::COBJModel()
 {
 // Inicialitzar la llista de VAO's.
 	initVAOList_OBJ();
+	m_pTriangleMesh = nullptr;
 }
 
 _stdcall COBJModel::~COBJModel()
@@ -229,7 +230,43 @@ int _stdcall COBJModel::LoadModel(char* szFileName)
 // Render all faces into a VAO
 	//auxVAO = RenderToVAOList(pFaces, OBJInfo.iFaceCount, pMaterials, prim_Id);
 	loadToVAOList(pFaces, OBJInfo.iFaceCount, pMaterials);
+	// ==========================================================================
+	// GENERACIÓN DE MALLA DE COLISIÓN PARA BULLET PHYSICS
+	// ==========================================================================
+	// Si ya existía una malla, la borramos para no dejar basura
+	if (m_pTriangleMesh) {
+		delete m_pTriangleMesh;
+		m_pTriangleMesh = nullptr;
+	}
 
+	// Creamos la nueva malla
+	m_pTriangleMesh = new btTriangleMesh();
+
+	// Recorremos todas las caras del modelo cargado
+	for (int i = 0; i < (int)OBJInfo.iFaceCount; i++)
+	{
+		for (int j = 1; j < (int)pFaces[i].iNumVertices - 1; j++)
+		{
+			// Vértice 0 
+			btVector3 v0(pFaces[i].pVertices[0].fX,
+				pFaces[i].pVertices[0].fY,
+				pFaces[i].pVertices[0].fZ);
+
+			// Vértice J
+			btVector3 v1(pFaces[i].pVertices[j].fX,
+				pFaces[i].pVertices[j].fY,
+				pFaces[i].pVertices[j].fZ);
+
+			// Vértice J+1
+			btVector3 v2(pFaces[i].pVertices[j + 1].fX,
+				pFaces[i].pVertices[j + 1].fY,
+				pFaces[i].pVertices[j + 1].fZ);
+
+			// Añadir el triángulo a la malla física
+			m_pTriangleMesh->addTriangle(v0, v1, v2);
+		}
+	}
+	printf("Bullet: Malla de colision generada con exito dentro de LoadModel.\n");
 ////////////////////////////////////////////////////////////////////////
 // Free structures that hold the model data
 ////////////////////////////////////////////////////////////////////////
@@ -1501,17 +1538,11 @@ void _stdcall COBJModel::draw_TriVAO_OBJ(GLuint sh_programID)
 
 OBJ::OBJ(const std::string& nombreObjeto) {
 	objecteOBJ = new COBJModel();
+	char ruta[256];
 
-	char ruta[256]; // espacio suficiente para la ruta
-
-	// Elegir ruta según el nombre del objeto
 	if (nombreObjeto == "cono") {
 		nom = nombreObjeto;
 		strcpy(ruta, "../x64/Release/OBJFiles/Cono/Cono.obj");
-	}
-	else if (nombreObjeto == "circuit") {
-		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m2/track.obj");
 	}
 	else if (nombreObjeto == "barrera") {
 		nom = nombreObjeto;
@@ -1519,30 +1550,42 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 	}
 	else if (nombreObjeto == "bloc") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Bloc/Bloc.obj"); 
+		strcpy(ruta, "../x64/Release/OBJFiles/Bloc/Bloc.obj");
 	}
 	else if (nombreObjeto == "barril") {
 		nom = nombreObjeto;
 		strcpy(ruta, "../x64/Release/OBJFiles/Barril/Barril.obj");
+	}
+	else if (nombreObjeto == "circuit") {
+		nom = nombreObjeto;  
+		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m4/track.obj");
+	}
+	else if (nombreObjeto == "punt") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Punt/Prueba1.obj");
 	}
 	else {
 		fprintf(stderr, "ERROR: Nombre de objeto desconocido: %s\n", nombreObjeto.c_str());
 		return;
 	}
 
-	// Cargar modelo
 	if (objecteOBJ->LoadModel(ruta) != 0) {
 		fprintf(stderr, "ERROR: No se pudo cargar %s\n", ruta);
 	}
-	else {
-		printf("OBJ cargado automáticamente: %s\n", ruta);
+	else { 
+		printf("OBJ cargado automaticamente: %s\n", ruta);
 	}
-}
 
+	// Valores por defecto seguros
+	posicion = glm::vec3(0.0f);
+	rotacion = glm::vec3(0.0f);
+	escala = glm::vec3(1.0f);
+}
 
 OBJ::~OBJ() {
 	if (objecteOBJ) delete objecteOBJ;
 }
+
 
 //z --> azul
 //j --> verde
@@ -1559,54 +1602,57 @@ OBJ::~OBJ() {
 
 //primero se mueve (traslación con TransMatrix), luego se escala el modelo.
 //ModelMatrix = glm::scale(TransMatrix, vec3(5.0f, 5.0f, 5.0f));
-
-void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG, CColor col_object, bool sw_mat[5]) {
+void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
+	CColor col_object, bool sw_mat[5])
+{
 	if (!objecteOBJ) return;
 
-	float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 0.0f;
+	glm::vec3 finalPos = posicion;
+
+	float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 295.0f;
 	float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
-	float escala=0.0f;
+	float escala = 0.0f, y = 0.0f, rad = 90.0f, z = 0.0f, x = 1.0f;
 	// Configurar separaciones según el objeto
 	if (nom == "cono") {
-		sepX = 0.5f;
-		sepY = 0.0f;
-		offsetZ = 0.0f;
-		escala = 0.1f;
+		sepX = -100.0f;
+		sepY = -50.0f;
+		escala = 0.8f;
 	}
 	else if (nom == "barrera") {
-		sepX = 1.0f;
-		sepY = 0.0f;
-		escala = 0.5f;
-	}
-	else if (nom == "circuit") {
-		sepX = -0.5f;
-		sepY = -0.5f;
-		offsetZ = 0.0f;
-		escala = 135.0f;
+		sepX = -100.0f;
+		sepY = -50.0f;
+		escala = 1.0f;
 	}
 	else if (nom == "bloc") {
-		sepX = -0.5f;
-		sepY = 0.0f;
-		escala = 0.5f;
+		sepX = -100.0f;
+		sepY = -50.0f;
+		escala = 1.0f;
 	}
 	else if (nom == "barril") {
-		sepX = -1.0f;
-		sepY = 0.0f;
-		offsetZ = 0.0f;
-		escala = 0.5f;
+		sepX = -100.0f;
+		sepY = -50.0f;
+		escala = 5.0f;
 	}
-	for (int i = 0; i < 10; i++) {
-		for (int j = 0; j < 10; j++) {
-			glm::mat4 TransMatrix = glm::translate(MatriuTG, glm::vec3(i * sepX, j * sepY, offsetZ));
-			glm::mat4 RotMatrix = glm::rotate(TransMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	else if (nom == "circuit") {
+		sepX = 710.0f;
+		sepY = 120.0f;
+		offsetZ = 1650.0f;
+		escala = 100.0f;
+	}
+	finalPos.x += sepX;
+	finalPos.y += sepY;
+	finalPos.z += offsetZ;
+	 
+	glm::mat4 TransMatrix = glm::translate(MatriuTG, finalPos);
+	 
+	glm::mat4 ModelMatrix = glm::scale(TransMatrix, glm::vec3(escala));
+	 
 
-			glm::mat4 ModelMatrix = glm::scale(RotMatrix, glm::vec3(escala));
-			glm::mat4 NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
-			 
-			glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
-			glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
-		}
-	}
+
+	glm::mat4 NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
+
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "modelMatrix"), 1, GL_FALSE, &ModelMatrix[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(sh_programID, "normalMatrix"), 1, GL_FALSE, &NormalMatrix[0][0]);
 
 	SeleccionaColorMaterial(sh_programID, col_object, sw_mat);
 	objecteOBJ->draw_TriVAO_OBJ(sh_programID);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdafx.h" 
-
+#include <btBulletDynamicsCommon.h> 
 
 class COBJModel;
 
@@ -19,9 +19,18 @@ public:
     
     Coche();              // Constructor
     ~Coche();             // Destructor to free memory
+    void initFisicas(btDiscreteDynamicsWorld* mundo);
+    void update();
     void render(GLuint sh_programID, glm::mat4 MatriuVista);
 
 private:
     COBJModel* model;     // apuntador al modelo de la carroceria
     COBJModel* model_rueda;      // Un solo modelo para todas las ruedas
+    //VARIABLES DE BULLET
+    btRigidBody* m_chassisBody;           //cuerpo rígido del coche
+    btRaycastVehicle* m_vehicle;          //controlador del vehículo
+    btVehicleRaycaster* m_vehicleRayCaster; //Calcula los rayos de las ruedas al suelo
+    btRaycastVehicle::btVehicleTuning m_tuning; //Configuración (suspensión, fricción, etc)
+   
 };
+ 
