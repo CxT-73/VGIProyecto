@@ -1558,7 +1558,11 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 	}
 	else if (nombreObjeto == "circuit") {
 		nom = nombreObjeto;  
-		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m4/track.obj");
+		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m5/TRACKSENSEMUR.obj");
+	}
+	else if (nombreObjeto == "muro") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m5/MURO.obj");
 	}
 	else if (nombreObjeto == "punt") {
 		nom = nombreObjeto;
@@ -1634,6 +1638,12 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 		escala = 5.0f;
 	}
 	else if (nom == "circuit") {
+		sepX = 710.0f;
+		sepY = 120.0f;
+		offsetZ = 1650.0f;
+		escala = 100.0f;
+	}
+	else if (nom == "muro") {
 		sepX = 710.0f;
 		sepY = 120.0f;
 		offsetZ = 1650.0f;

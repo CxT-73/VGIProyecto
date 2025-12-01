@@ -24,6 +24,7 @@
 Coche* miCoche = nullptr;
 OBJ* cono = nullptr;
 OBJ* circuit = nullptr;
+OBJ* muro = nullptr;
 OBJ* barrera = nullptr;
 OBJ* bloc = nullptr;
 OBJ* barril = nullptr;
@@ -484,6 +485,8 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 
 	if (circuit) 
 		circuit->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
+	if (muro)
+		muro->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
 
 	if (barrera) 
 		barrera->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);

@@ -15,6 +15,7 @@
 extern Coche* miCoche; 
 extern OBJ* cono;
 extern OBJ* circuit;
+extern OBJ* muro;
 extern OBJ* barrera;
 extern OBJ* bloc;
 extern OBJ* barril;

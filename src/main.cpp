@@ -315,6 +315,9 @@ void InitGL()
 	if (circuit == nullptr) {
 		circuit = new OBJ("circuit");
 	}
+	if (muro == nullptr) {
+		muro = new OBJ("muro");
+	}
 	if (barrera == nullptr) {
 		barrera = new OBJ("barrera");
 	}
