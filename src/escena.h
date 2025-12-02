@@ -20,6 +20,9 @@ extern OBJ* bloc;
 extern OBJ* barril;
 extern OBJ* punt;
 extern Zones* zonas;
+
+//BULLET
+extern btDiscreteDynamicsWorld* mundo;
 /* ------------------------------------------------------------------------- */
 /*                            Funcions de les escenes                        */
 /* ------------------------------------------------------------------------- */

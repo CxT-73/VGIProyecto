@@ -3,6 +3,7 @@
 #include "ImGui\imgui_impl_glfw.h"
 #include "ImGui\imgui_impl_opengl3.h"
 #include "ImGui\nfd.h" // Native File Dialog
+#include <btBulletDynamicsCommon.h> //BULLET
 
 #include "stdafx.h"
 #include "shader.h"
@@ -1668,6 +1669,11 @@ int main(void)
 	else {
 		printf("ALERTA: La variable circuit es nula. Revisa dond haces new OBJ.\n");
 	}
+
+	if (cono) cono->initFisicas(mundo);
+	if (barril) barril->initFisicas(mundo);
+	if (bloc) bloc->initFisicas(mundo);
+	if (barrera) barrera->initFisicas(mundo);
 	
 	// ------------- Entorn VGI: Callbacks
 	// Set GLFW event callbacks. I removed glfwSetWindowSizeCallback for conciseness

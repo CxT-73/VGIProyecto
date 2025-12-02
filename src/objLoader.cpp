@@ -1586,6 +1586,68 @@ OBJ::~OBJ() {
 	if (objecteOBJ) delete objecteOBJ;
 }
 
+//FISICAS OBJETOS
+void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo) 
+{
+	glm::vec3 finalPos = posicion;
+	float offsetZ = 295.0f;
+	float sepX = 0.0f, sepY = 0.0f;
+	float scaleFactor = 1.0f; 
+
+	if (nom == "cono") 
+	{
+		sepX = -100.0f; sepY = -50.0f; scaleFactor = 0.8f;
+	}
+	else if (nom == "barrera" || nom == "bloc") 
+	{
+		sepX = -100.0f; sepY = -50.0f; scaleFactor = 1.0f;
+	}
+	else if (nom == "barril") 
+	{
+		sepX = -100.0f; sepY = -50.0f; scaleFactor = 5.0f;
+	}
+
+	finalPos.x += sepX;
+	finalPos.y += sepY;
+	finalPos.z += offsetZ;
+
+	btScalar masa = 0.0f;
+
+	if (nom == "cono") 
+	{
+		// Cono: radio=1, altura=2 
+		m_collisionShape = new btConeShape(1.0f * scaleFactor, 2.0f * scaleFactor); //AJUSTAR
+		masa = 5.0f; 
+	}
+	else if (nom == "barril") 
+	{
+		// Cilindro: dimensiones (radio, altura/2, radio)
+		m_collisionShape = new btCylinderShape(btVector3(1.0f * scaleFactor, 1.5f * scaleFactor, 1.0f * scaleFactor)); //AJUSTAR
+		masa = 20.0f; 
+	}
+	else if (nom == "bloc" || nom == "barrera")
+	{
+		m_collisionShape = new btBoxShape(btVector3(2.0f, 2.0f, 2.0f)); // AJUSTAR
+		masa = 50.0f;
+	}
+	else  m_collisionShape = new btBoxShape(btVector3(1.0f, 1.0f, 1.0f));
+
+	btVector3 localInertia(0, 0, 0);
+	if (masa != 0.0f) {
+		m_collisionShape->calculateLocalInertia(masa, localInertia);
+	}
+
+	btTransform startTransform;
+	startTransform.setIdentity();
+	startTransform.setOrigin(btVector3(finalPos.x, finalPos.y, finalPos.z));
+
+	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+	btRigidBody::btRigidBodyConstructionInfo rbInfo(masa, myMotionState, m_collisionShape, localInertia);
+
+	m_rigidBody = new btRigidBody(rbInfo);
+	mundo->addRigidBody(m_rigidBody);
+
+}
 
 //z --> azul
 //j --> verde
@@ -1607,46 +1669,67 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 {
 	if (!objecteOBJ) return;
 
-	glm::vec3 finalPos = posicion;
+	glm::mat4 ModelMatrix;
+	float scaleFactor = 1.0f;
 
-	float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 295.0f;
-	float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
-	float escala = 0.0f, y = 0.0f, rad = 90.0f, z = 0.0f, x = 1.0f;
-	// Configurar separaciones según el objeto
-	if (nom == "cono") {
-		sepX = -100.0f;
-		sepY = -50.0f;
-		escala = 0.8f;
+	if (nom == "cono") scaleFactor = 0.8f;
+	else if (nom == "barrera" || nom == "bloc") scaleFactor = 1.0f;
+	else if (nom == "barril") scaleFactor = 5.0f;
+
+	if (m_rigidBody && m_rigidBody->getMotionState())
+	{
+		btTransform trans;
+		m_rigidBody->getMotionState()->getWorldTransform(trans);
+
+		float mat[16];
+		trans.getOpenGLMatrix(mat);
+		ModelMatrix = glm::make_mat4(mat);
+
+		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(scaleFactor));
 	}
-	else if (nom == "barrera") {
-		sepX = -100.0f;
-		sepY = -50.0f;
-		escala = 1.0f;
+	else
+	{
+
+		glm::vec3 finalPos = posicion;
+
+		float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 295.0f;
+		float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
+		float escala = 0.0f, y = 0.0f, rad = 90.0f, z = 0.0f, x = 1.0f;
+		// Configurar separaciones según el objeto
+		if (nom == "cono") {
+			sepX = -100.0f;
+			sepY = -50.0f;
+			escala = 0.8f;
+		}
+		else if (nom == "barrera") {
+			sepX = -100.0f;
+			sepY = -50.0f;
+			escala = 1.0f;
+		}
+		else if (nom == "bloc") {
+			sepX = -100.0f;
+			sepY = -50.0f;
+			escala = 1.0f;
+		}
+		else if (nom == "barril") {
+			sepX = -100.0f;
+			sepY = -50.0f;
+			escala = 5.0f;
+		}
+		else if (nom == "circuit") {
+			sepX = 710.0f;
+			sepY = 120.0f;
+			offsetZ = 1650.0f;
+			escala = 100.0f;
+		}
+		finalPos.x += sepX;
+		finalPos.y += sepY;
+		finalPos.z += offsetZ;
+
+		glm::mat4 TransMatrix = glm::translate(MatriuTG, finalPos);
+
+		ModelMatrix = glm::scale(TransMatrix, glm::vec3(escala));
 	}
-	else if (nom == "bloc") {
-		sepX = -100.0f;
-		sepY = -50.0f;
-		escala = 1.0f;
-	}
-	else if (nom == "barril") {
-		sepX = -100.0f;
-		sepY = -50.0f;
-		escala = 5.0f;
-	}
-	else if (nom == "circuit") {
-		sepX = 710.0f;
-		sepY = 120.0f;
-		offsetZ = 1650.0f;
-		escala = 100.0f;
-	}
-	finalPos.x += sepX;
-	finalPos.y += sepY;
-	finalPos.z += offsetZ;
-	 
-	glm::mat4 TransMatrix = glm::translate(MatriuTG, finalPos);
-	 
-	glm::mat4 ModelMatrix = glm::scale(TransMatrix, glm::vec3(escala));
-	 
 
 
 	glm::mat4 NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));

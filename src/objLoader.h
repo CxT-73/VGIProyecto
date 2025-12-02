@@ -143,8 +143,14 @@ public:
 	glm::vec3 rotacion;   // rotación en grados (x,y,z)
 	glm::vec3 escala;  
 
+    //COLISIONS OBJECTES
+    btRigidBody* m_rigidBody;
+    btCollisionShape* m_collisionShape;
+
 	OBJ(const std::string& nombreObjeto);
 	~OBJ();
+
+    void initFisicas(btDiscreteDynamicsWorld* mundo);
 
 	void setTransform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scl) {
 		posicion = pos;
