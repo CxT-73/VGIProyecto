@@ -1558,7 +1558,11 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 	}
 	else if (nombreObjeto == "circuit") {
 		nom = nombreObjeto;  
-		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m4/track.obj");
+		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m5/TRACKSENSEMUR.obj");
+	}
+	else if (nombreObjeto == "muro") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m5/MURO.obj");
 	}
 	else if (nombreObjeto == "punt") {
 		nom = nombreObjeto;
@@ -1573,13 +1577,14 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 		fprintf(stderr, "ERROR: No se pudo cargar %s\n", ruta);
 	}
 	else { 
-		printf("OBJ cargado automaticamente: %s\n", ruta);
+		if(nombreObjeto != "punt")
+			printf("OBJ cargado automaticamente: %s\n", ruta);
 	}
 
 	// Valores por defecto seguros
 	posicion = glm::vec3(0.0f);
 	rotacion = glm::vec3(0.0f);
-	escala = glm::vec3(1.0f);
+	escala = glm::vec3(100.0f);
 }
 
 OBJ::~OBJ() {
@@ -1606,6 +1611,13 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo)
 	{
 		sepX = -100.0f; sepY = -50.0f; scaleFactor = 5.0f;
 	}
+	else if (nom == "muro")
+	{
+		sepX = 710.0f;
+		sepY = 120.0f;
+		offsetZ = 1650.0f;
+		float escala = 100.0f;
+	}
 
 	finalPos.x += sepX;
 	finalPos.y += sepY;
@@ -1615,20 +1627,89 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo)
 
 	if (nom == "cono") 
 	{
-		// Cono: radio=1, altura=2 
-		m_collisionShape = new btConeShape(1.0f * scaleFactor, 2.0f * scaleFactor); //AJUSTAR
-		masa = 5.0f; 
+		btConvexHullShape* shape = new btConvexHullShape();
+		float H = 3.04f * scaleFactor;
+		float W = 1.27f * scaleFactor;
+
+		float z_suelo = -H;    
+		float z_tope_base = -H + (0.5f * scaleFactor);
+		float z_punta = H;  
+
+		float c = W * 0.3f; 
+
+		float nivelesBase[] = { z_suelo, z_tope_base };
+
+		for (int i = 0; i < 2; i++) {
+			float z = nivelesBase[i];
+			shape->addPoint(btVector3(W, c, z)); shape->addPoint(btVector3(W, -c, z));
+			shape->addPoint(btVector3(-W, c, z)); shape->addPoint(btVector3(-W, -c, z));
+			shape->addPoint(btVector3(c, W, z)); shape->addPoint(btVector3(-c, W, z));
+			shape->addPoint(btVector3(c, -W, z)); shape->addPoint(btVector3(-c, -W, z));
+		}
+
+		float w_top = 0.15f * scaleFactor;
+		shape->addPoint(btVector3(w_top, w_top, z_punta));
+		shape->addPoint(btVector3(w_top, -w_top, z_punta));
+		shape->addPoint(btVector3(-w_top, w_top, z_punta));
+		shape->addPoint(btVector3(-w_top, -w_top, z_punta));
+
+		shape->initializePolyhedralFeatures();
+		m_collisionShape = shape;
+
+		masa = 10.0f;
+		btVector3 localInertia(0, 0, 0);
+
+		m_collisionShape->calculateLocalInertia(masa, localInertia);
+
+		btTransform startTransform;
+		startTransform.setIdentity();
+		startTransform.setOrigin(btVector3(finalPos.x, finalPos.y, finalPos.z));
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(masa, myMotionState, m_collisionShape, localInertia);
+		m_rigidBody = new btRigidBody(rbInfo);
+
+		m_rigidBody->setFriction(0.6f);
+		m_rigidBody->setRestitution(0.5f); // Rebote medio
+		m_rigidBody->setRollingFriction(0.1f); // Resistencia a rodar (para que pare)
+		m_rigidBody->setAngularFactor(btVector3(1, 1, 1));
+
+		mundo->addRigidBody(m_rigidBody);
+		return;
 	}
 	else if (nom == "barril") 
 	{
 		// Cilindro: dimensiones (radio, altura/2, radio)
-		m_collisionShape = new btCylinderShape(btVector3(1.0f * scaleFactor, 1.5f * scaleFactor, 1.0f * scaleFactor)); //AJUSTAR
-		masa = 20.0f; 
+		m_collisionShape = new btCylinderShapeZ(btVector3(0.43f * scaleFactor, 0.43f * scaleFactor, 0.63f * scaleFactor));
+		masa = 2000.0f;
 	}
-	else if (nom == "bloc" || nom == "barrera")
+	else if (nom == "barrera")
 	{
-		m_collisionShape = new btBoxShape(btVector3(2.0f, 2.0f, 2.0f)); // AJUSTAR
-		masa = 50.0f;
+		//m_collisionShape = new btBoxShape(btVector3(0.915f * scaleFactor, 2.535f * scaleFactor, 1.37f * scaleFactor)); // AJUSTAR
+		btConvexHullShape* shape = new btConvexHullShape();
+
+		float scale = scaleFactor;
+		float h_len = 2.535f * scale;
+		float h_hgt = 1.37f * scale; 
+
+		float h_width_base = 0.915f * scale;
+		float h_width_top = 0.25f * scale;
+
+		shape->addPoint(btVector3(h_width_base, h_len, -h_hgt));
+		shape->addPoint(btVector3(-h_width_base, h_len, -h_hgt));
+		shape->addPoint(btVector3(h_width_base, -h_len, -h_hgt));
+		shape->addPoint(btVector3(-h_width_base, -h_len, -h_hgt));
+		shape->addPoint(btVector3(h_width_top, h_len, h_hgt));
+		shape->addPoint(btVector3(-h_width_top, h_len, h_hgt));
+		shape->addPoint(btVector3(h_width_top, -h_len, h_hgt));
+		shape->addPoint(btVector3(-h_width_top, -h_len, h_hgt));
+
+		m_collisionShape = shape;
+		masa = 8000.0f;
+	}
+	else if (nom == "bloc")
+	{
+		m_collisionShape = new btBoxShape(btVector3(1.615f * scaleFactor, 0.8f * scaleFactor, 0.665f * scaleFactor));
+		masa = 3000.0f;
 	}
 	else  m_collisionShape = new btBoxShape(btVector3(1.0f, 1.0f, 1.0f));
 
@@ -1672,9 +1753,16 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 	glm::mat4 ModelMatrix;
 	float scaleFactor = 1.0f;
 
-	if (nom == "cono") scaleFactor = 0.8f;
+	if (nom == "cono")
+	{
+		scaleFactor = 0.8f;
+		//m_rigidBody->setFriction(0.5f);     // Plástico contra asfalto
+		//m_rigidBody->setRestitution(0.8f);  // Rebota
+		//m_rigidBody->setRollingFriction(0.3f);
+	}
 	else if (nom == "barrera" || nom == "bloc") scaleFactor = 1.0f;
 	else if (nom == "barril") scaleFactor = 5.0f;
+	else if (nom == "muro") scaleFactor = 100.0f;
 
 	if (m_rigidBody && m_rigidBody->getMotionState())
 	{
@@ -1717,6 +1805,12 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 			escala = 5.0f;
 		}
 		else if (nom == "circuit") {
+			sepX = 710.0f;
+			sepY = 120.0f;
+			offsetZ = 1650.0f;
+			escala = 100.0f;
+		}
+		else if (nom == "muro") {
 			sepX = 710.0f;
 			sepY = 120.0f;
 			offsetZ = 1650.0f;

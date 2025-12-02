@@ -316,6 +316,9 @@ void InitGL()
 	if (circuit == nullptr) {
 		circuit = new OBJ("circuit");
 	}
+	if (muro == nullptr) {
+		muro = new OBJ("muro");
+	}
 	if (barrera == nullptr) {
 		barrera = new OBJ("barrera");
 	}
@@ -324,10 +327,7 @@ void InitGL()
 	}
 	if (barril == nullptr) {
 		barril = new OBJ("barril");
-	}
-	if (punt == nullptr) {
-		punt = new OBJ("punt");
-	}
+	} 
 	if (zonas == nullptr) {
 		zonas = new Zones("punt");
 	}
@@ -1660,11 +1660,16 @@ int main(void)
 
 	initFisicas();
 
-	if (circuit != nullptr) crearColisionadorEstatico(circuit);
+	if (circuit != nullptr)
+	{
+		crearColisionadorEstatico(circuit);
+		crearColisionadorEstatico(muro);
+	}
 	iniciarFisicasCoche();
 	// Convertimos el circuito gráfico en suelo físico
 	if (circuit != nullptr) {
 		crearColisionadorEstatico(circuit);
+		crearColisionadorEstatico(muro);
 	}
 	else {
 		printf("ALERTA: La variable circuit es nula. Revisa dond haces new OBJ.\n");
