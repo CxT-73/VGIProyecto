@@ -9,7 +9,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd Cono.jpg
+map_Kd Cono.png
 
 newmtl brillo_cono
 Ns 206.972961
@@ -19,7 +19,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 2.000000
 d 1.000000
 illum 3
-map_Kd Cono.jpg
+map_Kd Cono.png
 
 newmtl color_cono
 Ns 250.000000
@@ -29,4 +29,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd Cono.jpg
+map_Kd Cono.png
