@@ -18,8 +18,7 @@ extern OBJ* circuit;
 extern OBJ* muro;
 extern OBJ* barrera;
 extern OBJ* bloc;
-extern OBJ* barril;
-extern OBJ* punt;
+extern OBJ* barril; 
 extern Zones* zonas;
 /* ------------------------------------------------------------------------- */
 /*                            Funcions de les escenes                        */
