@@ -12,7 +12,7 @@
 //#version 330 core
 #version 460 core
 
-#define MaxLights 8
+#define MaxLights 20
 
 // --- L16- Estructures Font de LLum i Material (coeficients reflectivitat).
 struct Light

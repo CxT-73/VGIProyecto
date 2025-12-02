@@ -23,7 +23,7 @@ void InitGL()
 
 	// Entorn VGI: Variables de control per Menú Càmera: Esfèrica, Navega, Mòbil, Zoom, Satelit, Polars... 
 	camera = CAM_FOLLOW;
-	mobil = true;	zzoom = true;		zzoomO = false;		satelit = false;
+	mobil = false;	zzoom = true;		zzoomO = false;		satelit = false;
  
 
 
@@ -383,6 +383,10 @@ void OnPaint(GLFWwindow* window)
 	// Entorn VGI: Activar shader Visualització Escena
 	glUseProgram(shader_programID);
 
+	//LLUMS COTXE
+	controlLlumsCotxe.tiempoTotal += 1.0f / 90.0f;
+	func_llumsCotxe(miCoche, controlLlumsCotxe, llumGL);
+
 	// Entorn VGI: Definició de Viewport, Projecció i Càmara
 	ProjectionMatrix = Projeccio_Perspectiva(shader_programID, 0, 0, w, h, OPV.R);
 
@@ -410,7 +414,7 @@ void OnPaint(GLFWwindow* window)
 		double fov_central = 15.0f;
 		double fov_lateral = 30.0f;
 		glViewport(0, 0, w, h);
-
+		
 		ProjectionMatrix = Projeccio_Perspectiva(w, h, fov_principal);
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
 		ViewMatrix = Vista_PrimeraPersona(shader_programID, miCoche, c_fons,
@@ -418,6 +422,7 @@ void OnPaint(GLFWwindow* window)
 			llumGL, ifixe, ilum2sides);
 
 		configura_Escena();
+		if (SkyBoxCube) dibuixa_Skybox(skC_programID, cubemapTexture, Vis_Polar, ProjectionMatrix, ViewMatrix);
 		dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
 			textura, texturesID, textura_map, tFlag_invert_Y,
 			npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
@@ -431,7 +436,7 @@ void OnPaint(GLFWwindow* window)
 		glViewport(x_center, y_top, mirrorWidth, mirrorHeight);
 
 
-		glClear(GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_DEPTH_BUFFER_BIT);
 
 		ProjectionMatrix = Projeccio_Perspectiva(mirrorWidth, mirrorHeight, fov_central);
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
@@ -449,7 +454,7 @@ void OnPaint(GLFWwindow* window)
 		int retrovHeight = h / 4;
 		int y_top_ret = h - retrovHeight - 10;
 		glViewport(x_left, y_top_ret, retrovWidth, retrovHeight);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_DEPTH_BUFFER_BIT);
 
 
 		ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
@@ -465,7 +470,7 @@ void OnPaint(GLFWwindow* window)
 
 		int x_right = w - retrovWidth - 10;
 		glViewport(x_right, y_top_ret, retrovWidth, retrovHeight);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_DEPTH_BUFFER_BIT);
 		ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
 		ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, false, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
@@ -501,10 +506,10 @@ void OnPaint(GLFWwindow* window)
 			llumGL, ifixe, ilum2sides);
 		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
 		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-		}
+	}
 
 	//  Actualitzar la barra d'estat de l'aplicació amb els valors R,A,B,PVx,PVy,PVz
-	if (statusB) Barra_Estat();
+	if (true) Barra_Estat();
 }
 
 // configura_Escena: Funcio que configura els parametres de Model i dibuixa les
@@ -753,6 +758,29 @@ void Barra_Estat()
 
 	// Refrescar posició PVz Status Bar
 	fprintf(stderr, "%s \n", sss.c_str());
+	// -----------------------------------------------------
+	// --- NOU CODI LLUMS: VISUALITZAR ESTAT COTXE ---------
+	// -----------------------------------------------------
+	std::string infoLlums = "COTXE: ";
+
+	// Estat Faros
+	if (controlLlumsCotxe.modoFaros == 0) infoLlums += "[OFF] ";
+	else if (controlLlumsCotxe.modoFaros == 1) infoLlums += "[CURTES] ";
+	else if (controlLlumsCotxe.modoFaros == 2) infoLlums += "[LLARGUES] ";
+
+	// Estat Frens
+	if (controlLlumsCotxe.frenando) infoLlums += " [!!!FRE!!!] ";
+	else infoLlums += "           ";
+
+	// Estat Intermitents
+	if (controlLlumsCotxe.intermitenteIzquierdo) infoLlums += "<< ";
+	else infoLlums += "   ";
+
+	if (controlLlumsCotxe.intermitenteDerecho) infoLlums += ">>";
+	else infoLlums += "  ";
+
+	// Imprimir al final de tot
+	fprintf(stderr, "%s \n--------------------------------\n", infoLlums.c_str());
 
 	// Status Bar per indicar el pas del Fractal
 	if (objecte == O_FRACTAL)
@@ -826,7 +854,41 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 	if (!io.WantCaptureKeyboard) { //<Tractament mouse de l'aplicació>}
 		// EntornVGI: Si tecla pulsada és ESCAPE, tancar finestres i aplicació.
 		if (mods == 0 && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
-		else if (camera == CAM_FOLLOW)
+		// =====================================================
+	// ZONA DE CONTROL DE LUCES DEL COCHE
+	// =====================================================
+
+		if (key == GLFW_KEY_S) //FRE o MARCHA ENRERE
+		{
+			if (action == GLFW_PRESS) controlLlumsCotxe.frenando = true;
+			else if (action == GLFW_RELEASE) controlLlumsCotxe.frenando = false;
+		}
+
+		if (action == GLFW_PRESS)
+		{
+			switch (key)
+			{
+			case GLFW_KEY_L: //LLUMS CURTES I LLARGUES
+				controlLlumsCotxe.modoFaros = (controlLlumsCotxe.modoFaros + 1) % 3;
+				break;
+			case GLFW_KEY_J: // ` //INTERMITENT ESQUERRE
+				controlLlumsCotxe.intermitenteIzquierdo = !controlLlumsCotxe.intermitenteIzquierdo;
+				break;
+			case GLFW_KEY_K: // + //INTERMITENT DRET
+				controlLlumsCotxe.intermitenteDerecho = !controlLlumsCotxe.intermitenteDerecho;
+				break;
+			case GLFW_KEY_P: //DOBLE INTERMITENT
+				bool estado = !(controlLlumsCotxe.intermitenteIzquierdo && controlLlumsCotxe.intermitenteDerecho);
+				controlLlumsCotxe.intermitenteIzquierdo = estado;
+				controlLlumsCotxe.intermitenteDerecho = estado;
+				break;
+			}
+		}
+
+		// FI ZONA DE CONTROL DE LUCES DEL COCHE
+
+		//SISTEMA CAMARA
+		if (camera == CAM_FOLLOW)
 		{
 			// Si se PRESIONA una tecla
 			if (action == GLFW_PRESS)
@@ -855,7 +917,7 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 				OPV.R = 25.0f;
 				OPV.alfa = 20.0f;
 				OPV.beta = 0.0f;
-				mobil = true;
+				mobil = false;
 
 			}
 		}
@@ -906,6 +968,7 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 					OPV.R = 25.0f;
 					OPV.alfa = 20.0f;
 					OPV.beta = 0.0f;
+					mobil = true;
 					camera = CAM_LLIURE;
 				}
 			}
@@ -1034,7 +1097,7 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 		m_PosEAvall.x = xpos;				m_PosEAvall.y = ypos;
 		if (camera == CAM_ESFERICA || camera == CAM_LLIURE)
 		{	// Càmera Esfèrica
-			OPV.beta = OPV.beta + gir.cx / 2.0;
+			OPV.beta = OPV.beta - gir.cx / 2.0;
 			OPV.alfa = OPV.alfa + gir.cy / 2.0;
 
 			// Entorn VGI: Control per evitar el creixement desmesurat dels angles.
@@ -1042,6 +1105,7 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 			while (OPV.alfa < 0)		OPV.alfa = OPV.alfa + 360.0;
 			while (OPV.beta >= 360)		OPV.beta = OPV.beta - 360.0;
 			while (OPV.beta < 0)		OPV.beta = OPV.beta + 360.0;
+
 		}
 		else { // Càmera Geode
 			OPV_G.beta = OPV_G.beta + gir.cx / 2.0;
@@ -1498,7 +1562,6 @@ int main(void)
 	float delta;
 	 
 
-	
 
 	// glfw: initialize and configure
 	// ------------------------------
@@ -1591,6 +1654,18 @@ int main(void)
 
 	OnVistaSkyBox();
 
+	initFisicas();
+
+	if (circuit != nullptr) crearColisionadorEstatico(circuit);
+	iniciarFisicasCoche();
+	// Convertimos el circuito gráfico en suelo físico
+	if (circuit != nullptr) {
+		crearColisionadorEstatico(circuit);
+	}
+	else {
+		printf("ALERTA: La variable circuit es nula. Revisa dond haces new OBJ.\n");
+	}
+	
 	// ------------- Entorn VGI: Callbacks
 	// Set GLFW event callbacks. I removed glfwSetWindowSizeCallback for conciseness
 	glfwSetWindowSizeCallback(window, OnSize);										// - Windows Size in screen Coordinates
@@ -1631,6 +1706,7 @@ int main(void)
 		delta = now - previous;
 		previous = now;
 
+		stepFisicas();
 		// Entorn VGI. Timer: for each timer do this
 		time -= delta;
 		if ((time <= 0.0) && (satelit || anima)) OnTimer();
@@ -1687,6 +1763,7 @@ int main(void)
 
 			OPV.beta += orbitSpeedPerSecond * delta;
 		}
+		
 
 
 
@@ -1710,7 +1787,7 @@ int main(void)
 	// Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
 		glfwWindowShouldClose(window) == 0);
-
+	cleanFisicas();
 	// Entorn VGI.ImGui: Cleanup ImGui
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();

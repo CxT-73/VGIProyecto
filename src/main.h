@@ -18,7 +18,7 @@ extern bool g_isOrbitingLeft = false;
 extern bool g_isOrbitingRight = false;
 
 //variables per cam lliure     
-glm::vec3 g_FreeCamPos(23.492f, 0.0f, 8.550f); // Posición inicial (ejemplo: cerca del coche)
+glm::vec3 g_FreeCamPos(23.492f, 0.0f, 350.550f); // Posición inicial (ejemplo: cerca del coche)
 bool g_isMovingForward = false;
 bool g_isMovingBackward = false;
 bool g_isMovingLeft = false;
@@ -136,6 +136,9 @@ bool g_isMovingRight = false;
 	LLUM llumGL[NUM_MAX_LLUMS];		// Vector de llums d'OpenGL
 	bool sw_llambient;		// Booleana que controla modus de configurar el color de la llum ambient [TRUE] o no [FALSE]
 	CColor col_llambient;	// Color llum ambient.
+
+	//LLUMS COTXE
+	ControlLuces controlLlumsCotxe;
 
 // Entorn VGI: Variables de control del menú Shaders
 	char shader;				// Tipus de shader [FLAT, GOURAUD, PHONG, FILE, PROG_BINARY_SHADER]
