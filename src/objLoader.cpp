@@ -1577,13 +1577,14 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 		fprintf(stderr, "ERROR: No se pudo cargar %s\n", ruta);
 	}
 	else { 
-		printf("OBJ cargado automaticamente: %s\n", ruta);
+		if(nombreObjeto != "punt")
+			printf("OBJ cargado automaticamente: %s\n", ruta);
 	}
 
 	// Valores por defecto seguros
 	posicion = glm::vec3(0.0f);
 	rotacion = glm::vec3(0.0f);
-	escala = glm::vec3(1.0f);
+	escala = glm::vec3(100.0f);
 }
 
 OBJ::~OBJ() {

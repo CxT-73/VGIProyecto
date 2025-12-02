@@ -10,9 +10,9 @@ class COBJModel;
 class ObjetoSeguidor { 
 public:
     OBJ* objeto;
+    ObjetoSeguidor* objeto_seguidor;
     Zones* zonas;
-    int zonaIndex; 
-    bool invisible = false;
+    int zonaIndex;  
 
     ObjetoSeguidor(OBJ* obj, Zones* zs, int idx)
         : objeto(obj), zonas(zs), zonaIndex(idx) {
@@ -28,17 +28,6 @@ public:
         glm::vec3 bajoCoche = glm::vec3(coche->x, coche->y, coche->z) + offset;
         objeto->setTransform(bajoCoche, rot, scl);
     }
-
-    void render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG, CColor col_object, bool sw_mat[5]){
-        if (invisible) {
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            CColor invisibleColor = { 1.0f, 1.0f, 1.0f, 0.0f };
-            objeto->render(sh_programID, MatriuVista, MatriuTG, invisibleColor, sw_mat);
-        }
-        else {
-            objeto->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
-        }
-    }
-
+     
+    void colocarDuplicadosEnZonas(const std::map<int, std::pair<int, std::vector<glm::vec3>>>& zonasConfig, const std::map<int, std::vector<int>>& invisiblesPorZona, glm::vec3 rot, glm::vec3 scl, GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG, CColor col_object, bool sw_mat[5]);
 };
