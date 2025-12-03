@@ -38,8 +38,7 @@ void ObjetoSeguidor::crearDuplicados(
                 << offset.y << ", "
                 << offset.z << std::endl;
 
-            glm::vec3 posFinal =  offset;
-            objeto->posicion = offset;
+            glm::vec3 posFinal = zonaPos + offset; 
             std::cout << "[DEBUG]   Creando duplicado " << i
                 << " en zona " << zonaID << std::endl;
 

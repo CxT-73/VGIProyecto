@@ -494,7 +494,9 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 // Enviar les comandes gràfiques a pantalla
 //	glFlush();
 }
-/*void initEscenaDuplicados()
+
+#include <iostream>
+void initEscenaDuplicados()
 {
 	std::cout << "[DEBUG] initEscenaDuplicados ejecutado\n";
 	// CONO
@@ -549,8 +551,8 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
 		seguidores.push_back(seg);
 	}
-}*/
-#include <iostream>
+}
+/*
 void initEscenaDuplicados()
 {
 	std::cout << "[DEBUG] initEscenaDuplicados ejecutado\n";
@@ -609,6 +611,7 @@ void initEscenaDuplicados()
 		seguidores.push_back(seg);
 	}
 }
+*/
 void renderEscenaDuplicados(GLuint sh_programID,
 	glm::mat4 MatriuVista,
 	glm::mat4 MatriuTG,
