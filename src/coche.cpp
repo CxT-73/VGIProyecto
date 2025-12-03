@@ -15,6 +15,7 @@ Coche::Coche() {
     angulo_ruedas = 0.0f;   
     rotacion_ruedas = 0.0f; 
     activadoABS = true;
+    FrenoDeMano = true;
     // Create a new model object
     model = new COBJModel();
     model_rueda = new COBJModel();
@@ -155,7 +156,7 @@ void Coche::update() {
     if (!m_vehicle) return;
 
     static bool kPressed = false;
-    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
         if (!kPressed) {
             activadoABS = !activadoABS;
             printf("Sistema ABS: %s\n", activadoABS ? "ACTIVADO" : "DESACTIVADO");
@@ -165,7 +166,17 @@ void Coche::update() {
     else {
         kPressed = false;
     }
-
+    static bool pPressed = false;
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
+        if (!pPressed) {
+            FrenoDeMano = !FrenoDeMano;
+            printf("Freno de Mano: %s\n", FrenoDeMano ? "PUESTO" : "QUITADO");
+            pPressed = true;
+        }
+    }
+    else {
+        pPressed = false;
+    }
     // DATOS
     float velocidadActual = m_vehicle->getCurrentSpeedKmHour();
     float fuerzaMotor = 0.0f;
@@ -175,29 +186,34 @@ void Coche::update() {
     //CONFIGURACIÓN DE FUERZAS
     float potAcelerar = -7000.0f; // Fuerza para ir adelante
     float potAtras = 5000.0f;     // Fuerza para ir atrás
-
     float frenoABS = 300.0f;       // Freno suave
     float frenoBloqueo = 3300.0f; // Bloqueo salvaje
-
+    float frenoParking = 100000.0f;
     // INPUTS
     bool W = (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS);
     bool S = (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS);
     bool A = (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS);
     bool D = (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
     bool Espacio = (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS); // Freno
-
-    if (W) {
-        fuerzaMotor = potAcelerar;
+    bool P = (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS);
+    
+    if (FrenoDeMano) {
+        fuerzaMotor = 0.0f;
+        fuerzaFreno = frenoParking;
     }
-    else if (S) {
-        fuerzaMotor = potAtras;
+    else {
+        if (W) {
+            fuerzaMotor = potAcelerar;
+        }
+        else if (S) {
+            fuerzaMotor = potAtras;
+        }
     }
 
 
     // DIRECCIÓN
     if (A) giroVolante = 0.5f;
     if (D) giroVolante = -0.5f;
-
     if (glfwJoystickPresent(GLFW_JOYSTICK_1)) {
         //joystick connectat
 
