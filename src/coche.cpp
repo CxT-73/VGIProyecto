@@ -1,10 +1,10 @@
 #include "coche.h"
 #include "objLoader.h" 
 #include <iostream>
-extern ControlLuces controlLlumsCotxe; 
+extern ControlLuces controlLlumsCotxe;
 
 Coche::Coche() {
-    
+
     x = -80;
     y = -50;
     z = 295;
@@ -12,8 +12,8 @@ Coche::Coche() {
     ax = ay = az = 0.0f;
     psi = 90.0f;
     v_angular = 0.0f;
-    angulo_ruedas = 0.0f;   
-    rotacion_ruedas = 0.0f; 
+    angulo_ruedas = 0.0f;
+    rotacion_ruedas = 0.0f;
     activadoABS = true;
     FrenoDeMano = true;
     // Create a new model object
@@ -28,7 +28,7 @@ Coche::Coche() {
     else {
         printf("S'HA CARREGAT CORRECTAMENT: % s!\n", ruta);
     }
-    char ruta_rueda[] = "../x64/Release/OBJFiles/Wheel/Rueda.obj"; 
+    char ruta_rueda[] = "../x64/Release/OBJFiles/Wheel/Rueda.obj";
     if (model_rueda->LoadModel(ruta_rueda) != 0) {
         fprintf(stderr, "ERROR: No se pudo cargar el modelo de la rueda desde %s!\n", ruta_rueda);
 
@@ -120,14 +120,14 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
 
     //Trasera Der
     m_vehicle->addWheel(posTD, wheelDirectionCS0, wheelAxleCS, 0.6f, wheelRadius, m_tuning, false);
-    
+
     //CONFIGURACIÓN DE SUSPENSIÓN
     for (int i = 0; i < m_vehicle->getNumWheels(); i++) {
         btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
 
         //AMORTIGUACIÓN
-        wheel.m_wheelsDampingRelaxation = 15.0f;   
-        wheel.m_wheelsDampingCompression = 15.0f; 
+        wheel.m_wheelsDampingRelaxation = 15.0f;
+        wheel.m_wheelsDampingCompression = 15.0f;
 
         //AGARRE Y SEGURIDAD
         wheel.m_frictionSlip = 1.5f;
@@ -166,6 +166,7 @@ void Coche::update() {
     else {
         kPressed = false;
     }
+
     static bool pPressed = false;
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
         if (!pPressed) {
@@ -177,11 +178,11 @@ void Coche::update() {
     else {
         pPressed = false;
     }
+
     // DATOS
     float velocidadActual = m_vehicle->getCurrentSpeedKmHour();
     float fuerzaMotor = 0.0f;
     float fuerzaFreno = 0.0f;
-    float giroVolante = 0.0f;
 
     //CONFIGURACIÓN DE FUERZAS
     float potAcelerar = -7000.0f; // Fuerza para ir adelante
@@ -189,6 +190,7 @@ void Coche::update() {
     float frenoABS = 300.0f;       // Freno suave
     float frenoBloqueo = 3300.0f; // Bloqueo salvaje
     float frenoParking = 100000.0f;
+
     // INPUTS
     bool W = (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS);
     bool S = (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS);
@@ -196,10 +198,11 @@ void Coche::update() {
     bool D = (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
     bool Espacio = (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS); // Freno
     bool P = (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS);
-    
+
     if (FrenoDeMano) {
         fuerzaMotor = 0.0f;
         fuerzaFreno = frenoParking;
+        controlLlumsCotxe.frenando = true;
     }
     else {
         if (W) {
@@ -208,12 +211,42 @@ void Coche::update() {
         else if (S) {
             fuerzaMotor = potAtras;
         }
+
+        if (Espacio) {
+            if (activadoABS) {
+                fuerzaFreno = frenoABS;
+            }
+            else {
+                fuerzaFreno = frenoBloqueo;
+            }
+        }
     }
 
 
     // DIRECCIÓN
-    if (A) giroVolante = 0.5f;
-    if (D) giroVolante = -0.5f;
+    float incremento = 0.05f;
+    float recuperacion = 0.01f;
+    float maxGiro = 0.5f;
+
+    if (A) {
+        angulo_ruedas += incremento;
+        if (angulo_ruedas > maxGiro) angulo_ruedas = maxGiro;
+    }
+    else if (D) {
+        angulo_ruedas -= incremento;
+        if (angulo_ruedas < -maxGiro) angulo_ruedas = -maxGiro;
+    }
+    else {
+        if (angulo_ruedas > 0.0f) {
+            angulo_ruedas -= recuperacion;
+            if (angulo_ruedas < 0.0f) angulo_ruedas = 0.0f;
+        }
+        else if (angulo_ruedas < 0.0f) {
+            angulo_ruedas += recuperacion;
+            if (angulo_ruedas > 0.0f) angulo_ruedas = 0.0f;
+        }
+    }
+
     if (glfwJoystickPresent(GLFW_JOYSTICK_1)) {
         //joystick connectat
 
@@ -237,46 +270,39 @@ void Coche::update() {
 
         if (std::abs(axes[0]) > 0.1f) {
             // Multiplicamos por -0.5f para invertir (si es necesario) y escalar el giro
-            giroVolante = axes[0] * -0.5f;
+            angulo_ruedas = axes[0] * -0.5f;
         }
 
 
+        if (!FrenoDeMano) {
+            float valorR2 = axes[4];
+            float valorL2 = axes[3];
+            float deadzoneTriggers = 0.05f;
 
-        float valorR2 = axes[4];
-        float valorL2 = axes[3];
-        float deadzoneTriggers = 0.05f;
-
-        if (valorR2 > deadzoneTriggers) { // Si presionas R2
-            fuerzaMotor = potAcelerar * valorR2;
-        }
-        else if (valorL2 > deadzoneTriggers) {
-            fuerzaMotor = potAtras * valorL2;
-        }
+            if (valorR2 > deadzoneTriggers) { // Si presionas R2
+                fuerzaMotor = potAcelerar * valorR2;
+            }
+            else if (valorL2 > deadzoneTriggers) {
+                fuerzaMotor = potAtras * valorL2;
+            }
 
 
 
-        if (buttons[0] == GLFW_PRESS) {
-            Espacio = true;
-        }
+            if (buttons[0] == GLFW_PRESS) {
+                Espacio = true;
+                if (activadoABS) fuerzaFreno = frenoABS;
+                else fuerzaFreno = frenoBloqueo;
+            }
 
-        if (valorL2 > deadzoneTriggers || buttons[0] == GLFW_PRESS) {
-            controlLlumsCotxe.frenando = true;
-        }
-        else {
-            // Si no tocamos ni L2 ni Cruz, apagamos la luz de freno.
-            // (Nota: Esto sobrescribe el teclado si pulsas 'S' y tienes mando conectado,
-            // pero es el comportamiento esperado para que no se quede encendida).
-            controlLlumsCotxe.frenando = false;
-        }
-
-    }
-
-    if (Espacio) {
-        if (activadoABS) {
-            fuerzaFreno = frenoABS;
-        }
-        else {
-            fuerzaFreno = frenoBloqueo;
+            if (valorL2 > deadzoneTriggers || buttons[0] == GLFW_PRESS) {
+                controlLlumsCotxe.frenando = true;
+            }
+            else {
+                // Si no tocamos ni L2 ni Cruz, apagamos la luz de freno.
+                // (Nota: Esto sobrescribe el teclado si pulsas 'S' y tienes mando conectado,
+                // pero es el comportamiento esperado para que no se quede encendida).
+                controlLlumsCotxe.frenando = false;
+            }
         }
     }
 
@@ -291,7 +317,13 @@ void Coche::update() {
     // Frenos
     if (fuerzaFreno > 0.0f) {
 
-        if (activadoABS) {
+        if (FrenoDeMano) {
+            m_vehicle->setBrake(fuerzaFreno, 0);
+            m_vehicle->setBrake(fuerzaFreno, 1);
+            m_vehicle->setBrake(fuerzaFreno, 2);
+            m_vehicle->setBrake(fuerzaFreno, 3);
+        }
+        else if (activadoABS) {
             m_vehicle->setBrake(fuerzaFreno * 0.6f, 0);
             m_vehicle->setBrake(fuerzaFreno * 0.6f, 1);
             m_vehicle->setBrake(fuerzaFreno * 0.4f, 2);
@@ -315,9 +347,9 @@ void Coche::update() {
     }
 
     // Dirección con penalización si bloqueamos ruedas 
-    float anguloFinal = giroVolante;
+    float anguloFinal = angulo_ruedas;
 
-    if (!activadoABS && Espacio && std::abs(velocidadActual) > 1.0f) {
+    if (!activadoABS && Espacio && std::abs(velocidadActual) > 1.0f && !FrenoDeMano) {
         anguloFinal *= 0.05f; // El volante apenas responde
     }
 
@@ -410,7 +442,7 @@ glm::mat4 Coche::getModelMatrixCar(float escala) const {
         m_chassisBody->getMotionState()->getWorldTransform(trans);
         float mat[16];
         trans.getOpenGLMatrix(mat);
-        M = glm::make_mat4(mat); 
+        M = glm::make_mat4(mat);
     }
     else {
         glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z));
