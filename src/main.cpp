@@ -981,6 +981,99 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 	}
 }
 
+void OnJoystick(GLFWwindow* window) {
+
+	// Solo entramos si hay mando conectado
+	if (glfwJoystickPresent(GLFW_JOYSTICK_1)) {
+
+		int count;
+		const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
+
+		static bool lastButtons[15] = { false };
+
+		// --- MAPA DE BOTONES PS5 (Indices GLFW estándar) ---
+		// 1: Cruz (Freno mano - Dejamos que coche.cpp lo gestione o lo hacemos aquí si prefieres)
+		// 2: Círculo (ABS)
+		// 0: Cuadrado (Warning)
+		// 3: Triángulo (Luces)
+		// 4: L1 (Intermitente Izq)
+		// 5: R1 (Intermitente Der)
+
+		// ------------------------------------------
+		// 1. CONTROL DE LUCES (Btn 3 - Triángulo)
+		// ------------------------------------------
+		if (buttons[3] == GLFW_PRESS && !lastButtons[3]) {
+			controlLlumsCotxe.modoFaros = (controlLlumsCotxe.modoFaros + 1) % 3;
+			// printf("Luces cambiadas: %d\n", controlLlumsCotxe.modoFaros);
+		}
+
+		// ------------------------------------------
+		// 2. INTERMITENTE IZQUIERDO (Btn 4 - L1)
+		// ------------------------------------------
+		if (buttons[4] == GLFW_PRESS && !lastButtons[4]) {
+			controlLlumsCotxe.intermitenteIzquierdo = !controlLlumsCotxe.intermitenteIzquierdo;
+			if (controlLlumsCotxe.intermitenteIzquierdo) controlLlumsCotxe.intermitenteDerecho = false;
+		}
+
+		// ------------------------------------------
+		// 3. INTERMITENTE DERECHO (Btn 5 - R1)
+		// ------------------------------------------
+		if (buttons[5] == GLFW_PRESS && !lastButtons[5]) {
+			controlLlumsCotxe.intermitenteDerecho = !controlLlumsCotxe.intermitenteDerecho;
+			if (controlLlumsCotxe.intermitenteDerecho) controlLlumsCotxe.intermitenteIzquierdo = false;
+		}
+
+		// ------------------------------------------
+		// 4. WARNING / EMERGENCIA (Btn 2 - CIRCULO)
+		// ------------------------------------------
+		if (buttons[2] == GLFW_PRESS && !lastButtons[2]) {
+			bool estado = !(controlLlumsCotxe.intermitenteIzquierdo && controlLlumsCotxe.intermitenteDerecho);
+			controlLlumsCotxe.intermitenteIzquierdo = estado;
+			controlLlumsCotxe.intermitenteDerecho = estado;
+		}
+
+		// ------------------------------------------
+		// 5. ABS (Btn 15 - Flecha arriba)
+		// ------------------------------------------
+		// NOTA: Necesitamos acceder a la variable del coche. 
+		// Asegúrate de que 'miCoche' es accesible aquí y 'activadoABS' es público.
+		if (buttons[15] == GLFW_PRESS && !lastButtons[15]) {
+			miCoche->activadoABS = !miCoche->activadoABS;
+			// printf("ABS: %d\n", miCoche->activadoABS);
+		}
+
+
+		//flecha de abajo en el mando para cambiar la camara.
+
+		static bool wasCameraPressed = false;
+		bool isCameraPressed = (count > 10 && buttons[17] == GLFW_PRESS);
+
+		if (isCameraPressed && !wasCameraPressed) {
+
+			if (camera == CAM_FOLLOW) {
+				camera = CAM_PRIMERA_PERSONA;
+			}
+			else {
+				// Resetear posición al volver a externa
+				OPV.R = 25.0f;
+				OPV.alfa = 20.0f;
+				OPV.beta = 0.0f;
+				camera = CAM_FOLLOW;
+			}
+		}
+		// ACTUALIZAR MEMORIA CÁMARA INMEDIATAMENTE
+		wasCameraPressed = isCameraPressed;
+
+		// --- ACTUALIZAR ESTADO ANTERIOR ---
+		for (int i = 0; i < count && i < 15; i++) {
+			lastButtons[i] = (buttons[i] == GLFW_PRESS);
+		}
+	}
+
+}
+
+
+
 void OnKeyUp(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 
@@ -1784,6 +1877,8 @@ int main(void)
 
 		// Poll for and process events
 		glfwPollEvents();
+
+		OnJoystick(window);
 
 		// Crida a OnPaint() per redibuixar l'escena
 		OnPaint(window);

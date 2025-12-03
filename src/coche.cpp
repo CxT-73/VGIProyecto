@@ -1,5 +1,7 @@
 #include "coche.h"
 #include "objLoader.h" 
+#include <iostream>
+extern ControlLuces controlLlumsCotxe; 
 
 Coche::Coche() {
     
@@ -190,6 +192,69 @@ void Coche::update() {
     else if (S) {
         fuerzaMotor = potAtras;
     }
+
+
+    // DIRECCIÓN
+    if (A) giroVolante = 0.5f;
+    if (D) giroVolante = -0.5f;
+
+    if (glfwJoystickPresent(GLFW_JOYSTICK_1)) {
+        //joystick connectat
+
+        //comprobacions
+
+        int axisCount;
+        const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axisCount);
+
+        std::cout << "S'han detectat " << axisCount << " eixos." << std::endl;
+
+        int buttonCount;
+        const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonCount);
+
+
+
+        const char* joystickName = glfwGetJoystickName(GLFW_JOYSTICK_1);
+        if (joystickName) {
+            std::cout << "Joystick detectat: " << joystickName << std::endl;
+        }
+
+
+        if (std::abs(axes[0]) > 0.1f) {
+            // Multiplicamos por -0.5f para invertir (si es necesario) y escalar el giro
+            giroVolante = axes[0] * -0.5f;
+        }
+
+
+
+        float valorR2 = axes[4];
+        float valorL2 = axes[3];
+        float deadzoneTriggers = 0.05f;
+
+        if (valorR2 > deadzoneTriggers) { // Si presionas R2
+            fuerzaMotor = potAcelerar * valorR2;
+        }
+        else if (valorL2 > deadzoneTriggers) {
+            fuerzaMotor = potAtras * valorL2;
+        }
+
+
+
+        if (buttons[0] == GLFW_PRESS) {
+            Espacio = true;
+        }
+
+        if (valorL2 > deadzoneTriggers || buttons[0] == GLFW_PRESS) {
+            controlLlumsCotxe.frenando = true;
+        }
+        else {
+            // Si no tocamos ni L2 ni Cruz, apagamos la luz de freno.
+            // (Nota: Esto sobrescribe el teclado si pulsas 'S' y tienes mando conectado,
+            // pero es el comportamiento esperado para que no se quede encendida).
+            controlLlumsCotxe.frenando = false;
+        }
+
+    }
+
     if (Espacio) {
         if (activadoABS) {
             fuerzaFreno = frenoABS;
@@ -198,11 +263,6 @@ void Coche::update() {
             fuerzaFreno = frenoBloqueo;
         }
     }
-
-    // DIRECCIÓN
-    if (A) giroVolante = 0.5f;
-    if (D) giroVolante = -0.5f;
-
 
     // Motor 
     m_vehicle->applyEngineForce(fuerzaMotor, 2);
