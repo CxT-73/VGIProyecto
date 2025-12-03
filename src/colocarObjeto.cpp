@@ -1,47 +1,120 @@
-#include "colocarObjeto.h"   
-#include "zones.h"
-
-
-void ObjetoSeguidor::colocarDuplicadosEnZonas(
-    const std::map<int, std::pair<int, std::vector<glm::vec3>>>& zonasConfig,
-    const std::map<int, std::vector<int>>& invisiblesPorZona,  
+#include "colocarObjeto.h"
+#include <iostream>
+ObjetoSeguidor::ObjetoSeguidor(OBJ* base, Zones* zs, int idx, btDiscreteDynamicsWorld* m)
+    : objeto(base), zonas(zs), zonaIndex(idx), mundo(m)
+{
+}
+void ObjetoSeguidor::crearDuplicados(
+    const std::map<int, std::pair<int, std::vector<glm::vec3>>> &zonasConfig,
+    const std::map<int, std::vector<int>>& invisiblesPorZona,
     glm::vec3 rot,
-    glm::vec3 scl,
-    GLuint sh_programID,
+    glm::vec3 escala)
+{
+    std::cout << "[DEBUG] Entrando en crearDuplicados()" << std::endl;
+
+    COBJModel* sharedModel = objeto->objecteOBJ;
+
+    for (auto& entry : zonasConfig)
+    {
+        int zonaID = entry.first;
+        std::cout << "[DEBUG] Zona encontrada: " << zonaID << std::endl;
+
+        int cantidad = entry.second.first;
+        auto offsets = entry.second.second;
+
+        glm::vec3 zonaPos = zonas->getPosicion(zonaID);
+
+        for (int i = 0; i < cantidad; i++)
+        {
+
+            glm::vec3 offset = (i < offsets.size()) ? offsets[i] : glm::vec3(0);
+            std::cout << "[DEBUG]   zonaPos = "
+                << zonaPos.x << ", "
+                << zonaPos.y << ", "
+                << zonaPos.z << std::endl;
+
+            std::cout << "[DEBUG]   offset = "
+                << offset.x << ", "
+                << offset.y << ", "
+                << offset.z << std::endl;
+
+            glm::vec3 posFinal =  offset;
+            objeto->posicion = offset;
+            std::cout << "[DEBUG]   Creando duplicado " << i
+                << " en zona " << zonaID << std::endl;
+
+            std::cout << "          Pos final = "
+                << posFinal.x << ", "
+                << posFinal.y << ", "
+                << posFinal.z << std::endl;
+            std::cout << "[INIT] Duplicado creado en: "
+                << posFinal.x << ", "
+                << posFinal.y << ", "
+                << posFinal.z << std::endl;
+
+            OBJ* copia = new OBJ(objeto->nom, posFinal, sharedModel);
+            copia->setTransform(posFinal, rot, escala);
+
+            std::cout << "          Llamando a initFisicas()" << std::endl;
+            copia->initFisicas(mundo, offset);
+
+            duplicados.push_back(copia);
+
+            bool invisible = false;
+            auto it = invisiblesPorZona.find(zonaID);
+            if (it != invisiblesPorZona.end())
+                invisible = (std::find(it->second.begin(), it->second.end(), i) != it->second.end());
+
+            invisibleFlags.push_back(invisible ? 1 : 0);
+        }
+    }
+}
+
+void ObjetoSeguidor::renderDuplicados(GLuint sh_programID,
     glm::mat4 MatriuVista,
     glm::mat4 MatriuTG,
     CColor col_object,
     bool sw_mat[5])
 {
-    for (const auto& par : zonasConfig) {
-        int idx = par.first;
-        int cantidad = par.second.first;
-        const auto& offsets = par.second.second;
 
-        glm::vec3 origen = zonas->getPosicion(idx);
+    for (size_t i = 0; i < duplicados.size(); i++)
+    {
+        OBJ* obj = duplicados[i];
+        std::cout << "[RENDER] Dibujando duplicado en "
+            << obj->posicion.x << ", "
+            << obj->posicion.y << ", "
+            << obj->posicion.z << "\n";
 
-        for (int i = 0; i < cantidad; ++i) {
-            glm::vec3 offset = (i < offsets.size()) ? offsets[i] : glm::vec3(0.0f);
-            glm::vec3 posicionFinal = origen + offset;
+        // Sincronizar física ? render
+        if (obj->m_rigidBody)
+        {
+            btTransform t;
+            obj->m_rigidBody->getMotionState()->getWorldTransform(t);
+            btVector3 p = t.getOrigin();
+            obj->posicion = glm::vec3(p.x(), p.y(), p.z());
+        }
 
-            objeto->setTransform(posicionFinal, rot, scl);
-             
-            bool esInvisible = false;
-            auto it = invisiblesPorZona.find(idx);
-            if (it != invisiblesPorZona.end()) {
-                const auto& invisibles = it->second;
-                esInvisible = std::find(invisibles.begin(), invisibles.end(), i) != invisibles.end();
-            }
+        bool invisible = (invisibleFlags[i] == 1);
 
-            if (esInvisible) {
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                CColor invisibleColor = { 1.0f, 1.0f, 1.0f, 0.0f };
-                objeto->render(sh_programID, MatriuVista, MatriuTG, invisibleColor, sw_mat);
-            }
-            else {
-                objeto->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
-            }
+        if (invisible)
+        {
+            CColor invisibleColor = { 1,1,1,0 };
+            obj->render(sh_programID, MatriuVista, MatriuTG, invisibleColor, sw_mat);
+        }
+        else
+        {
+            obj->render(sh_programID, MatriuVista, MatriuTG, col_object, sw_mat);
         }
     }
+}
+
+void ObjetoSeguidor::cleanup()
+{
+    for (auto obj : duplicados)
+    {
+        obj->destroyFisicas(mundo);
+        delete obj;
+    }
+    duplicados.clear();
+    invisibleFlags.clear();
 }

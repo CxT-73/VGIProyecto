@@ -11,6 +11,10 @@
 #include "objLoader.h"
 #include "coche.h" 
 #include "zones.h" 
+#include "colocarObjeto.h" // o donde esté ObjetoSeguidor
+
+extern std::vector<ObjetoSeguidor*> seguidores;
+
 //declaramos el coche
 extern Coche* miCoche; 
 extern OBJ* cono;
@@ -58,5 +62,9 @@ void initFisicas();
 void stepFisicas();
 void cleanFisicas();
 void crearColisionadorEstatico(OBJ* objetoJuego);
-void iniciarFisicasCoche();
+void iniciarFisicasCoche(); 
+void initEscenaDuplicados();
+void renderEscenaDuplicados(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
+	CColor col_object, bool sw_mat[5]);
+
 #endif

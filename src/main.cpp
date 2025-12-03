@@ -1767,12 +1767,7 @@ int main(void)
 	else {
 		printf("ALERTA: La variable circuit es nula. Revisa dond haces new OBJ.\n");
 	}
-
-	if (cono) cono->initFisicas(mundo);
-	if (barril) barril->initFisicas(mundo);
-	if (bloc) bloc->initFisicas(mundo);
-	if (barrera) barrera->initFisicas(mundo);
-	
+	initEscenaDuplicados(); 
 	// ------------- Entorn VGI: Callbacks
 	// Set GLFW event callbacks. I removed glfwSetWindowSizeCallback for conciseness
 	glfwSetWindowSizeCallback(window, OnSize);										// - Windows Size in screen Coordinates

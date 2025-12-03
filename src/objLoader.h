@@ -146,18 +146,46 @@ public:
     //COLISIONS OBJECTES
     btRigidBody* m_rigidBody;
     btCollisionShape* m_collisionShape;
+    OBJ(const std::string& nombreObjeto, const glm::vec3& pos)
+        : nom(nombreObjeto), posicion(pos), rotacion(0.0f), escala(1.0f),
+        m_rigidBody(nullptr), m_collisionShape(nullptr)
+    {
+        objecteOBJ = new COBJModel();
+        char* ruta = new char[nombreObjeto.length() + 1];
+        strcpy(ruta, nombreObjeto.c_str());  // copia ? ahora sí es char*
+
+        objecteOBJ->LoadModel(ruta);
+
+        delete[] ruta; // evitar fugas
+
+
+    }
 
 	OBJ(const std::string& nombreObjeto);
 	~OBJ();
-
-    void initFisicas(btDiscreteDynamicsWorld* mundo);
+    void initFisicas(btDiscreteDynamicsWorld* mundo,
+        glm::vec3 offset = glm::vec3(0.0f) );
 
 	void setTransform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scl) {
 		posicion = pos;
 		rotacion = rot;
 		escala = scl;
 	}
+    void destroyFisicas(btDiscreteDynamicsWorld* mundo);
+    OBJ(const std::string& nombreObjeto,
+        const glm::vec3& pos,
+        COBJModel* sharedModel)
+    {
+        nom = nombreObjeto;
+        objecteOBJ = sharedModel;   // Reusar modelo
+        posicion = pos;
+        rotacion = glm::vec3(0);
+        escala = glm::vec3(1);
 
+        m_rigidBody = nullptr;
+        m_collisionShape = nullptr;
+         
+    }
 	void render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 		CColor col_object, bool sw_mat[5]);
 };
