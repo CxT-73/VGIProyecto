@@ -1546,7 +1546,7 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 	}
 	else if (nombreObjeto == "cono_estatic") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Cono_estatic/Cono.obj");
+		strcpy(ruta, "../x64/Release/OBJFiles/Cono/Cono.obj");
 	}
 	else if (nombreObjeto == "barrera") {
 		nom = nombreObjeto;
