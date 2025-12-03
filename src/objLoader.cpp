@@ -1637,38 +1637,39 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 	 
 	btScalar masa = 0.0f;
 
-	if (nom == "cono")
+	if (nom == "cono" || nom == "cono_estatic")
 	{
 		btConvexHullShape* shape = new btConvexHullShape();
-		float H = 3.04f * scaleFactor;
-		float W = 1.27f * scaleFactor;
-
-		float z_suelo = -H;
-		float z_tope_base = -H + (0.5f * scaleFactor);
-		float z_punta = H;
-
-		float c = W * 0.3f;
+		float baseWidth = 3.69f * scaleFactor;  // Ancho total de la base
+		float baseHeight = 0.434f * scaleFactor; // Altura de la base hexagonal
+		float totalHeight = 6.12f * scaleFactor; // Altura total hasta la punta
+		float r_base = baseWidth * 0.5f;
+		float r_top = 0.15f * scaleFactor; // Radio de la punta (estimado)
+		float z_suelo = 0.0f;
+		float z_tope_base = baseHeight;
+		float z_punta = totalHeight;
+		float c = r_base * 0.3f; // Ajuste para la forma octogonal de la base
 
 		float nivelesBase[] = { z_suelo, z_tope_base };
 
 		for (int i = 0; i < 2; i++) {
 			float z = nivelesBase[i];
-			shape->addPoint(btVector3(W, c, z)); shape->addPoint(btVector3(W, -c, z));
-			shape->addPoint(btVector3(-W, c, z)); shape->addPoint(btVector3(-W, -c, z));
-			shape->addPoint(btVector3(c, W, z)); shape->addPoint(btVector3(-c, W, z));
-			shape->addPoint(btVector3(c, -W, z)); shape->addPoint(btVector3(-c, -W, z));
+			shape->addPoint(btVector3(r_base, c, z)); shape->addPoint(btVector3(r_base, -c, z));
+			shape->addPoint(btVector3(-r_base, c, z)); shape->addPoint(btVector3(-r_base, -c, z));
+			shape->addPoint(btVector3(c, r_base, z)); shape->addPoint(btVector3(-c, r_base, z));
+			shape->addPoint(btVector3(c, -r_base, z)); shape->addPoint(btVector3(-c, -r_base, z));
 		}
 
-		float w_top = 0.15f * scaleFactor;
-		shape->addPoint(btVector3(w_top, w_top, z_punta));
-		shape->addPoint(btVector3(w_top, -w_top, z_punta));
-		shape->addPoint(btVector3(-w_top, w_top, z_punta));
-		shape->addPoint(btVector3(-w_top, -w_top, z_punta));
+		shape->addPoint(btVector3(r_top, r_top, z_punta));
+		shape->addPoint(btVector3(r_top, -r_top, z_punta));
+		shape->addPoint(btVector3(-r_top, r_top, z_punta));
+		shape->addPoint(btVector3(-r_top, -r_top, z_punta));
 
 		shape->initializePolyhedralFeatures();
 		m_collisionShape = shape;
+		if (nom == "cono") masa = 500.0f;
+		else masa = 99999.0f;
 
-		masa = 10.0f;
 	}
 	else if (nom == "barril")
 	{
@@ -1757,12 +1758,33 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 	if (nom == "cono" || nom == "cono_estatic")
 	{
 		scaleFactor = 0.8f;
-		//m_rigidBody->setFriction(0.5f);     // Plástico contra asfalto
-		//m_rigidBody->setRestitution(0.8f);  // Rebota
-		//m_rigidBody->setRollingFriction(0.3f);
+
+		m_rigidBody->setFriction(0.6f);
+		m_rigidBody->setRestitution(0.3f);
+		m_rigidBody->setRollingFriction(0.3f);
+		m_rigidBody->setSpinningFriction(0.3f);
+		m_rigidBody->setDamping(0.1f, 0.5f);
 	}
-	else if (nom == "barrera" || nom == "bloc") scaleFactor = 1.0f;
-	else if (nom == "barril") scaleFactor = 5.0f;
+	else if (nom == "barrera") {
+		scaleFactor = 1.0f;
+		m_rigidBody->setFriction(0.9f); 
+		m_rigidBody->setRestitution(0.05f);
+		m_rigidBody->setRollingFriction(0.9f);
+	}
+	else if (nom == "bloc")
+	{
+		scaleFactor = 1.0f;
+		m_rigidBody->setFriction(0.85f);
+		m_rigidBody->setRestitution(0.02f);
+		m_rigidBody->setRollingFriction(0.5f);
+	}
+	else if (nom == "barril")
+	{
+		scaleFactor = 5.0f;
+		m_rigidBody->setFriction(0.5f);
+		m_rigidBody->setRestitution(0.35f);
+		m_rigidBody->setRollingFriction(0.05f);
+	}
 	else if (nom == "muro") scaleFactor = 100.0f;
 
 	if (m_rigidBody && m_rigidBody->getMotionState())
