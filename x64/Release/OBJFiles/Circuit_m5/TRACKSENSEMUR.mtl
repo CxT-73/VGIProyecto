@@ -15,7 +15,7 @@ illum 2
 map_Kd circuit.png
  
 
-newmtl REDCURB
+newmtl REDCURB.001
 Ns 60.247936
 Ka 1.000000 1.000000 1.000000
 Kd 0.800339 0.000300 0.000000
@@ -32,7 +32,7 @@ map_Kd rojo.png
 
 
 
-newmtl redmetalic
+newmtl redmetalic.001
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000
 Kd 0.799099 0.000303 0.000000
@@ -56,7 +56,7 @@ illum 2
 map_Kd gris.png
 
 
-newmtl white
+newmtl white.001
 Ns 33.722317
 Ka 1.000000 1.000000 1.000000
 Kd 1.000000 1.000000 1.000000
@@ -68,7 +68,7 @@ illum 2
 map_Kd a.png
 
 
-newmtl whitemetalic
+newmtl whitemetalic.001
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000
 Kd 0.800000 0.800000 0.800000
@@ -80,7 +80,7 @@ illum 3
 map_Kd a.png
 
 
- newmtl curb
+ newmtl curb.001
 Ns 51.652905
 Ka 1.000000 1.000000 1.000000
 Kd 0.758932 0.643969 0.000618

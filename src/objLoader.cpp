@@ -1562,11 +1562,11 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 	}
 	else if (nombreObjeto == "circuit") {
 		nom = nombreObjeto;  
-		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m5/TRACKSENSEMUR.obj");
+		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m6/TRACKSENSEMUR.obj");
 	}
 	else if (nombreObjeto == "muro") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m5/MURO.obj");
+		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m6/MURO.obj");
 	}
 	else if (nombreObjeto == "punt") {
 		nom = nombreObjeto;
