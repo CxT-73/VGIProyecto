@@ -18,6 +18,7 @@ extern std::vector<ObjetoSeguidor*> seguidores;
 //declaramos el coche
 extern Coche* miCoche; 
 extern OBJ* cono;
+extern OBJ* cono_estatic;
 extern OBJ* circuit;
 extern OBJ* muro;
 extern OBJ* barrera;

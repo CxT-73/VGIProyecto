@@ -312,7 +312,9 @@ void InitGL()
 	if (cono == nullptr) {
 		cono = new OBJ("cono");
 	}
-
+	if (cono_estatic == nullptr) {
+		cono_estatic = new OBJ("cono_estatic");
+	}
 	if (circuit == nullptr) {
 		circuit = new OBJ("circuit");
 	}

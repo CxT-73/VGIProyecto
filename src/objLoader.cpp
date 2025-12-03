@@ -1544,6 +1544,10 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 		nom = nombreObjeto;
 		strcpy(ruta, "../x64/Release/OBJFiles/Cono/Cono.obj");
 	}
+	else if (nombreObjeto == "cono_estatic") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Cono_estatic/Cono.obj");
+	}
 	else if (nombreObjeto == "barrera") {
 		nom = nombreObjeto;
 		strcpy(ruta, "../x64/Release/OBJFiles/Barrera_m1/Barrera_m1.obj");
@@ -1612,15 +1616,14 @@ void OBJ::destroyFisicas(btDiscreteDynamicsWorld* mundo)
 void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 {
 	glm::vec3 finalPos = posicion;
-
-	// ? USAR EL OFFSET DE ObjetoSeguidor
+	 
 	float sepX = offset.x;
 	float sepY = offset.y;
 	float offsetZ = offset.z;
 
 	float scaleFactor = 1.0f;
 
-	if (nom == "cono")
+	if (nom == "cono" || nom == "cono_estatic")
 		scaleFactor = 0.8f;
 
 	else if (nom == "barrera" || nom == "bloc")
@@ -1631,10 +1634,7 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 
 	else if (nom == "muro")
 		scaleFactor = 100.0f;
-
-	// APLICAR EL OFFSET PROCEDENTE DE ZONAS 
-
-	// --- Físicas igual que antes ---
+	 
 	btScalar masa = 0.0f;
 
 	if (nom == "cono")
@@ -1672,6 +1672,7 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 	}
 	else if (nom == "barril")
 	{
+		// Cilindro: dimensiones (radio, altura/2, radio)
 		m_collisionShape = new btCylinderShapeZ(
 			btVector3(0.43f * scaleFactor, 0.43f * scaleFactor, 0.63f * scaleFactor)
 		);
@@ -1679,6 +1680,7 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 	}
 	else if (nom == "barrera")
 	{
+		//m_collisionShape = new btBoxShape(btVector3(0.915f * scaleFactor, 2.535f * scaleFactor, 1.37f * scaleFactor)); // AJUSTAR
 		btConvexHullShape* shape = new btConvexHullShape();
 		float s = scaleFactor;
 
@@ -1711,8 +1713,7 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 		m_collisionShape = new btBoxShape(btVector3(1, 1, 1));
 		masa = 0;
 	}
-
-	// --- RigidBody estándar ---
+	 
 	btVector3 inertia(0, 0, 0);
 	if (masa > 0)
 		m_collisionShape->calculateLocalInertia(masa, inertia);
@@ -1753,7 +1754,7 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 	glm::mat4 ModelMatrix;
 	float scaleFactor = 1.0f;
 
-	if (nom == "cono")
+	if (nom == "cono" || nom == "cono_estatic")
 	{
 		scaleFactor = 0.8f;
 		//m_rigidBody->setFriction(0.5f);     // Plástico contra asfalto
@@ -1784,7 +1785,7 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 		float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
 		float escala = 0.0f, y = 0.0f, rad = 90.0f, z = 0.0f, x = 1.0f;
 		// Configurar separaciones según el objeto
-		if (nom == "cono") {
+		if (nom == "cono" || nom == "cono_estatic") {
 			sepX = -100.0f;
 			sepY = -50.0f;
 			escala = 0.8f;

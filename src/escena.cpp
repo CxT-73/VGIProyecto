@@ -23,6 +23,7 @@
 std::vector<ObjetoSeguidor*> seguidores;
 Coche* miCoche = nullptr;
 OBJ* cono = nullptr;
+OBJ* cono_estatic = nullptr;
 OBJ* circuit = nullptr;
 OBJ* muro = nullptr;
 OBJ* barrera = nullptr;
@@ -494,44 +495,48 @@ void dibuixa_EscenaGL(GLuint sh_programID, bool eix, GLuint axis_Id, CMask3D rei
 // Enviar les comandes gràfiques a pantalla
 //	glFlush();
 }
-
-#include <iostream>
+ 
 void initEscenaDuplicados()
-{
-	std::cout << "[DEBUG] initEscenaDuplicados ejecutado\n";
+{ 
 	// CONO
-	if (cono) {
-		std::cout << "[DEBUG] Creando duplicados del CONO\n";
+	if (cono) { 
 		ObjetoSeguidor* seg = new ObjetoSeguidor(cono, zonas, 0, mundo);
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{4, {1, { {120.0f, -100.0f, 300.0f} }}},
-			{3, {2, { {-105.0f, -60.0f, 300.0f}, {60.0f, -140.0f, 300.0f} }}}
+			{4, {1, { {40.0f, -50.0f, 240.0f} }}},//fet
+			{3, {2, { {-105.0f, -200.0f, 260.0f}, {120.0f, -140.0f, 260.0f} }}}//fet
 		};
-		std::map<int, std::vector<int>> invisiblesPorZona;
+		std::map<int, std::vector<int>> invisiblesPorZona;// = { {3, {0, 1}} };
 		seg->crearDuplicados(zonasConfig, invisiblesPorZona, glm::vec3(0.0f), glm::vec3(10.0f));
 		seguidores.push_back(seg);
 	}
-
+	//CONO_ESTATIC
+	if (cono_estatic) {
+		ObjetoSeguidor* seg = new ObjetoSeguidor(cono_estatic, zonas, 0, mundo);
+		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
+			{3, {1, { {-65.0f, -190.0f, 260.0f} }}}
+		};
+		std::map<int, std::vector<int>> invisiblesPorZona;// = { {3, {0, 1}} };
+		seg->crearDuplicados(zonasConfig, invisiblesPorZona, glm::vec3(0.0f), glm::vec3(10.0f));
+		seguidores.push_back(seg);
+	}
 	// BARRERA
-	if (barrera) {
-		std::cout << "[DEBUG] Creando duplicados del BARRERA\n";
+	if (barrera) { 
 		ObjetoSeguidor* seg = new ObjetoSeguidor(barrera, zonas, 0, mundo);
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{4, {1, { {-15.0f, -400.0f, 300.0f} }}},
-			{3, {1, { {-65.0f, -130.0f, 300.0f} }}},
-			{1, {1, { {  0.0f,   10.0f, 300.0f} }}}
+			{4, {1, { {-15.0f, -300.0f, 240.0f} }}}, //fet
+			{3, {1, { {-65.0f, -190.0f, 260.0f} }}}, //fet
+			{1, {1, { {  0.0f,   -90.0f, 230.0f} }}} //fet
 		};
-		std::map<int, std::vector<int>> invisibles;
+		std::map<int, std::vector<int>> invisibles;// { { 3, { 0 } } };
 		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
 		seguidores.push_back(seg);
 	}
 
 	// BLOC
-	if (bloc) {
-		std::cout << "[DEBUG] Creando duplicados del BLOC\n";
+	if (bloc) { 
 		ObjetoSeguidor* seg = new ObjetoSeguidor(bloc, zonas, 0, mundo);
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{4, {2, { {140.0f,   0.0f, 300.0f}, {120.0f, 100.0f, 300.0f} }}},
+			{4, {2, { {140.0f,   0.0f, 300.0f}, {120.0f, 10.0f, 240.0f} }}},
 			{5, {2, { {-60.0f, -180.0f, 300.0f}, {-150.0f, -60.0f, 300.0f} }}}
 		};
 		std::map<int, std::vector<int>> invisibles;
@@ -540,78 +545,17 @@ void initEscenaDuplicados()
 	}
 
 	// BARRIL
-	if (barril) {
-		std::cout << "[DEBUG] Creando duplicados del BARRIL\n";
+	if (barril) { 
 		ObjetoSeguidor* seg = new ObjetoSeguidor(barril, zonas, 0, mundo);
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{4, {2, { {-90.0f, -500.0f, 300.0f}, {120.0f,   50.0f, 300.0f} }}},
-			{6, {1, { {80.0f, 120.0f, 300.0f} }}}
+			{4, {2, { {-130.0f, -480.0f, 248.0f}, {120.0f, 0.0f, 260.0f} }}},
+			{6, {1, { {80.0f, 10.0f, 200.0f} }}} //fet
 		};
 		std::map<int, std::vector<int>> invisibles;
 		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
 		seguidores.push_back(seg);
 	}
-}
-/*
-void initEscenaDuplicados()
-{
-	std::cout << "[DEBUG] initEscenaDuplicados ejecutado\n";
-	// CONO
-	if (cono) {
-		std::cout << "[DEBUG] Creando duplicados del CONO\n";
-		ObjetoSeguidor* seg = new ObjetoSeguidor(cono, zonas, 0, mundo);
-		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{4, {1, { {120.0f, -100.0f, 300.0f} }}},
-			{3, {2, { {-100.0f, -50.0f, 295.0f}, {60.0f, -140.0f, 300.0f} }}}
-		};
-		std::map<int, std::vector<int>> invisiblesPorZona;
-		seg->crearDuplicados(zonasConfig, invisiblesPorZona, glm::vec3(0.0f), glm::vec3(10.0f));
-		seguidores.push_back(seg);
-	}
-
-	// BARRERA
-	if (barrera) {
-		std::cout << "[DEBUG] Creando duplicados del BARRERA\n";
-		ObjetoSeguidor* seg = new ObjetoSeguidor(barrera, zonas, 0, mundo);
-		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{4, {1, { {-100.0f, -50.0f, 295.0f} }}},
-			{3, {1, { {-100.0f, -50.0f, 295.0f}}}},
-			{1, {1, { {  0.0f,   10.0f, 300.0f} }}}
-		};
-		std::map<int, std::vector<int>> invisibles;
-		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
-		seguidores.push_back(seg);
-	}
-
-	// BLOC
-	if (bloc) {
-		std::cout << "[DEBUG] Creando duplicados del BLOC\n";
-		ObjetoSeguidor* seg = new ObjetoSeguidor(bloc, zonas, 0, mundo);
-		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{4, {2, { {140.0f,   0.0f, 300.0f}, {120.0f, 100.0f, 300.0f} }}},
-			{3, {2, { {-100.0f, -50.0f, 295.0f}, {-100.0f, -50.0f, 295.0f}}}},
-			{5, {2, { {-60.0f, -180.0f, 300.0f}, {-150.0f, -60.0f, 300.0f} }}}
-		};
-		std::map<int, std::vector<int>> invisibles;
-		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
-		seguidores.push_back(seg);
-	}
-
-	// BARRIL
-	if (barril) {
-		std::cout << "[DEBUG] Creando duplicados del BARRIL\n";
-		ObjetoSeguidor* seg = new ObjetoSeguidor(barril, zonas, 0, mundo);
-		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{4, {2, { {-90.0f, -500.0f, 300.0f}, {120.0f,   50.0f, 300.0f} }}},
-			{3, {1, { {-100.0f, -50.0f, 295.0f}}}},
-			{6, {1, { {80.0f, 120.0f, 300.0f} }}}
-		};
-		std::map<int, std::vector<int>> invisibles;
-		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
-		seguidores.push_back(seg);
-	}
-}
-*/
+} 
 void renderEscenaDuplicados(GLuint sh_programID,
 	glm::mat4 MatriuVista,
 	glm::mat4 MatriuTG,

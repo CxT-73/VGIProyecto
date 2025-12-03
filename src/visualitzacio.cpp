@@ -964,8 +964,7 @@ glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool 
 	if (bck_ln) glPolygonMode(GL_BACK, GL_LINE);
 
 	return MatriuVista;
-}
-#include<iostream>
+} 
 glm::mat4 Vista_Pausa(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
 	LLUM* lumi, bool ifix, bool il2sides)
@@ -1011,17 +1010,7 @@ glm::mat4 Vista_Pausa(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil
 			cameraPos,
 			cameraTarget,
 			glm::vec3(0.0f, 0.0f, 1.0f)
-		);
-		std::cout << "\n=== CAMARA (Vista_Pausa) ===\n";
-		std::cout << "cameraPos:  "
-			<< cameraPos.x << ", "
-			<< cameraPos.y << ", "
-			<< cameraPos.z << "\n";
-		std::cout << "cameraTarget: "
-			<< cameraTarget.x << ", "
-			<< cameraTarget.y << ", "
-			<< cameraTarget.z << "\n";
-		std::cout << "============================\n\n";
+		); 
 
 	}
 	else

@@ -139,8 +139,8 @@ public:
 	std::string nom;
 	COBJModel* objecteOBJ;
 
-	glm::vec3 posicion;   // traslación
-	glm::vec3 rotacion;   // rotación en grados (x,y,z)
+	glm::vec3 posicion;   
+	glm::vec3 rotacion;   
 	glm::vec3 escala;  
 
     //COLISIONS OBJECTES
@@ -152,11 +152,11 @@ public:
     {
         objecteOBJ = new COBJModel();
         char* ruta = new char[nombreObjeto.length() + 1];
-        strcpy(ruta, nombreObjeto.c_str());  // copia ? ahora sí es char*
+        strcpy(ruta, nombreObjeto.c_str());  
 
         objecteOBJ->LoadModel(ruta);
 
-        delete[] ruta; // evitar fugas
+        delete[] ruta; 
 
 
     }
@@ -177,7 +177,7 @@ public:
         COBJModel* sharedModel)
     {
         nom = nombreObjeto;
-        objecteOBJ = sharedModel;   // Reusar modelo
+        objecteOBJ = sharedModel;    
         posicion = pos;
         rotacion = glm::vec3(0);
         escala = glm::vec3(1);
