@@ -96,10 +96,10 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
     // Z = Altura 
 
     // Rueda 0: Delantera Izquierda
-    btVector3 posDI(1.7f, 4.f, 0.1f);
+    btVector3 posDI(1.7f, 4.05f, 0.1f);
 
     // Rueda 1: Delantera Derecha
-    btVector3 posDD(-1.7f, 4.f, 0.1f);
+    btVector3 posDD(-1.7f, 4.05f, 0.1f);
 
     // Rueda 2: Trasera Izquierda
     btVector3 posTI(1.7f, -3.3f, 0.0f);
@@ -224,8 +224,8 @@ void Coche::update() {
 
 
     // DIRECCIÓN
-    float incremento = 0.05f;
-    float recuperacion = 0.01f;
+    float incremento = 0.01f;
+    float recuperacion = 0.05f;
     float maxGiro = 0.5f;
 
     if (A) {
