@@ -513,7 +513,11 @@ void initEscenaDuplicados()
 	if (cono_estatic) {
 		ObjetoSeguidor* seg = new ObjetoSeguidor(cono_estatic, zonas, 0, mundo);
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{3, {1, { {-65.0f, -190.0f, 260.0f} }}}
+			{0, {27, { {-65.0f, -90.0f, 140.0f}, {-150.0f, -70.0f, 140.0f},{-147.5f, -65.0f, 140.0f}, {-145.0f, -60.0f, 140.0f},{-142.5f, -55.0f, 140.0f},  {-140.0f, -50.0f, 140.0f},{-137.5f, -45.0f, 140.0f} , {-135.0f, -40.0f, 140.0f},
+					  {-130.0f, -40.0f, 140.0f},{-125.0f, -45.0f, 140.0f},{-120.0f, -50.0f, 140.0f},{-115.0f, -55.0f, 140.0f},{-110.0f, -60.0f, 140.0f},{-105.0f, -65.0f, 140.0f},{-102.5f, -70.0f, 140.0f},
+					  {-96.25f, -98.25f, 140.0f},{-100.0f, -95.0f, 140.0f},{-102.5f, -90.0f, 140.0f},{-105.0f, -85.0f, 140.0f}, {-107.5f, -80.0f, 140.0f},{-105.0f, -75.0f, 140.0f},
+					  {-92.5f, -100.0f, 140.0f},{-87.5f, -100.0f, 140.0f},{-82.5f, -97.5f, 140.0f},{-77.5f, -95.0f, 140.0f},{-72.5f, -92.5f, 140.0f},{-67.5f, -90.0f, 140.0f},{-62.5f, -87.5f, 140.0f},
+		}}}
 		};
 		std::map<int, std::vector<int>> invisiblesPorZona;// = { {3, {0, 1}} };
 		seg->crearDuplicados(zonasConfig, invisiblesPorZona, glm::vec3(0.0f), glm::vec3(10.0f));
