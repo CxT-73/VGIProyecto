@@ -62,6 +62,10 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
     tr.setIdentity();
     tr.setOrigin(btVector3(-80.0f, -50.0f, 297.0f));
 
+    btQuaternion rotacion;
+    rotacion.setRotation(btVector3(0, 0, 1), btScalar(1.57079f)); // 90 grados en Z
+    tr.setRotation(rotacion);
+
     //CREAR EL cuerpo físico
     btDefaultMotionState* motionState = new btDefaultMotionState(tr);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(masa, motionState, chassisShape, inerciaLocal);
@@ -185,8 +189,8 @@ void Coche::update() {
     float fuerzaFreno = 0.0f;
 
     //CONFIGURACIÓN DE FUERZAS
-    float potAcelerar = -7000.0f; // Fuerza para ir adelante
-    float potAtras = 5000.0f;     // Fuerza para ir atrás
+    float potAcelerar = -5000.0f; // Fuerza para ir adelante
+    float potAtras = 2000.0f;     // Fuerza para ir atrás
     float frenoABS = 300.0f;       // Freno suave
     float frenoBloqueo = 3300.0f; // Bloqueo salvaje
     float frenoParking = 100000.0f;
