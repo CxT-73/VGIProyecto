@@ -11,8 +11,6 @@
 //--------------- VGI: Tipus de Càmera
 #define CAP ' '
 #define CAM_ESFERICA 'E'
-#define CAM_GEODE 'G'
-#define CAM_NAVEGA 'N'
 #define CAM_FOLLOW 'F'
 #define CAM_PRIMERA_PERSONA 'P'
 #define CAM_LLIURE 'L'

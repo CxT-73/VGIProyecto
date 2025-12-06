@@ -12,6 +12,11 @@
 #include "main.h"
 #include "zones.h"
 #include "colocarObjeto.h"
+#include "MainMenu.h"
+#include "NewGame.h"
+#include "Playing.h"
+#include "PauseMenu.h"
+#include "EndGame.h"
  
 
 void InitGL()
@@ -566,15 +571,6 @@ void Barra_Estat()
 		{	// Càmera Esfèrica
 			OPVAux.R = OPV.R; OPVAux.alfa = OPV.alfa; OPVAux.beta = OPV.beta;
 		}
-		else if (camera == CAM_NAVEGA)
-		{	// Càmera Navega
-			OPVAux.R = sqrt(opvN.x * opvN.x + opvN.y * opvN.y + opvN.z * opvN.z);
-			OPVAux.alfa = (asin(opvN.z / OPVAux.R) * 180) / PI;
-			OPVAux.beta = (atan(opvN.y / opvN.x)) * 180 / PI;
-		}
-		else {	// Càmera Geode
-			OPVAux.R = OPV_G.R; OPVAux.alfa = OPV_G.alfa; OPVAux.beta = OPV_G.beta;
-		}
 	}
 	else {
 		OPVAux.R = OPV.R; OPVAux.alfa = OPV.alfa; OPVAux.beta = OPV.beta;
@@ -583,7 +579,6 @@ void Barra_Estat()
 	// Status Bar R Origen Punt de Vista
 	if (projeccio == CAP) buffer = "       ";
 	else if (projeccio == ORTO) buffer = " ORTO   ";
-	else if (camera == CAM_NAVEGA) buffer = " NAV   ";
 	else buffer = std::to_string(OPVAux.R);
 	// Refrescar posició R Status Bar
 	fprintf(stderr, "R=: %s", buffer.c_str());
@@ -591,7 +586,6 @@ void Barra_Estat()
 	// Status Bar angle alfa Origen Punt de Vista
 	if (projeccio == CAP) buffer = "       ";
 	else if (projeccio == ORTO) buffer = "ORTO   ";
-	else if (camera == CAM_NAVEGA) buffer = " NAV   ";
 	else buffer = std::to_string(OPVAux.alfa);
 	// Refrescar posició angleh Status Bar
 	fprintf(stderr, " a=: %s", buffer.c_str());
@@ -599,55 +593,13 @@ void Barra_Estat()
 	// Status Bar angle beta Origen Punt de Vista
 	if (projeccio == CAP) buffer = "       ";
 	else if (projeccio == ORTO) buffer = "ORTO   ";
-	else if (camera == CAM_NAVEGA) buffer = " NAV   ";
 	else buffer = std::to_string(OPVAux.beta);
 	// Refrescar posició anglev Status Bar
 	fprintf(stderr, " ß=: %s  ", buffer.c_str());
 
-	// Transformació PV de Coord. esfèriques (R,anglev,angleh) --> Coord. cartesianes (PVx,PVy,PVz)
-	if (camera == CAM_NAVEGA) { PVx = opvN.x; PVy = opvN.y; PVz = opvN.z; }
-	else {
-		if (Vis_Polar == POLARZ)
-		{
-			PVx = OPVAux.R * cos(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-			PVy = OPVAux.R * sin(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-			PVz = OPVAux.R * sin(OPVAux.alfa * PI / 180);
-			if (camera == CAM_GEODE)
-			{	// Vector camp on mira (cap a (R,alfa,beta)
-				PVx = PVx + cos(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-				PVy = PVy + sin(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-				PVz = PVz + sin(OPVAux.alfa * PI / 180);
-			}
-		}
-		else if (Vis_Polar == POLARY)
-		{
-			PVx = OPVAux.R * sin(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-			PVy = OPVAux.R * sin(OPVAux.alfa * PI / 180);
-			PVz = OPVAux.R * cos(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-			if (camera == CAM_GEODE)
-			{	// Vector camp on mira (cap a (R,alfa,beta)
-				PVx = PVx + sin(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-				PVy = PVy + sin(OPVAux.alfa * PI / 180);
-				PVz = PVz + cos(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-			}
-		}
-		else {
-			PVx = OPVAux.R * sin(OPVAux.alfa * PI / 180);
-			PVy = OPVAux.R * cos(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-			PVz = OPVAux.R * sin(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-			if (camera == CAM_GEODE)
-			{	// Vector camp on mira (cap a (R,alfa,beta)
-				PVx = PVx + sin(OPVAux.alfa * PI / 180);
-				PVy = PVy + cos(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-				PVz = PVz + sin(OPVAux.beta * PI / 180) * cos(OPVAux.alfa * PI / 180);
-			}
-		}
-	}
-
 	// Status Bar PVx
 	if (projeccio == CAP) buffer = "       ";
 	else if (pan) buffer = std::to_string(tr_cpv.x);
-	else buffer = std::to_string(PVx);
 	//sss = _T("PVx=") + buffer;
 // Refrescar posició PVx Status Bar
 	fprintf(stderr, "PVx= %s", buffer.c_str());
@@ -655,7 +607,6 @@ void Barra_Estat()
 	// Status Bar PVy
 	if (projeccio == CAP) buffer = "       ";
 	else if (pan) buffer = std::to_string(tr_cpv.y);
-	else buffer = std::to_string(PVy);
 	//sss = "PVy=" + buffer;
 // Refrescar posició PVy Status Bar
 	fprintf(stderr, " PVy= %s", buffer.c_str());
@@ -663,7 +614,6 @@ void Barra_Estat()
 	// Status Bar PVz
 	if (projeccio == CAP) buffer = "       ";
 	else if (pan) buffer = std::to_string(tr_cpv.z);
-	else buffer = std::to_string(PVz);
 	//sss = "PVz=" + buffer;
 // Refrescar posició PVz Status Bar
 	fprintf(stderr, " PVz= %s \n", buffer.c_str());
@@ -672,7 +622,6 @@ void Barra_Estat()
 	sss = " ";
 	if (sw_grid) sss = "GRID ";
 	else if (pan) sss = "PAN ";
-	else if (camera == CAM_NAVEGA) sss = "NAV ";
 	else if (sw_color) sss = "OBJ ";
 	else sss = "FONS ";
 	// Refrescar posició Transformacions en Status Bar
@@ -684,16 +633,6 @@ void Barra_Estat()
 		if (rota) sss = "ROT";
 		else if (trasl) sss = "TRA";
 		else if (escal) sss = "ESC";
-	}
-	else if ((!sw_grid) && (!pan) && (camera != CAM_NAVEGA))
-	{	// Components d'intensitat de fons que varien per teclat
-		if ((fonsR) && (fonsG) && (fonsB)) sss = " RGB";
-		else if ((fonsR) && (fonsG)) sss = " RG ";
-		else if ((fonsR) && (fonsB)) sss = " R   B";
-		else if ((fonsG) && (fonsB)) sss = "   GB";
-		else if (fonsR) sss = " R  ";
-		else if (fonsG) sss = "   G ";
-		else if (fonsB) sss = "      B";
 	}
 	// Refrescar posició Transformacions en Status Bar
 	fprintf(stderr, "%s ", sss.c_str());
@@ -733,31 +672,6 @@ void Barra_Estat()
 			sss = sss + buffer + " ";
 
 			buffer = std::to_string(TG.VScal.x);
-			sss = sss + buffer;
-		}
-	}
-	else if ((!sw_grid) && (!pan) && (camera != CAM_NAVEGA))
-	{
-		if (!sw_color)
-		{	// Color fons
-			buffer = std::to_string(c_fons.r);
-			sss = " " + buffer + " ";
-
-			buffer = std::to_string(c_fons.g);
-			sss = sss + buffer + " ";
-
-			buffer = std::to_string(c_fons.b);
-			sss = sss + buffer;
-		}
-		else
-		{	// Color objecte
-			buffer = std::to_string(col_obj.r);
-			sss = " " + buffer + " ";
-
-			buffer = std::to_string(col_obj.g);
-			sss = sss + buffer + " ";
-
-			buffer = std::to_string(col_obj.b);
 			sss = sss + buffer;
 		}
 	}
@@ -859,6 +773,25 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 	// (2) ONLY forward mouse data to your underlying app/game.
 	if (!io.WantCaptureKeyboard) { //<Tractament mouse de l'aplicació>}
 		// EntornVGI: Si tecla pulsada és ESCAPE, tancar finestres i aplicació.
+		if (mods == 0 && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+
+			std::string currentState = g_MenuController->getState();
+
+			if (currentState == "Playing") {
+				// Si estamos en PlayingState, cambiamos a PauseMenuState
+				g_MenuController->SwitchState(new PauseMenuState());
+				return; // Salimos de la función para no procesar otras teclas.
+			}
+			if(currentState == "Pause") {
+				// Si estamos en PauseMenuState, volvemos a PlayingState
+				g_MenuController->SwitchState(new PlayingState());
+				return; // Salimos de la función para no procesar otras teclas.
+			}
+		}
+		else if (key == GLFW_KEY_P && action == GLFW_PRESS){
+			g_MenuController->SwitchState(new EndGameState());
+		}
+		else if (camera == CAM_FOLLOW)
 		if (mods == 0 && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 		// =====================================================
 	// ZONA DE CONTROL DE LUCES DEL COCHE
@@ -1368,48 +1301,6 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 		// Crida a OnPaint() per redibuixar l'escena
 		//OnPaint(window);
 	}
-	else if (m_ButoDAvall && (camera == CAM_NAVEGA) && (projeccio != CAP && projeccio != ORTO))
-	{	// Avançar en opció de Navegació
-		if ((m_PosDAvall.x != xpos) && (m_PosDAvall.y != ypos))
-		{
-			//CSize zoomincr = m_PosDAvall - point;
-			zoomincr.cx = m_PosDAvall.x - xpos;		zoomincr.cy = m_PosDAvall.y - ypos;
-			double incr = zoomincr.cy / 2.0;
-			//	long int incr=zoomincr.cy/2.0;  // Causa assertion en "afx.inl" lin 169
-			vdir[0] = n[0] - opvN.x;
-			vdir[1] = n[1] - opvN.y;
-			vdir[2] = n[2] - opvN.z;
-			modul = sqrt(vdir[0] * vdir[0] + vdir[1] * vdir[1] + vdir[2] * vdir[2]);
-			vdir[0] = vdir[0] / modul;
-			vdir[1] = vdir[1] / modul;
-			vdir[2] = vdir[2] / modul;
-
-			// Entorn VGI: Segons orientació dels eixos Polars (Vis_Polar)
-			if (Vis_Polar == POLARZ) { // (X,Y,Z)
-				opvN.x += incr * vdir[0];
-				opvN.y += incr * vdir[1];
-				n[0] += incr * vdir[0];
-				n[1] += incr * vdir[1];
-			}
-			else if (Vis_Polar == POLARY) { //(X,Y,Z) --> (Z,X,Y)
-				opvN.z += incr * vdir[2];
-				opvN.x += incr * vdir[0];
-				n[2] += incr * vdir[2];
-				n[0] += incr * vdir[0];
-			}
-			else if (Vis_Polar == POLARX) { //(X,Y,Z) --> (Y,Z,X)
-				opvN.y += incr * vdir[1];
-				opvN.z += incr * vdir[2];
-				n[1] += incr * vdir[1];
-				n[2] += incr * vdir[2];
-			}
-
-			//m_PosDAvall = point;
-			m_PosDAvall.x = xpos;				m_PosDAvall.y = ypos;
-			// Crida a OnPaint() per redibuixar l'escena
-			//OnPaint(window);
-		}
-	}
 
 	// Entorn VGI: Transformació Geomètrica interactiva per l'eix Z amb boto dret del mouse.
 	else if (m_ButoDAvall && transZ && transf)
@@ -1473,48 +1364,6 @@ void OnMouseWheel(GLFWwindow* window, double xoffset, double yoffset)
 				if (OPV.R < 0.25) OPV.R = 0.25;
 				//InvalidateRect(NULL, false);
 			}
-			else if (camera == CAM_GEODE)
-			{	// Càmera Geode
-				OPV_G.R = OPV_G.R + yoffset / 4.0;
-				if (OPV_G.R < 0.0) OPV_G.R = 0.0;
-				//InvalidateRect(NULL, false);
-			}
-		}
-		else if (camera == CAM_NAVEGA && !io.WantCaptureMouse)
-		{
-			vdir[0] = n[0] - opvN.x;
-			vdir[1] = n[1] - opvN.y;
-			vdir[2] = n[2] - opvN.z;
-			modul = sqrt(vdir[0] * vdir[0] + vdir[1] * vdir[1] + vdir[2] * vdir[2]);
-			vdir[0] = vdir[0] / modul;
-			vdir[1] = vdir[1] / modul;
-			vdir[2] = vdir[2] / modul;
-
-			// Entorn VGI: Segons orientació dels eixos Polars (Vis_Polar)
-			if (Vis_Polar == POLARZ) { // (X,Y,Z)
-				opvN.x += (yoffset / 4.0) * vdir[0];
-				opvN.y += (yoffset / 4.0) * vdir[1];
-				n[0] += (yoffset / 4.0) * vdir[0];
-				n[1] += (yoffset / 4.0) * vdir[1];
-			}
-			else if (Vis_Polar == POLARY) { //(X,Y,Z) --> (Z,X,Y)
-				opvN.z += (yoffset / 4.0) * vdir[2];
-				opvN.x += (yoffset / 4.0) * vdir[0];
-				n[2] += (yoffset / 4.0) * vdir[2];
-				n[0] += (yoffset / 4.0) * vdir[0];
-			}
-			else if (Vis_Polar == POLARX) { //(X,Y,Z) --> (Y,Z,X)
-				opvN.y += (yoffset / 4.0) * vdir[1];
-				opvN.z += (yoffset / 4.0) * vdir[2];
-				n[1] += (yoffset / 4.0) * vdir[1];
-				n[2] += (yoffset / 4.0) * vdir[2];
-			}
-			/*
-						opvN.x += (yoffset / 4.0) * vdir[0];		//opvN.x += (zDelta / 4.0) * vdir[0];
-						opvN.y += (yoffset / 4.0) * vdir[1];		//opvN.y += (zDelta / 4.0) * vdir[1];
-						n[0] += (yoffset / 4.0) * vdir[0];		//n[0] += (zDelta / 4.0) * vdir[0];
-						n[1] += (yoffset / 4.0) * vdir[1];		//n[1] += (zDelta / 4.0) * vdir[1];
-			*/
 		}
 	}
 }
@@ -1748,8 +1597,16 @@ int main(void)
 	// Initialize API
 		//InitAPI();
 
+
 	// Initialize Application control varibles
 	InitGL();
+
+	
+	bool g_ShowMenu = true; // Control maestro
+
+	g_GameContext.isGameRunning = false;
+	g_MenuController = new MenuController(&g_GameContext, &camera);
+	g_MenuController->SwitchState(new MainMenuState()); // Estado inicial
 
 	OnVistaSkyBox();
 
@@ -1789,17 +1646,19 @@ int main(void)
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+	ImFont* pNewFont = io.Fonts->AddFontFromFileTTF("../include/RobotoSlab-VariableFont_wght.ttf", 24.0f);
+
+	if (pNewFont)
+	{
+		io.FontDefault = pNewFont;
+	}
+
 	ImGui::StyleColorsLight();
 
 	// Entorn VGI.ImGui: Setup Platform/Renderer backends
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 130");
 	// Entorn VGI.ImGui: End Setup Dear ImGui context
-	  
-
-
-
-
 
 	// Loop until the user closes the window
 	while (!glfwWindowShouldClose(window))
@@ -1875,18 +1734,32 @@ int main(void)
 		// Poll for and process events
 		glfwPollEvents();
 
-		OnJoystick(window);
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		// 2. Comprobar si debemos cerrar app desde el menú
+		if (g_GameContext.shouldCloseApp) {
+			glfwSetWindowShouldClose(window, GL_TRUE);
+		}
+
+		if (g_MenuController) {
+			g_MenuController->Render();
+		}
+
+		if (GLFW_KEY_ESCAPE && GLFW_PRESS)
 
 		// Crida a OnPaint() per redibuixar l'escena
 		OnPaint(window);
 
 		// Entorn VGI: Activa la finestra actual
 		glfwMakeContextCurrent(window);
-		 
-  
 
-		// Entorn VGI: Transferència del buffer OpenGL a buffer de pantalla
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		glfwSwapBuffers(window);
+		glfwPollEvents();
 	}
 
 
