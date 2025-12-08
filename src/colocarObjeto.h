@@ -22,7 +22,7 @@ public:
         const std::map<int, std::vector<int>>& invisiblesPorZona,
         glm::vec3 rot,
         glm::vec3 escala);
-
+    
     void renderDuplicados(GLuint sh_programID,
         glm::mat4 MatriuVista,
         glm::mat4 MatriuTG,
