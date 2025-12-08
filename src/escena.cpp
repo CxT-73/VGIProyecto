@@ -28,7 +28,9 @@ OBJ* circuit = nullptr;
 OBJ* muro = nullptr;
 OBJ* barrera = nullptr;
 OBJ* bloc = nullptr;
-OBJ* barril = nullptr; 
+OBJ* barril = nullptr;
+OBJ* senyal1 = nullptr;
+OBJ* senyal2 = nullptr;
 
 Zones* zonas = nullptr;
 // ===== BULLET: SISTEMA FÍSICO =====
@@ -513,13 +515,28 @@ void initEscenaDuplicados()
 	if (cono_estatic) {
 		ObjetoSeguidor* seg = new ObjetoSeguidor(cono_estatic, zonas, 0, mundo);
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{0, {27, { {-65.0f, -90.0f, 140.0f}, {-150.0f, -70.0f, 140.0f},{-147.5f, -65.0f, 140.0f}, {-145.0f, -60.0f, 140.0f},{-142.5f, -55.0f, 140.0f},  {-140.0f, -50.0f, 140.0f},{-137.5f, -45.0f, 140.0f} , {-135.0f, -40.0f, 140.0f},
-					  {-130.0f, -40.0f, 140.0f},{-125.0f, -45.0f, 140.0f},{-120.0f, -50.0f, 140.0f},{-115.0f, -55.0f, 140.0f},{-110.0f, -60.0f, 140.0f},{-105.0f, -65.0f, 140.0f},{-102.5f, -70.0f, 140.0f},
+			{0, {101, { {-65.0f, -90.0f, 140.0f}, {-147.5f, -71.25f, 140.0f},{-142.5f, -70.0f, 140.0f}, {-140.0f, -65.0f, 140.0f},{-137.5f, -60.0f, 140.0f},  {-135.0f, -55.0f, 140.0f},{-132.5f, -50.0f, 140.0f} , {-130.0f, -45.0f, 140.0f},
+					  {-125.0f, -45.0f, 140.0f},{-120.0f, -50.0f, 140.0f},{-115.0f, -55.0f, 140.0f},{-110.0f, -60.0f, 140.0f},{-105.0f, -65.0f, 140.0f},{-102.5f, -70.0f, 140.0f},
 					  {-96.25f, -98.25f, 140.0f},{-100.0f, -95.0f, 140.0f},{-102.5f, -90.0f, 140.0f},{-105.0f, -85.0f, 140.0f}, {-107.5f, -80.0f, 140.0f},{-105.0f, -75.0f, 140.0f},
-					  {-92.5f, -100.0f, 140.0f},{-87.5f, -100.0f, 140.0f},{-82.5f, -97.5f, 140.0f},{-77.5f, -95.0f, 140.0f},{-72.5f, -92.5f, 140.0f},{-67.5f, -90.0f, 140.0f},{-62.5f, -87.5f, 140.0f},
+					  {-92.5f, -100.0f, 140.0f},{-87.5f, -100.0f, 140.0f},{-82.5f, -97.5f, 140.0f},{-77.5f, -95.0f, 140.0f},{-72.5f, -92.5f, 140.0f},{-67.5f, -90.0f, 140.0f}, 
+					  {-62.5f, -90.0f, 140.0f},{-57.5f, -92.75f, 140.0f},{-52.5f, -95.0f, 140.0f},{-47.5f, -97.5f, 140.0f},{-42.5f, -100.0f, 140.0f},{-37.5f, -102.5f, 140.0f},{-32.5f, -105.0f, 140.0f},{-27.5f, -107.5f, 140.0f},{-22.5f, -110.0f, 140.0f},
+					  {-17.5f, -110.0f, 140.0f},{-15.0f, -115.0f, 140.0f},{-17.5f, -120.0f, 140.0f},{-20.0f, -125.0f, 140.0f},{-22.5f, -130.0f, 140.0f},{-26.25f, -135.0f, 140.0f},{-28.75f, -139.0f, 140.0f},
+		
+		
+					  {-0.0f, -105.0f, 140.0f},{-2.5f, -110.0f, 140.0f},{-5.0f, -115.0f, 140.0f},{-7.5f, -120.0f, 140.0f},{-10.0f, -125.0f, 140.0f},{-12.5f, -130.0f, 140.0f},{-16.25f, -135.0f, 140.0f},{-18.75f, -140.0f, 140.0f},{-21.0f, -144.0f, 140.0f},{-23.5f, -141.5f, 140.0f},
+					  {-57.5f, -72.0f, 140.0f},{-52.5f, -75.75f, 140.0f},{-47.5f, -77.5f, 140.0f},{-42.5f, -80.0f, 140.0f},{-37.5f, -82.5f, 140.0f},{-32.5f, -85.0f, 140.0f},{-27.5f, -87.5f, 140.0f},{-22.5f, -90.0f, 140.0f},{-17.5f, -92.5f, 140.0f},{-12.5f, -95.0f, 140.0f},{-7.5f, -97.5f, 140.0f},{-2.5f, -100.0f, 140.0f},
+					  {-82.5f, -82.0f, 140.0f},{-77.5f, -79.5f, 140.0f},{-72.5f, -77.0f, 140.0f},{-67.5f, -74.5f, 140.0f},{-62.5f, -72.0f, 140.0f},
+					  {-85.75f, -80.25f, 140.0f},{-89.5f, -77.0f, 140.0f}, {-87.0f, -72.0f, 140.0f},{-84.5f, -67.0f, 140.0f},{-89.5f, -62.0f, 140.0f}, {-94.5f, -57.0f, 140.0f},{-99.5f, -52.0f, 140.0f}, {-104.5f, -47.0f, 140.0f},{-109.5f, -42.0f, 140.0f},{-114.5f, -37.0f, 140.0f},
+					  {-119.5f, -34.5f, 140.0f},{-124.5f, -32.0f, 140.0f},{-129.5f, -29.5f, 140.0f},{-134.5f, -29.5f, 140.0f},
+					  {-136.0f, -34.5f, 140.0f},{-138.5f, -39.5f, 140.0f}, {-141.0f, -44.5f, 140.0f},{-143.5f, -49.5f, 140.0f},
+					  {-160.0f, -57.5f, 140.0f},{-157.5f, -62.5f, 140.0f},{-155.0f, -67.5f, 140.0f}, {-150.0f, -70.0f, 140.0f},
+					  {-157.5f, -52.5f, 140.0f}, {-155.0f, -47.5f, 140.0f}, {-152.5f, -42.5f, 140.0f}, {-150.0f, -37.5f, 140.0f}, {-147.5f, -32.5f, 140.0f},
+
+
+					  {-127.5f, -15.0f, 140.0f},{-125.0f, -10.0f, 140.0f},{-122.5f, -5.0f, 140.0f},{-120.0f, 0.0f, 140.0f},{-117.5f, 5.0f, 140.0f},
 		}}}
 		};
-		std::map<int, std::vector<int>> invisiblesPorZona;// = { {3, {0, 1}} };
+		std::map<int, std::vector<int>> invisiblesPorZona = { {0, {51}} };
 		seg->crearDuplicados(zonasConfig, invisiblesPorZona, glm::vec3(0.0f), glm::vec3(10.0f));
 		seguidores.push_back(seg);
 	}
@@ -529,7 +546,7 @@ void initEscenaDuplicados()
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
 			{4, {1, { {-15.0f, -300.0f, 240.0f} }}}, //fet
 			{3, {1, { {-65.0f, -190.0f, 260.0f} }}}, //fet
-			{1, {1, { {  0.0f,   -90.0f, 230.0f} }}} //fet
+			{1, {1, { {  0.0f,   -90.0f, 230.0f} }}} //fet 
 		};
 		std::map<int, std::vector<int>> invisibles;// { { 3, { 0 } } };
 		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
@@ -551,6 +568,30 @@ void initEscenaDuplicados()
 	// BARRIL
 	if (barril) { 
 		ObjetoSeguidor* seg = new ObjetoSeguidor(barril, zonas, 0, mundo);
+		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
+			{4, {2, { {-130.0f, -480.0f, 248.0f}, {120.0f, 0.0f, 260.0f} }}},
+			{6, {1, { {80.0f, 10.0f, 200.0f} }}} //fet
+		};
+		std::map<int, std::vector<int>> invisibles;
+		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
+		seguidores.push_back(seg);
+	}
+
+	//GIRAR
+	if (senyal1) {
+		ObjetoSeguidor* seg = new ObjetoSeguidor(senyal1, zonas, 0, mundo);
+		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
+			{0, {1, { {-112.5f, 5.0f, 125.0f} }}}
+			   
+		};
+		std::map<int, std::vector<int>> invisibles;
+		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
+		seguidores.push_back(seg);
+	}
+
+	// SPEED
+	if (senyal2) {
+		ObjetoSeguidor* seg = new ObjetoSeguidor(senyal2, zonas, 0, mundo);
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
 			{4, {2, { {-130.0f, -480.0f, 248.0f}, {120.0f, 0.0f, 260.0f} }}},
 			{6, {1, { {80.0f, 10.0f, 200.0f} }}} //fet

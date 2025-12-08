@@ -25,6 +25,9 @@ extern OBJ* barrera;
 extern OBJ* bloc;
 extern OBJ* barril; 
 extern Zones* zonas;
+extern OBJ* senyal1;
+extern OBJ* senyal2;
+
 
 //BULLET
 extern btDiscreteDynamicsWorld* mundo;

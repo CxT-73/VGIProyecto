@@ -17,7 +17,7 @@
 #include "Playing.h"
 #include "PauseMenu.h"
 #include "EndGame.h"
- 
+
 
 void InitGL()
 {
@@ -30,17 +30,17 @@ void InitGL()
 	// Entorn VGI: Variables de control per Menú Càmera: Esfèrica, Navega, Mòbil, Zoom, Satelit, Polars... 
 	camera = CAM_FOLLOW;
 	mobil = false;	zzoom = true;		zzoomO = false;		satelit = false;
- 
 
 
-	OPV.R = 25.0f;      
-	OPV.alfa = 20.0f;   
-	OPV.beta = 0.0f;    
 
-	
+	OPV.R = 25.0f;
+	OPV.alfa = 20.0f;
+	OPV.beta = 0.0f;
+
+
 	g_isOrbitingLeft = false;
 	g_isOrbitingRight = false;
-	
+
 
 
 
@@ -334,11 +334,18 @@ void InitGL()
 	}
 	if (barril == nullptr) {
 		barril = new OBJ("barril");
-	} 
+	}
 	if (zonas == nullptr) {
 		zonas = new Zones("punt");
 	}
-	 
+
+	if (senyal1 == nullptr) {
+		senyal1 = new OBJ("senyal1");
+	}
+
+	if (senyal2 == nullptr) {
+		senyal2 = new OBJ("senyal2");
+	}
 }
 
 void GetGLVersion(int* major, int* minor)
@@ -425,7 +432,7 @@ void OnPaint(GLFWwindow* window)
 		double fov_central = 15.0f;
 		double fov_lateral = 30.0f;
 		glViewport(0, 0, w, h);
-		
+
 		ProjectionMatrix = Projeccio_Perspectiva(w, h, fov_principal);
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
 		ViewMatrix = Vista_PrimeraPersona(shader_programID, miCoche, c_fons,
@@ -544,7 +551,7 @@ void dibuixa_Escena() {
 
 	// Escalat d'objectes, per adequar-los a les vistes ortogràfiques (Pràctica 2)
 	//	GTMatrix = glm::scale();
- 
+
 	//	Dibuix geometria de l'escena amb comandes GL.
 	dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
 		textura, texturesID, textura_map, tFlag_invert_Y,
@@ -782,17 +789,17 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 				g_MenuController->SwitchState(new PauseMenuState());
 				return; // Salimos de la función para no procesar otras teclas.
 			}
-			if(currentState == "Pause") {
+			if (currentState == "Pause") {
 				// Si estamos en PauseMenuState, volvemos a PlayingState
 				g_MenuController->SwitchState(new PlayingState());
 				return; // Salimos de la función para no procesar otras teclas.
 			}
 		}
-		else if (key == GLFW_KEY_P && action == GLFW_PRESS){
+		else if (key == GLFW_KEY_P && action == GLFW_PRESS) {
 			g_MenuController->SwitchState(new EndGameState());
 		}
 		else if (camera == CAM_FOLLOW)
-		if (mods == 0 && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
+			if (mods == 0 && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 		// =====================================================
 	// ZONA DE CONTROL DE LUCES DEL COCHE
 	// =====================================================
@@ -1508,7 +1515,7 @@ int main(void)
 	float time = elapsedTime;
 	float now;
 	float delta;
-	 
+
 
 
 	// glfw: initialize and configure
@@ -1601,7 +1608,7 @@ int main(void)
 	// Initialize Application control varibles
 	InitGL();
 
-	
+
 	bool g_ShowMenu = true; // Control maestro
 
 	g_GameContext.isGameRunning = false;
@@ -1626,7 +1633,7 @@ int main(void)
 	else {
 		printf("ALERTA: La variable circuit es nula. Revisa dond haces new OBJ.\n");
 	}
-	initEscenaDuplicados(); 
+	initEscenaDuplicados();
 	// ------------- Entorn VGI: Callbacks
 	// Set GLFW event callbacks. I removed glfwSetWindowSizeCallback for conciseness
 	glfwSetWindowSizeCallback(window, OnSize);										// - Windows Size in screen Coordinates
@@ -1676,11 +1683,11 @@ int main(void)
 
 		if (camera == CAM_FOLLOW && mobil)
 		{
-			
-			float orbitSpeedPerSecond = 120.0f; 
+
+			float orbitSpeedPerSecond = 120.0f;
 
 			if (g_isOrbitingLeft) {
-				
+
 				OPV.beta -= orbitSpeedPerSecond * delta;
 			}
 			if (g_isOrbitingRight) {
@@ -1690,9 +1697,9 @@ int main(void)
 		if (camera == CAM_LLIURE)
 		{
 			float velocity = 100.0f; // AUMETAR PARA QUE LA CAMARA VAYA MAS RAPIDO
-			float moveSpeed = velocity * delta; 
+			float moveSpeed = velocity * delta;
 
-			
+
 			glm::vec3 front;
 			float yaw_rad = glm::radians(OPV.beta);
 			float pitch_rad = glm::radians(OPV.alfa);
@@ -1726,7 +1733,7 @@ int main(void)
 
 			OPV.beta += orbitSpeedPerSecond * delta;
 		}
-		
+
 
 
 
@@ -1749,8 +1756,8 @@ int main(void)
 
 		if (GLFW_KEY_ESCAPE && GLFW_PRESS)
 
-		// Crida a OnPaint() per redibuixar l'escena
-		OnPaint(window);
+			// Crida a OnPaint() per redibuixar l'escena
+			OnPaint(window);
 
 		// Entorn VGI: Activa la finestra actual
 		glfwMakeContextCurrent(window);

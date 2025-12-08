@@ -60,10 +60,10 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
     //POSICIÓN INICIAL
     btTransform tr;
     tr.setIdentity();
-    tr.setOrigin(btVector3(-80.0f, -50.0f, 297.0f));
-
+    tr.setOrigin(btVector3(-502.5f, 985.0f, 320.0f));
+     
     btQuaternion rotacion;
-    rotacion.setRotation(btVector3(0, 0, 1), btScalar(1.57079f)); // 90 grados en Z
+    rotacion.setRotation(btVector3(0, 0, -1), btScalar(2.00713f)); // 90 grados en Z
     tr.setRotation(rotacion);
 
     //CREAR EL cuerpo físico

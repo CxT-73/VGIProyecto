@@ -11,6 +11,7 @@ public:
     Zones* zonas;
     int zonaIndex;
     btDiscreteDynamicsWorld* mundo;
+    std::vector<glm::vec3> posicionesDuplicados;
 
     std::vector<OBJ*> duplicados;
     std::vector<int> invisibleFlags;
