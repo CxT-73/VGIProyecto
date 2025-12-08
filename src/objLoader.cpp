@@ -1552,6 +1552,14 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 		nom = nombreObjeto;
 		strcpy(ruta, "../x64/Release/OBJFiles/Barrera_m1/Barrera_m1.obj");
 	}
+	else if (nombreObjeto == "senyal1") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Senyal_m1/Road_sign.obj");
+	}
+	else if (nombreObjeto == "senyal2") {
+		nom = nombreObjeto;
+		strcpy(ruta, "../x64/Release/OBJFiles/Senyal_m2/35 mph speed limit sign.obj");
+	}
 	else if (nombreObjeto == "bloc") {
 		nom = nombreObjeto;
 		strcpy(ruta, "../x64/Release/OBJFiles/Bloc/Bloc.obj");
@@ -1626,12 +1634,12 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 	if (nom == "cono" || nom == "cono_estatic")
 		scaleFactor = 0.8f;
 
-	else if (nom == "barrera" || nom == "bloc")
+	else if (nom == "barrera" || nom == "bloc" || nom == "senyal2" || nom == "senyal1")
 		scaleFactor = 1.0f;
 
 	else if (nom == "barril")
 		scaleFactor = 5.0f;
-
+	  
 	else if (nom == "muro")
 		scaleFactor = 100.0f;
 	 
@@ -1765,7 +1773,7 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 		m_rigidBody->setSpinningFriction(0.3f);
 		m_rigidBody->setDamping(0.1f, 0.5f);
 	}
-	else if (nom == "barrera") {
+	else if (nom == "barrera" || nom == "senyal1" || nom == "senyal2") {
 		scaleFactor = 1.0f;
 		m_rigidBody->setFriction(0.9f); 
 		m_rigidBody->setRestitution(0.05f);
@@ -1807,7 +1815,7 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 		float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
 		float escala = 0.0f, y = 0.0f, rad = 90.0f, z = 0.0f, x = 1.0f;
 		// Configurar separaciones según el objeto
-		if (nom == "cono" || nom == "cono_estatic") {
+		if (nom == "cono" || nom == "cono_estatic" || nom == "senyal1" || nom == "senyal2") {
 			sepX = -100.0f;
 			sepY = -50.0f;
 			escala = 0.8f;
