@@ -9,7 +9,7 @@ class Coche {
 public:
    
     float x, y, z;        // Posición
-    float vx, vy, vz;     // Velocidad
+    float velocidad_mph;  //velocidad
     float ax, ay, az;     // Aceleracion
     float psi;            // posicion angular (hacia donde apunta el coche. 0 es delante.)
     float v_angular;      // velocidad angular
@@ -25,7 +25,22 @@ public:
     void render(GLuint sh_programID, glm::mat4 MatriuVista);
     glm::mat4 getModelMatrixCar(float escala = 0.8f) const;
     btRigidBody* getChassisBody() const { return m_chassisBody; }
+    float getVelocidad() { return velocidad_mph; }
+    btVector3 getLinearVelocity() {return m_chassisBody->getLinearVelocity();}
+    btVector3 getAngularVelocity() { return m_chassisBody->getAngularVelocity(); }
+    void setLinearVelocity(const btVector3& vel) {
+        if (m_chassisBody) {
+            m_chassisBody->setLinearVelocity(vel);
+            m_chassisBody->activate(true); // Importante: Despierta el cuerpo si estaba dormido
+        }
+    }
 
+    void setAngularVelocity(const btVector3& vel) {
+        if (m_chassisBody) {
+            m_chassisBody->setAngularVelocity(vel);
+            m_chassisBody->activate(true); // Importante: Despierta el cuerpo
+        }
+    }
 private:
     COBJModel* model;     // apuntador al modelo de la carroceria
     COBJModel* model_rueda;      // Un solo modelo para todas las ruedas

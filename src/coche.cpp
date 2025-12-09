@@ -8,7 +8,7 @@ Coche::Coche() {
     x = -80;
     y = -50;
     z = 295;
-    vx = vy = vz = 0.0f;
+    velocidad_mph = 0.0f;
     ax = ay = az = 0.0f;
     psi = 90.0f;
     v_angular = 0.0f;
@@ -380,6 +380,10 @@ void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
         x = bulletPos.getX();
         y = bulletPos.getY();
         z = bulletPos.getZ();
+
+        btVector3 velocidadVector = m_chassisBody->getLinearVelocity();
+        float velocidadMetrosSegundo = velocidadVector.length();
+        velocidad_mph = velocidadMetrosSegundo * 2.23694f;
 
         btMatrix3x3 basis = trans.getBasis();
         btVector3 bulletForward = basis.getColumn(1);

@@ -813,12 +813,13 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 			std::string currentState = g_MenuController->getState();
 
 			if (currentState == "Playing") {
-				// Si estamos en PlayingState, cambiamos a PauseMenuState
+
 				g_MenuController->SwitchState(new PauseMenuState());
 				return; // Salimos de la función para no procesar otras teclas.
 			}
 			if (currentState == "Pause") {
 				// Si estamos en PauseMenuState, volvemos a PlayingState
+
 				g_MenuController->SwitchState(new PlayingState());
 				return; // Salimos de la función para no procesar otras teclas.
 			}
@@ -1703,8 +1704,15 @@ int main(void)
 		now = glfwGetTime();
 		delta = now - previous;
 		previous = now;
+		if (g_MenuController->GetContext()->isGameRunning) {
+			stepFisicas();
+		}
+		if (g_MenuController && g_MenuController->getState() == "Playing") {
+			g_GameContext.gameTime += delta;
 
-		stepFisicas();
+			// Actualizamos finalTime para que se guarde el último tiempo registrado
+			g_GameContext.finalTime = g_GameContext.gameTime;
+		}
 		// Entorn VGI. Timer: for each timer do this
 		time -= delta;
 		if ((time <= 0.0) && (satelit || anima)) OnTimer();
@@ -1795,6 +1803,21 @@ int main(void)
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		float velMPH = miCoche->getVelocidad(); // Tendrías que crear este método getter
+		static float damageAcumulado = 0.0f;
+
+		if (velMPH > 100.0f) {
+
+			float damagePerSecond = 0.5f;
+			damageAcumulado += damagePerSecond * delta;	
+			if (damageAcumulado >= 1.0f) {
+				g_GameContext.carHealth -= 1; 
+				damageAcumulado -= 1.0f;      
+
+				
+				if (g_GameContext.carHealth < 0) g_GameContext.carHealth = 0;
+			}
+		}
 	}
 
 
