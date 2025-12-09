@@ -63,7 +63,10 @@ void InitGL()
 	front_faces = true;	test_vis = false;	oculta = true;		back_line = false;
 
 	// Entorn VGI: Variables de control del menú Iluminació		
-	ilumina = SUAU;			ifixe = false;					ilum2sides = false;
+	ilumina = SUAU;			ifixe = false;					
+	ilum2sides = false;
+  
+
 	// Reflexions actives: Ambient [1], Difusa [2] i Especular [3]. No actives: Emission [0]. 
 	sw_material[0] = false;			sw_material[1] = true;			sw_material[2] = true;			sw_material[3] = true;	sw_material[4] = true;
 	sw_material_old[0] = false;		sw_material_old[1] = true;		sw_material_old[2] = true;		sw_material_old[3] = true;	sw_material_old[4] = true;
@@ -389,6 +392,7 @@ void OnPaint(GLFWwindow* window)
 	// TODO: Agregue aquí su código de controlador de mensajes
 	GLdouble vpv[3] = { 0.0, 0.0, 1.0 };
 
+
 	// Entorn VGI.ImGui: Menú ImGui condicionat al color de fons
 	if ((c_fons.r < 0.5) || (c_fons.g < 0.5) || (c_fons.b < 0.5))
 		ImGui::StyleColorsLight();
@@ -409,16 +413,16 @@ void OnPaint(GLFWwindow* window)
 	ProjectionMatrix = Projeccio_Perspectiva(shader_programID, 0, 0, w, h, OPV.R);
 
 	// Entorn VGI: Definició de la càmera.
-	if (camera == CAM_ESFERICA) {
-		n[0] = 0;		n[1] = 0;		n[2] = 0;
-		ViewMatrix = Vista_Esferica(shader_programID, OPV, Vis_Polar, pan, tr_cpv, tr_cpvF, c_fons, col_obj, objecte, mida, pas,
-			front_faces, oculta, test_vis, back_line,
-			ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
-			eixos, grid, hgrid);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
-	else if (camera == CAM_FOLLOW) {
+	//if (camera == CAM_ESFERICA) {
+	//	n[0] = 0;		n[1] = 0;		n[2] = 0;
+	//	ViewMatrix = Vista_Esferica(shader_programID, OPV, Vis_Polar, pan, tr_cpv, tr_cpvF, c_fons, col_obj, objecte, mida, pas,
+	//		front_faces, oculta, test_vis, back_line,
+	//		ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
+	//		eixos, grid, hgrid);
+	//	configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+	//	dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+	//}
+	if (camera == CAM_FOLLOW) {
 
 		ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, OPV, mobil, c_fons,
 			oculta, test_vis, back_line, ilumina, llum_ambient,
