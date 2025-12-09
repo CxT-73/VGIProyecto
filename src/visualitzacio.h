@@ -12,7 +12,8 @@
 /* ------------------------------------------------------------------------- */
 class Coche;
 // Entorn VGI: Il.luminació
-void Iluminacio(char ilumin, bool ifix, bool ilu2sides, bool ll_amb, LLUM* lumin, char obj, bool frnt_fcs, bool bc_lin, int step);
+void Iluminacio(GLint sh_programID, char ilumin, bool ifix[], bool ilu2sides, bool ll_amb, LLUM* lumin, char obj, bool frnt_fcs,
+	bool bc_lin, int step);
 
 
 // ----------- Entorn VGI: PROJECCIONS
@@ -24,50 +25,50 @@ glm::mat4 Projeccio_Perspectiva(GLsizei w, GLsizei h, double fov_grados);
 
 // ----------- Entorn VGI: CÀMERES
 // Entorn VGI: Càmera Ortogràfica
-glm::mat4 Vista_Ortografica(GLuint sh_programID, int prj, GLdouble Raux, CColor col_fons, CColor col_object, char objecte, GLdouble mida, int step,
-	bool frnt_fcs, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumin,
-	bool ifix, bool il2sides, bool eix, CMask3D reixa, CPunt3D hreixa);
+//glm::mat4 Vista_Ortografica(GLuint sh_programID, int prj, GLdouble Raux, CColor col_fons, CColor col_object, char objecte, GLdouble mida, int step,
+//	bool frnt_fcs, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumin,
+//	bool ifix, bool il2sides, bool eix, CMask3D reixa, CPunt3D hreixa);
 //// Entorn VGI: Càmera Esfèrica
 //glm::mat4 Vista_Esferica(GLuint sh_programID, CEsfe3D opv,char VPol,bool pant,CPunt3D tr,CPunt3D trF,
 //				 CColor col_fons,CColor col_object,char objecte,double mida,int step,
 //				 bool frnt_fcs, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumin, 
-//				 bool ifix[], bool il2sides, bool eix, CMask3D reixa, CPunt3D hreixa);
+//	bool ifix[NUM_MAX_LLUMS], bool il2sides, bool eix, CMask3D reixa, CPunt3D hreixa);
 //// Entorn VGI: Càmera Navega
 //glm::mat4 Vista_Navega(GLuint sh_programID,CPunt3D pv,//bool pvb,
 //				  GLdouble n[3],GLdouble v[3], bool pant,CPunt3D tr,CPunt3D trF,
 //				  CColor col_fons,CColor col_object,char objecte,bool color, int step, 
 //				  bool frnt_fcs, bool oculta, bool testv,bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumin, 
-//				  bool ifix[], bool il2sides, bool eix, CMask3D reixa, CPunt3D hreixa);
+//				  bool ifix, bool il2sides,bool eix, CMask3D reixa, CPunt3D hreixa);
 //// Entorn VGI: Càmera Geode
 //glm::mat4 Vista_Geode(GLuint sh_programID, CEsfe3D opv, char VPol, bool pant, CPunt3D tr, CPunt3D trF,
 //	CColor col_fons, CColor col_object, char objecte, double mida, int step,
 //	bool frnt_fcs, bool oculta, bool testv, bool bck_ln,
-//	char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides,
+//	char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides,
 //	bool eix, CMask3D reixa, CPunt3D hreixa);
 
 // Camera seguiment cotxe
 glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix, bool il2sides);
+	LLUM* lumi, bool ifix[], bool il2sides);
 
 glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fons,
-	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides);
+	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides);
 
 glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fons,
-	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides);
+	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides);
 
 glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche,bool esIzquierdo, CColor col_fons,
-	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix, bool il2sides);
+	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides);
 
 glm::mat4 Vista_Lliure(GLuint sh_programID, CColor col_fons, CEsfe3D opv, glm::vec3 g_FreeCamPos,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix, bool il2sides);
+	LLUM* lumi, bool ifix[], bool il2sides);
 glm::mat4 Vista_Pausa(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix, bool il2sides);
+	LLUM* lumi, bool ifix[], bool il2sides);
 glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix, bool il2sides);
+	LLUM* lumi, bool ifix[], bool il2sides);
 
 void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin);
 

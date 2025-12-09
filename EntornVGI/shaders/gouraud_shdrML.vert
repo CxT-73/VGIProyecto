@@ -51,7 +51,7 @@ uniform mat4 modelMatrix;	// Model Matrix.
 uniform sampler2D texture0;	// Imatge textura
 uniform bool textur;		// Booleana d’activació (TRUE) de textures o no (FALSE).
 uniform bool flag_invert_y;	// Booleana que activa la inversió coordenada textura t (o Y) a 1.0-cty segons llibreria SOIL (TRUE) o no (FALSE).
-uniform bool fixedLight;	// Booleana que defineix la font de llum fixe en Coordenades Món (TRUE) o no (FALSE).
+uniform bool fixedLight[MaxLights];	// Booleana que defineix la font de llum fixe en Coordenades Món (TRUE) o no (FALSE).
 uniform bool sw_material;	// Booleana que indica si el color del vèrtex ve del Material emission, ambient, diffue, specular (TRUE) o del vector de color del vèrtex in_Color (FALSE)
 uniform bvec4 sw_intensity;	// Filtre per a cada tipus de reflexió: Emissiva (sw_intensity[0]), Ambient (sw_intensity[1]), Difusa (sw_intensity[2]) o Especular (sw_intensity[2]).
 uniform vec4 LightModelAmbient;	// Intensitat de llum ambient (r,g,b,a)-
@@ -117,9 +117,11 @@ void main ()	// --- L64-
 	if (LightSource[i].sw_light) {
 		fatt = 1.0; 	// Inicialitzar factor d'atenuació. 
 		// --- L118- Compute light position (fixed in WC of attached to camera)
-		if (fixedLight) lightPosition = viewMatrix * LightSource[i].position;
-			else lightPosition = vec4(-vertexPV,1.0);
-
+		if (fixedLight[i]) {
+		lightPosition = viewMatrix * LightSource[i].position;
+		} else {
+		    lightPosition = vec4(-vertexPV, 1.0);
+		}
 		// --- L122- Compute point light source (w=1) or direccional light (w=0)
 		if (LightSource[i].position.w == 1) 
 		  { //L = normalize(lightPosition.xyz - vertexPV);
