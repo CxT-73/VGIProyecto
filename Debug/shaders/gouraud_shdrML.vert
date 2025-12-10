@@ -13,7 +13,7 @@
 //#version 330 core
 #version 460 core
 
-#define MaxLights 8
+#define MaxLights 20
 
 // --- L16- Estructures Font de LLum i Material (coeficients reflectivitat).
 struct Light
@@ -27,6 +27,7 @@ struct Light
 	vec3 spotDirection;	// Vector de direcció de la font restringida (Coord. Món).
 	float spotCosCutoff;	// Angle d'obertura de la font restringids (en graus). 
 	float spotExponent;	// Exponent per al càlcul intenstitat font restringida segons model Warn.
+	bool is_world_space;
 };
 
 struct Material
@@ -52,12 +53,13 @@ uniform mat4 modelMatrix;	// Model Matrix.
 uniform sampler2D texture0;	// Imatge textura
 uniform bool textur;		// Booleana d’activació (TRUE) de textures o no (FALSE).
 uniform bool flag_invert_y;	// Booleana que activa la inversió coordenada textura t (o Y) a 1.0-cty segons llibreria SOIL (TRUE) o no (FALSE).
-uniform bool fixedLight;	// Booleana que defineix la font de llum fixe en Coordenades Món (TRUE) o no (FALSE).
+uniform bool fixedLight[MaxLights];	// Booleana que defineix la font de llum fixe en Coordenades Món (TRUE) o no (FALSE).
 uniform bool sw_material;	// Booleana que indica si el color del vèrtex ve del Material emission, ambient, diffue, specular (TRUE) o del vector de color del vèrtex in_Color (FALSE)
 uniform bvec4 sw_intensity;	// Filtre per a cada tipus de reflexió: Emissiva (sw_intensity[0]), Ambient (sw_intensity[1]), Difusa (sw_intensity[2]) o Especular (sw_intensity[2]).
 uniform vec4 LightModelAmbient;	// Intensitat de llum ambient (r,g,b,a)-
 uniform Light LightSource[MaxLights];	// Vector de fonts de llum.
 uniform Material material;	// Vector de coeficients reflectivitat de materials.
+uniform int lightIsWorld[MaxLights];
 
 // --- L62- Variables out
 out vec4 VertexColor;
@@ -118,8 +120,11 @@ vec3 gouraudModel(inout int numMat, inout float aValue)
 	if (LightSource[i].sw_light) {
 		fatt = 1.0; 	// Inicialitzar factor d'atenuació. 
 		// --- L120- Compute light position (fixed in WC of attached to camera)
-		if (fixedLight) lightPosition = viewMatrix * LightSource[i].position;
-			else lightPosition = vec4(-vertexPV,1.0);
+		if (fixedLight[i]) {
+		lightPosition = viewMatrix * LightSource[i].position;
+		} else {
+		    lightPosition = vec4(-vertexPV, 1.0);
+		}
 
 		// --- L124- Compute point light source (w=1) or direccional light (w=0)
 		if (LightSource[i].position.w == 1) 

@@ -42,6 +42,7 @@ public:
     // Add this method to allow access to the current state
     IMenuState* GetCurrentState() const { return currentState; }
     
+    
     std::string getState() const {
         return contextData->state;
 	}

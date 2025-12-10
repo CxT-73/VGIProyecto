@@ -12,7 +12,7 @@ void PauseMenuState::Render(MenuController& controller) {
     controller.setState("Paused");
 
     controller.DrawBackgroundOverlay();
-
+    controller.GetContext()->isGameRunning = false;
 
     // 3 Botones + 2 espaciados (SPACING) + 1 espaciado (Título) + Título (aprox 1x BUTTON_HEIGHT)
     float title_height = ImGui::GetTextLineHeight() * 1.5f;
@@ -31,6 +31,10 @@ void PauseMenuState::Render(MenuController& controller) {
     ImVec2 button_size(BUTTON_WIDTH, BUTTON_HEIGHT);
 
     if (ImGui::Button("Resume practice", button_size)) {
+        char* cameraPtr = controller.GetCameraPtr();
+        if (cameraPtr) {
+            *cameraPtr = 'F'; 
+        }
         controller.GetContext()->isGameRunning = true;
         controller.SwitchState(new PlayingState());
     }

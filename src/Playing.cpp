@@ -16,7 +16,7 @@ void PlayingState::Render(MenuController& controller) {
 
     // Asignar cámara de juego
     char* cameraPtr = controller.GetCameraPtr();
-    if (cameraPtr) {
+    if (cameraPtr == nullptr) {
         // Asumiendo que CAM_FOLLOW es la cámara de carrera
         *cameraPtr = 'F';
     }

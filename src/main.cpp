@@ -42,7 +42,11 @@ void InitGL()
 	g_isOrbitingRight = false;
 
 
-
+	controlLlumsCotxe.frenando = false;
+	controlLlumsCotxe.intermitenteIzquierdo = false;
+	controlLlumsCotxe.intermitenteDerecho = false;
+	controlLlumsCotxe.modoFaros = 0;
+	controlLlumsCotxe.tiempoTotal = 0.0f;
 
 	// Entorn VGI: Variables de control Skybox Cube
 	SkyBoxCube = true;		skC_programID = 0;
@@ -63,7 +67,14 @@ void InitGL()
 	front_faces = true;	test_vis = false;	oculta = true;		back_line = false;
 
 	// Entorn VGI: Variables de control del menú Iluminació		
-	ilumina = SUAU;			ifixe = false;					ilum2sides = false;
+	ilumina = SUAU;			//ifixe = true;					
+	ilum2sides = false;
+	bool ifixe[NUM_MAX_LLUMS] = { false };  // TODOS A 0
+
+
+	printf("MAIN ifixe[] = ");
+	for (int i = 0; i < NUM_MAX_LLUMS; i++) printf("%d ", ifixe[i]);
+	printf("\n");
 	// Reflexions actives: Ambient [1], Difusa [2] i Especular [3]. No actives: Emission [0]. 
 	sw_material[0] = false;			sw_material[1] = true;			sw_material[2] = true;			sw_material[3] = true;	sw_material[4] = true;
 	sw_material_old[0] = false;		sw_material_old[1] = true;		sw_material_old[2] = true;		sw_material_old[3] = true;	sw_material_old[4] = true;
@@ -243,9 +254,10 @@ void InitGL()
 	shaderLighting.releaseAllShaders();
 	// Càrrega Shader de Gouraud
 	shader_programID = 0;
-	fprintf(stderr, "Gouraud_shdrML: \n");
-	if (!shader_programID) shader_programID = shaderLighting.loadFileShaders(".\\shaders\\gouraud_shdrML.vert", ".\\shaders\\gouraud_shdrML.frag");
-	shader = GOURAUD_SHADER;
+	fprintf(stderr, "Phong_shdrML: \n");
+	
+	if (!shader_programID) shader_programID = shaderLighting.loadFileShaders(".\\shaders\\phong_shdrML.vert", ".\\shaders\\phong_shdrML.frag");
+	shader = PHONG_SHADER;
 
 	// Càrrega SHADERS
 	// Càrrega Shader Eixos
@@ -312,6 +324,7 @@ void InitGL()
 	// CREACIÓ DE COTXE
 	if (miCoche == nullptr) {
 		miCoche = new Coche();
+		
 	}
 
 	if (cono == nullptr) {
@@ -389,6 +402,17 @@ void OnPaint(GLFWwindow* window)
 	// TODO: Agregue aquí su código de controlador de mensajes
 	GLdouble vpv[3] = { 0.0, 0.0, 1.0 };
 
+	ifixe[8] = true;
+	ifixe[9] = true;
+	ifixe[10] = true;
+	ifixe[11] = true;
+	ifixe[12] = true;
+	ifixe[13] = true;
+	ifixe[14] = true;
+	ifixe[15] = true;
+	ifixe[16] = true;
+	ifixe[17] = true;
+
 	// Entorn VGI.ImGui: Menú ImGui condicionat al color de fons
 	if ((c_fons.r < 0.5) || (c_fons.g < 0.5) || (c_fons.b < 0.5))
 		ImGui::StyleColorsLight();
@@ -409,125 +433,129 @@ void OnPaint(GLFWwindow* window)
 	ProjectionMatrix = Projeccio_Perspectiva(shader_programID, 0, 0, w, h, OPV.R);
 
 	// Entorn VGI: Definició de la càmera.
-	if (camera == CAM_ESFERICA) {
-		n[0] = 0;		n[1] = 0;		n[2] = 0;
-		ViewMatrix = Vista_Esferica(shader_programID, OPV, Vis_Polar, pan, tr_cpv, tr_cpvF, c_fons, col_obj, objecte, mida, pas,
-			front_faces, oculta, test_vis, back_line,
-			ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
-			eixos, grid, hgrid);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
-	else if (camera == CAM_FOLLOW) {
+	//if (camera == CAM_ESFERICA) {
+	//	n[0] = 0;		n[1] = 0;		n[2] = 0;
+	//	ViewMatrix = Vista_Esferica(shader_programID, OPV, Vis_Polar, pan, tr_cpv, tr_cpvF, c_fons, col_obj, objecte, mida, pas,
+	//		front_faces, oculta, test_vis, back_line,
+	//		ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
+	//		eixos, grid, hgrid);
+	//	configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+	//	dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+	//}
+	
 
-		ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, OPV, mobil, c_fons,
-			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
-	else if (camera == CAM_PRIMERA_PERSONA) {
+		if (camera == CAM_FOLLOW) {
+			printf("MAIN ifixe[] = ");
+			for (int i = 0; i < NUM_MAX_LLUMS; i++) printf("%d ", ifixe[i]);
+			ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, OPV, mobil, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+		}
+		else if (camera == CAM_PRIMERA_PERSONA) {
 
-		double fov_principal = 60.0f;
-		double fov_central = 15.0f;
-		double fov_lateral = 30.0f;
-		glViewport(0, 0, w, h);
+			double fov_principal = 60.0f;
+			double fov_central = 15.0f;
+			double fov_lateral = 30.0f;
+			glViewport(0, 0, w, h);
 
-		ProjectionMatrix = Projeccio_Perspectiva(w, h, fov_principal);
-		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_PrimeraPersona(shader_programID, miCoche, c_fons,
-			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
+			ProjectionMatrix = Projeccio_Perspectiva(w, h, fov_principal);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_PrimeraPersona(shader_programID, miCoche, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
 
-		configura_Escena();
-		if (SkyBoxCube) dibuixa_Skybox(skC_programID, cubemapTexture, Vis_Polar, ProjectionMatrix, ViewMatrix);
-		dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
-			textura, texturesID, textura_map, tFlag_invert_Y,
-			npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
-			ObOBJ, ViewMatrix, GTMatrix, true);
-		int mirrorWidth = w / 4;
-		int mirrorHeight = h / 5;
-		int x_center = (w - mirrorWidth) / 2;
-		int y_top = h - mirrorHeight - 10;
-
-
-		glViewport(x_center, y_top, mirrorWidth, mirrorHeight);
-
-
-		//glClear(GL_DEPTH_BUFFER_BIT);
-
-		ProjectionMatrix = Projeccio_Perspectiva(mirrorWidth, mirrorHeight, fov_central);
-		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_Espejo_Central(shader_programID, miCoche, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+			configura_Escena();
+			if (SkyBoxCube) dibuixa_Skybox(skC_programID, cubemapTexture, Vis_Polar, ProjectionMatrix, ViewMatrix);
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, true);
+			int mirrorWidth = w / 4;
+			int mirrorHeight = h / 5;
+			int x_center = (w - mirrorWidth) / 2;
+			int y_top = h - mirrorHeight - 10;
 
 
-		configura_Escena();
-		dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
-			textura, texturesID, textura_map, tFlag_invert_Y,
-			npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
-			ObOBJ, ViewMatrix, GTMatrix, false);
-
-		int x_left = 10;
-		int retrovWidth = w / 5;
-		int retrovHeight = h / 4;
-		int y_top_ret = h - retrovHeight - 10;
-		glViewport(x_left, y_top_ret, retrovWidth, retrovHeight);
-		//glClear(GL_DEPTH_BUFFER_BIT);
+			glViewport(x_center, y_top, mirrorWidth, mirrorHeight);
 
 
-		ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
-		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, true, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+			//glClear(GL_DEPTH_BUFFER_BIT);
+
+			ProjectionMatrix = Projeccio_Perspectiva(mirrorWidth, mirrorHeight, fov_central);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_Espejo_Central(shader_programID, miCoche, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
 
 
-		configura_Escena();
-		dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
-			textura, texturesID, textura_map, tFlag_invert_Y,
-			npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
-			ObOBJ, ViewMatrix, GTMatrix, false);
+			configura_Escena();
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, false);
 
-		int x_right = w - retrovWidth - 10;
-		glViewport(x_right, y_top_ret, retrovWidth, retrovHeight);
-		//glClear(GL_DEPTH_BUFFER_BIT);
-		ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
-		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, false, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
-
-
-		configura_Escena();
-		dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
-			textura, texturesID, textura_map, tFlag_invert_Y,
-			npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
-			ObOBJ, ViewMatrix, GTMatrix, false);
+			int x_left = 10;
+			int retrovWidth = w / 5;
+			int retrovHeight = h / 4;
+			int y_top_ret = h - retrovHeight - 10;
+			glViewport(x_left, y_top_ret, retrovWidth, retrovHeight);
+			//glClear(GL_DEPTH_BUFFER_BIT);
 
 
-	}
-	else if (camera == CAM_LLIURE) {
-		ViewMatrix = Vista_Lliure(shader_programID, c_fons, OPV, g_FreeCamPos,
-			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
-	else if (camera == CAM_PAUSA) {
+			ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, true, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
 
-		ViewMatrix = Vista_Pausa(shader_programID, miCoche, OPV, mobil, c_fons,
-			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
-	else if (camera == CAM_INICI) {
 
-		ViewMatrix = Vista_menu_inici(shader_programID, miCoche, OPV, mobil, c_fons,
-			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
+			configura_Escena();
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, false);
 
-	//  Actualitzar la barra d'estat de l'aplicació amb els valors R,A,B,PVx,PVy,PVz
-	if (true) Barra_Estat();
+			int x_right = w - retrovWidth - 10;
+			glViewport(x_right, y_top_ret, retrovWidth, retrovHeight);
+			//glClear(GL_DEPTH_BUFFER_BIT);
+			ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, false, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+
+
+			configura_Escena();
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, false);
+
+
+		}
+		else if (camera == CAM_LLIURE) {
+			ViewMatrix = Vista_Lliure(shader_programID, c_fons, OPV, g_FreeCamPos,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+		}
+		else if (camera == CAM_PAUSA) {
+
+			ViewMatrix = Vista_Pausa(shader_programID, miCoche, OPV, mobil, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+		}
+		else if (camera == CAM_INICI) {
+
+			ViewMatrix = Vista_menu_inici(shader_programID, miCoche, OPV, mobil, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+		}
+
+		//  Actualitzar la barra d'estat de l'aplicació amb els valors R,A,B,PVx,PVy,PVz
+		if (true) Barra_Estat();
+	
 }
 
 // configura_Escena: Funcio que configura els parametres de Model i dibuixa les
@@ -785,12 +813,13 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 			std::string currentState = g_MenuController->getState();
 
 			if (currentState == "Playing") {
-				// Si estamos en PlayingState, cambiamos a PauseMenuState
+
 				g_MenuController->SwitchState(new PauseMenuState());
 				return; // Salimos de la función para no procesar otras teclas.
 			}
 			if (currentState == "Pause") {
 				// Si estamos en PauseMenuState, volvemos a PlayingState
+
 				g_MenuController->SwitchState(new PlayingState());
 				return; // Salimos de la función para no procesar otras teclas.
 			}
@@ -823,7 +852,7 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 			case GLFW_KEY_K: // + //INTERMITENT DRET
 				controlLlumsCotxe.intermitenteDerecho = !controlLlumsCotxe.intermitenteDerecho;
 				break;
-			case GLFW_KEY_P: //DOBLE INTERMITENT
+			case GLFW_KEY_H: //DOBLE INTERMITENT
 				bool estado = !(controlLlumsCotxe.intermitenteIzquierdo && controlLlumsCotxe.intermitenteDerecho);
 				controlLlumsCotxe.intermitenteIzquierdo = estado;
 				controlLlumsCotxe.intermitenteDerecho = estado;
@@ -1675,8 +1704,15 @@ int main(void)
 		now = glfwGetTime();
 		delta = now - previous;
 		previous = now;
+		if (g_MenuController->GetContext()->isGameRunning) {
+			stepFisicas();
+		}
+		if (g_MenuController && g_MenuController->getState() == "Playing") {
+			g_GameContext.gameTime += delta;
 
-		stepFisicas();
+			// Actualizamos finalTime para que se guarde el último tiempo registrado
+			g_GameContext.finalTime = g_GameContext.gameTime;
+		}
 		// Entorn VGI. Timer: for each timer do this
 		time -= delta;
 		if ((time <= 0.0) && (satelit || anima)) OnTimer();
@@ -1767,6 +1803,21 @@ int main(void)
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		float velMPH = miCoche->getVelocidad(); // Tendrías que crear este método getter
+		static float damageAcumulado = 0.0f;
+
+		if (velMPH > 100.0f) {
+
+			float damagePerSecond = 0.5f;
+			damageAcumulado += damagePerSecond * delta;	
+			if (damageAcumulado >= 1.0f) {
+				g_GameContext.carHealth -= 1; 
+				damageAcumulado -= 1.0f;      
+
+				
+				if (g_GameContext.carHealth < 0) g_GameContext.carHealth = 0;
+			}
+		}
 	}
 
 

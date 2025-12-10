@@ -115,24 +115,24 @@ bool test_vis;  // Menú ocultacions: Activa [true] o desactiva [false] Test Visi
 bool oculta;    // Menú ocultacions: Activa [true] o desactiva [false] Ocultacions (Z-buffer).
 bool back_line; // Menú ocultacions: Activa [true] o desactiva [false] dibuix cares back com a línies.
 
-// Entorn VGI: Variables de control del menú Iluminació	
-bool ifixe;         // Iluminació fixe independent del PV (ifixe=1) 
-// o depenent (mobil) respecte el PV (casc miner) (ifixe=0)
-bool ilum2sides;	// Iluminació de les cares FRONT i BACK [TRUE] o només les FRONT [FALSE]
-char ilumina;		// Tipus d'il.luminació [FILFERROS 'f',PLANA 'c',SUAU 'c']
-static int oIlumina = 1;	// Variable que controla desplegable TIPUS ILUMINACIO d'ImGui
-bool sw_material[5];// Variable que controla els coeficients de reflectivitat del material [TRUE] o no [FALSE]:
-// [0]: emission, [1]: ambient, [2]: difusa, [3] especular.
-bool sw_material_old[5]; // Variable que guarda els valors de sw_material mentre no hi ha reflectivitat de material (refl_material=false).
-bool textura;       // Control de textures desactivades [0:NO] o activades [1:SI]
-char t_textura;		// Tipus de textures (predefinides o per fitxer)
-bool textura_map;	// Mapping de textura modulat amb la llum [TRUE] o calcat [FALSE]
-GLuint texturesID[NUM_MAX_TEXTURES];// Vector d'identificadors de textura de l'entorn. Si no hi ha textura activa, agafa el valor -1.
-// 0: Textura general, assignada a la lectura de fitxer.
-// 1-6: Textures de l'objecte Truck
-// 7: Textura pel Fractal
-// 8-9: Lliures
-bool tFlag_invert_Y; // Booleana que activa la inversió coordenada textura t (o Y) a 1.0-cty segons llibreria SOIL (TRUE) o no (FALSE).
+// Entorn VGI: Variables de control del menú Iluminació	  
+	bool ifixe[NUM_MAX_LLUMS];  // Iluminació fixe independent del PV (ifixe=1) 
+						// o depenent (mobil) respecte el PV (casc miner) (ifixe=0)
+	bool ilum2sides;	// Iluminació de les cares FRONT i BACK [TRUE] o només les FRONT [FALSE]
+	char ilumina;		// Tipus d'il.luminació [FILFERROS 'f',PLANA 'c',SUAU 'c']
+	static int oIlumina = 1;	// Variable que controla desplegable TIPUS ILUMINACIO d'ImGui
+	bool sw_material[5];// Variable que controla els coeficients de reflectivitat del material [TRUE] o no [FALSE]:
+						// [0]: emission, [1]: ambient, [2]: difusa, [3] especular.
+	bool sw_material_old[5]; // Variable que guarda els valors de sw_material mentre no hi ha reflectivitat de material (refl_material=false).
+	bool textura;       // Control de textures desactivades [0:NO] o activades [1:SI]
+	char t_textura;		// Tipus de textures (predefinides o per fitxer)
+	bool textura_map;	// Mapping de textura modulat amb la llum [TRUE] o calcat [FALSE]
+	GLuint texturesID[NUM_MAX_TEXTURES];// Vector d'identificadors de textura de l'entorn. Si no hi ha textura activa, agafa el valor -1.
+										// 0: Textura general, assignada a la lectura de fitxer.
+										// 1-6: Textures de l'objecte Truck
+										// 7: Textura pel Fractal
+										// 8-9: Lliures
+	bool tFlag_invert_Y; // Booleana que activa la inversió coordenada textura t (o Y) a 1.0-cty segons llibreria SOIL (TRUE) o no (FALSE).
 
 // Entorn VGI: Variables de control del menú Llums
 bool llum_ambient;		// Booleana que controla la llum ambient (SI/NO).
