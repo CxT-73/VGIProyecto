@@ -965,6 +965,30 @@ void OnJoystick(GLFWwindow* window) {
 
 		static bool lastButtons[20] = { false };
 
+
+		if (count > 9 && buttons[9] == GLFW_PRESS && !lastButtons[9]) {
+
+			// Obtenemos el estado actual del juego
+			std::string currentState = "";
+			if (g_MenuController) currentState = g_MenuController->getState();
+
+			if (currentState == "Playing") {
+				// Pausar juego
+				g_MenuController->SwitchState(new PauseMenuState());
+			}
+			else if (currentState == "Pause") {
+				// Reanudar juego
+				g_MenuController->SwitchState(new PlayingState());
+			}
+		}
+
+
+		if (g_MenuController && g_MenuController->getState() != "Playing") {
+			// Actualizamos la memoria de botones antes de salir para evitar "clics fantasma" al volver
+			for (int i = 0; i < count && i < 20; i++) lastButtons[i] = (buttons[i] == GLFW_PRESS);
+			return; // <--- ¡AQUÍ SE ACABA LA FUNCIÓN SI ESTÁS EN MENÚ!
+		}
+
 		// --- MAPA DE BOTONES PS5 (Indices GLFW estándar) ---
 		// 1: Cruz (Freno mano - Dejamos que coche.cpp lo gestione o lo hacemos aquí si prefieres)
 		// 2: Círculo (ABS)
@@ -1016,22 +1040,6 @@ void OnJoystick(GLFWwindow* window) {
 			// printf("ABS: %d\n", miCoche->activadoABS);
 		}
 
-
-		if (count > 9 && buttons[9] == GLFW_PRESS && !lastButtons[9]) {
-
-			// Obtenemos el estado actual del juego
-			std::string currentState = "";
-			if (g_MenuController) currentState = g_MenuController->getState();
-
-			if (currentState == "Playing") {
-				// Pausar juego
-				g_MenuController->SwitchState(new PauseMenuState());
-			}
-			else if (currentState == "Pause") {
-				// Reanudar juego
-				g_MenuController->SwitchState(new PlayingState());
-			}
-		}
 
 
 		//flecha de abajo en el mando para cambiar la camara.
@@ -1774,6 +1782,9 @@ int main(void)
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Habilita flechas del teclado (Arriba/Abajo + Enter)
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Habilita D-Pad/Stick del mando (Cruceta + Botón X/A)
+
 	ImFont* pNewFont = io.Fonts->AddFontFromFileTTF("../include/RobotoSlab-VariableFont_wght.ttf", 24.0f);
 
 	if (pNewFont)
@@ -1895,6 +1906,7 @@ int main(void)
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
+		glfwPollEvents(); 
 		float velMPH = miCoche->getVelocidad(); // Tendrías que crear este método getter
 		static float damageAcumulado = 0.0f;
 
