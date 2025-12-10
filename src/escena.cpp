@@ -577,7 +577,7 @@ void initEscenaDuplicados()
 			{5, {2, { {-55.0f, -270.0f, 360.0f}, {-150.0f, -245.0f, 360.0f} }}}, //fet
 			{6, {2, { {30.0f, 50.0f, 300.0f}, {140.0f, -140.0f, 300.0f} }} }, //fet
 			{7, {2, { {-243.0f, -190.0f, 270.0f}, {50.0f, -370.0f, 200.0f} }} }, //fet
-			{8, {1, { {-204.5f, 60.0f, 230.0f}   }} } //fet
+			{8, {1, { {-204.5f, 60.0f, 230.0f}   }} }
 
 		};
 		std::map<int, std::vector<int>> invisibles;
@@ -593,7 +593,7 @@ void initEscenaDuplicados()
 			{2, {2, { {-270.0f, 30.0f, 260.0f}, {70.0f, -100.0f, 260.0f} }} }, //fet
 			{3, {1, { {-220.0f, -100.0f, 260.0f} }}}, //fet
 			{4, {2, { {-130.0f, -480.0f, 248.0f}, {40.0f, -110.0f, 260.0f} }}}, //fet
-			{5, {2, { {-240.0f, 0.0f, 300.0f}, {270.0f, -130.0f, 350.0f} }}}, //fet
+			{5, {2, { {-240.0f, -50.0f, 300.0f}, {270.0f, -130.0f, 350.0f} }}}, //fet
 			{6, {1, { {80.0f, 10.0f, 200.0f} }}}, //fet
 			{7, {1, {  {-100.0f, -350.0f, 250.0f} }} },   //fet
 			{8, {1, { {0.0f, 120.0f, 230.0f}  }} }  //fet
@@ -620,13 +620,19 @@ void initEscenaDuplicados()
 	if (senyal2) {
 		ObjetoSeguidor* seg = new ObjetoSeguidor(senyal2, zonas, 0, mundo);
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{4, {2, { {-130.0f, -480.0f, 248.0f}, {120.0f, 0.0f, 260.0f} }}},
-			{6, {1, { {80.0f, 10.0f, 200.0f} }}} 
+			{2, {1, { { 50.0f, -30.0f, 235.0f} }} }, //fet
+			{3, {1, { {-190.0f, -170.0f, 254.0f} }}}, //fet 
+			{4, {1, { {-80.0f, 235.0f, 200.0f} }}}, //fet
+			{5, {1, { {60.0f, -245.0f, 333.0f} }}},  //fet
+			{6, {2, { {70.0f, -12.0f, 197.0f}, {-160.0f, -140.0f, 185.0f} }}}, //fet
+			{7, {1, {  {-160.0f, -330.0f, 230.0f} }} },   //fet
+			{8, {1, { {-65.0f, 110.0f,135.0f}  }} } //fet
 		};
 		std::map<int, std::vector<int>> invisibles;
 		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
 		seguidores.push_back(seg);
-	}
+	} 
+
 }
 void renderEscenaDuplicados(GLuint sh_programID,
 	glm::mat4 MatriuVista,
