@@ -824,7 +824,7 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 				return; // Salimos de la función para no procesar otras teclas.
 			}
 		}
-		else if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+		else if (key == GLFW_KEY_M && action == GLFW_PRESS) {
 			g_MenuController->SwitchState(new EndGameState());
 		}
 		else if (camera == CAM_FOLLOW)
