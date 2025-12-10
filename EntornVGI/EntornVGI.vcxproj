@@ -35,6 +35,7 @@
     <ClCompile Include="..\src\NewGame.cpp" />
     <ClCompile Include="..\src\PauseMenu.cpp" />
     <ClCompile Include="..\src\Playing.cpp" />
+    <ClCompile Include="..\src\quatern.cpp" />
     <ClCompile Include="..\src\zones.cpp" />
     <ClCompile Include="..\src\escena.cpp" />
     <ClCompile Include="..\src\glut_geometry.cpp" />
@@ -64,6 +65,7 @@
     <ClInclude Include="..\src\NewGame.h" />
     <ClInclude Include="..\src\PauseMenu.h" />
     <ClInclude Include="..\src\Playing.h" />
+    <ClInclude Include="..\src\quatern.h" />
     <ClInclude Include="..\src\zones.h" />
     <ClInclude Include="..\src\escena.h" />
     <ClInclude Include="..\src\glut_geometry.h" />

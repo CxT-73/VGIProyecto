@@ -16,7 +16,8 @@
 #define CAM_LLIURE 'L'
 #define CAM_PAUSA 'A'
 #define CAM_INICI 'I'
-
+#define CAM_GEODE 'G'
+#define CAM_NAVEGA 'N'
 //--------------- VGI: Tipus de Projecció
 #define AXONOM 'A'
 #define ORTO 'O'

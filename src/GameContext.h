@@ -2,6 +2,7 @@
 #include "ImGui\imgui.h"
 #include <vector>
 #include <string>
+#include "LinearMath/btVector3.h"
 
 // Estructura para compartir datos entre el juego y los menús
 struct GameContext {
@@ -20,4 +21,5 @@ struct GameContext {
     bool shouldCloseApp = false;
     bool resetGame = false; // Flag para reiniciar variables
     std::string state = "Main";
+
 };

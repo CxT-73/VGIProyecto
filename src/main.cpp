@@ -17,7 +17,7 @@
 #include "Playing.h"
 #include "PauseMenu.h"
 #include "EndGame.h"
- 
+
 
 void InitGL()
 {
@@ -30,19 +30,23 @@ void InitGL()
 	// Entorn VGI: Variables de control per Menú Càmera: Esfèrica, Navega, Mòbil, Zoom, Satelit, Polars... 
 	camera = CAM_FOLLOW;
 	mobil = false;	zzoom = true;		zzoomO = false;		satelit = false;
- 
 
 
-	OPV.R = 25.0f;      
-	OPV.alfa = 20.0f;   
-	OPV.beta = 0.0f;    
 
-	
+	OPV.R = 25.0f;
+	OPV.alfa = 20.0f;
+	OPV.beta = 90.0f;
+
+
 	g_isOrbitingLeft = false;
 	g_isOrbitingRight = false;
-	
 
 
+	controlLlumsCotxe.frenando = false;
+	controlLlumsCotxe.intermitenteIzquierdo = false;
+	controlLlumsCotxe.intermitenteDerecho = false;
+	controlLlumsCotxe.modoFaros = 0;
+	controlLlumsCotxe.tiempoTotal = 0.0f;
 
 	// Entorn VGI: Variables de control Skybox Cube
 	SkyBoxCube = true;		skC_programID = 0;
@@ -63,7 +67,14 @@ void InitGL()
 	front_faces = true;	test_vis = false;	oculta = true;		back_line = false;
 
 	// Entorn VGI: Variables de control del menú Iluminació		
-	ilumina = SUAU;			ifixe = false;					ilum2sides = false;
+	ilumina = SUAU;			//ifixe = true;					
+	ilum2sides = false;
+	bool ifixe[NUM_MAX_LLUMS] = { false };  // TODOS A 0
+
+
+	printf("MAIN ifixe[] = ");
+	for (int i = 0; i < NUM_MAX_LLUMS; i++) printf("%d ", ifixe[i]);
+	printf("\n");
 	// Reflexions actives: Ambient [1], Difusa [2] i Especular [3]. No actives: Emission [0]. 
 	sw_material[0] = false;			sw_material[1] = true;			sw_material[2] = true;			sw_material[3] = true;	sw_material[4] = true;
 	sw_material_old[0] = false;		sw_material_old[1] = true;		sw_material_old[2] = true;		sw_material_old[3] = true;	sw_material_old[4] = true;
@@ -243,9 +254,10 @@ void InitGL()
 	shaderLighting.releaseAllShaders();
 	// Càrrega Shader de Gouraud
 	shader_programID = 0;
-	fprintf(stderr, "Gouraud_shdrML: \n");
-	if (!shader_programID) shader_programID = shaderLighting.loadFileShaders(".\\shaders\\gouraud_shdrML.vert", ".\\shaders\\gouraud_shdrML.frag");
-	shader = GOURAUD_SHADER;
+	fprintf(stderr, "Phong_shdrML: \n");
+	
+	if (!shader_programID) shader_programID = shaderLighting.loadFileShaders(".\\shaders\\phong_shdrML.vert", ".\\shaders\\phong_shdrML.frag");
+	shader = PHONG_SHADER;
 
 	// Càrrega SHADERS
 	// Càrrega Shader Eixos
@@ -312,6 +324,7 @@ void InitGL()
 	// CREACIÓ DE COTXE
 	if (miCoche == nullptr) {
 		miCoche = new Coche();
+		
 	}
 
 	if (cono == nullptr) {
@@ -334,11 +347,18 @@ void InitGL()
 	}
 	if (barril == nullptr) {
 		barril = new OBJ("barril");
-	} 
+	}
 	if (zonas == nullptr) {
 		zonas = new Zones("punt");
 	}
-	 
+
+	if (senyal1 == nullptr) {
+		senyal1 = new OBJ("senyal1");
+	}
+
+	if (senyal2 == nullptr) {
+		senyal2 = new OBJ("senyal2");
+	}
 }
 
 void GetGLVersion(int* major, int* minor)
@@ -382,6 +402,17 @@ void OnPaint(GLFWwindow* window)
 	// TODO: Agregue aquí su código de controlador de mensajes
 	GLdouble vpv[3] = { 0.0, 0.0, 1.0 };
 
+	ifixe[8] = true;
+	ifixe[9] = true;
+	ifixe[10] = true;
+	ifixe[11] = true;
+	ifixe[12] = true;
+	ifixe[13] = true;
+	ifixe[14] = true;
+	ifixe[15] = true;
+	ifixe[16] = true;
+	ifixe[17] = true;
+
 	// Entorn VGI.ImGui: Menú ImGui condicionat al color de fons
 	if ((c_fons.r < 0.5) || (c_fons.g < 0.5) || (c_fons.b < 0.5))
 		ImGui::StyleColorsLight();
@@ -402,125 +433,129 @@ void OnPaint(GLFWwindow* window)
 	ProjectionMatrix = Projeccio_Perspectiva(shader_programID, 0, 0, w, h, OPV.R);
 
 	// Entorn VGI: Definició de la càmera.
-	if (camera == CAM_ESFERICA) {
-		n[0] = 0;		n[1] = 0;		n[2] = 0;
-		ViewMatrix = Vista_Esferica(shader_programID, OPV, Vis_Polar, pan, tr_cpv, tr_cpvF, c_fons, col_obj, objecte, mida, pas,
-			front_faces, oculta, test_vis, back_line,
-			ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
-			eixos, grid, hgrid);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
-	else if (camera == CAM_FOLLOW) {
+	//if (camera == CAM_ESFERICA) {
+	//	n[0] = 0;		n[1] = 0;		n[2] = 0;
+	//	ViewMatrix = Vista_Esferica(shader_programID, OPV, Vis_Polar, pan, tr_cpv, tr_cpvF, c_fons, col_obj, objecte, mida, pas,
+	//		front_faces, oculta, test_vis, back_line,
+	//		ilumina, llum_ambient, llumGL, ifixe, ilum2sides,
+	//		eixos, grid, hgrid);
+	//	configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+	//	dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+	//}
+	
 
-		ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, OPV, mobil, c_fons,
-			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
-	else if (camera == CAM_PRIMERA_PERSONA) {
+		if (camera == CAM_FOLLOW) {
+			printf("MAIN ifixe[] = ");
+			for (int i = 0; i < NUM_MAX_LLUMS; i++) printf("%d ", ifixe[i]);
+			ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, OPV, mobil, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+		}
+		else if (camera == CAM_PRIMERA_PERSONA) {
 
-		double fov_principal = 60.0f;
-		double fov_central = 15.0f;
-		double fov_lateral = 30.0f;
-		glViewport(0, 0, w, h);
-		
-		ProjectionMatrix = Projeccio_Perspectiva(w, h, fov_principal);
-		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_PrimeraPersona(shader_programID, miCoche, c_fons,
-			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
+			double fov_principal = 60.0f;
+			double fov_central = 15.0f;
+			double fov_lateral = 30.0f;
+			glViewport(0, 0, w, h);
 
-		configura_Escena();
-		if (SkyBoxCube) dibuixa_Skybox(skC_programID, cubemapTexture, Vis_Polar, ProjectionMatrix, ViewMatrix);
-		dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
-			textura, texturesID, textura_map, tFlag_invert_Y,
-			npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
-			ObOBJ, ViewMatrix, GTMatrix, true);
-		int mirrorWidth = w / 4;
-		int mirrorHeight = h / 5;
-		int x_center = (w - mirrorWidth) / 2;
-		int y_top = h - mirrorHeight - 10;
+			ProjectionMatrix = Projeccio_Perspectiva(w, h, fov_principal);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_PrimeraPersona(shader_programID, miCoche, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
 
-
-		glViewport(x_center, y_top, mirrorWidth, mirrorHeight);
-
-
-		//glClear(GL_DEPTH_BUFFER_BIT);
-
-		ProjectionMatrix = Projeccio_Perspectiva(mirrorWidth, mirrorHeight, fov_central);
-		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_Espejo_Central(shader_programID, miCoche, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+			configura_Escena();
+			if (SkyBoxCube) dibuixa_Skybox(skC_programID, cubemapTexture, Vis_Polar, ProjectionMatrix, ViewMatrix);
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, true);
+			int mirrorWidth = w / 4;
+			int mirrorHeight = h / 5;
+			int x_center = (w - mirrorWidth) / 2;
+			int y_top = h - mirrorHeight - 10;
 
 
-		configura_Escena();
-		dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
-			textura, texturesID, textura_map, tFlag_invert_Y,
-			npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
-			ObOBJ, ViewMatrix, GTMatrix, false);
-
-		int x_left = 10;
-		int retrovWidth = w / 5;
-		int retrovHeight = h / 4;
-		int y_top_ret = h - retrovHeight - 10;
-		glViewport(x_left, y_top_ret, retrovWidth, retrovHeight);
-		//glClear(GL_DEPTH_BUFFER_BIT);
+			glViewport(x_center, y_top, mirrorWidth, mirrorHeight);
 
 
-		ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
-		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, true, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+			//glClear(GL_DEPTH_BUFFER_BIT);
+
+			ProjectionMatrix = Projeccio_Perspectiva(mirrorWidth, mirrorHeight, fov_central);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_Espejo_Central(shader_programID, miCoche, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
 
 
-		configura_Escena();
-		dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
-			textura, texturesID, textura_map, tFlag_invert_Y,
-			npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
-			ObOBJ, ViewMatrix, GTMatrix, false);
+			configura_Escena();
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, false);
 
-		int x_right = w - retrovWidth - 10;
-		glViewport(x_right, y_top_ret, retrovWidth, retrovHeight);
-		//glClear(GL_DEPTH_BUFFER_BIT);
-		ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
-		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, false, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
-
-
-		configura_Escena();
-		dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
-			textura, texturesID, textura_map, tFlag_invert_Y,
-			npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
-			ObOBJ, ViewMatrix, GTMatrix, false);
+			int x_left = 10;
+			int retrovWidth = w / 5;
+			int retrovHeight = h / 4;
+			int y_top_ret = h - retrovHeight - 10;
+			glViewport(x_left, y_top_ret, retrovWidth, retrovHeight);
+			//glClear(GL_DEPTH_BUFFER_BIT);
 
 
-	}
-	else if (camera == CAM_LLIURE) {
-		ViewMatrix = Vista_Lliure(shader_programID, c_fons, OPV, g_FreeCamPos,
-			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
-	else if (camera == CAM_PAUSA) {
+			ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, true, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
 
-		ViewMatrix = Vista_Pausa(shader_programID, miCoche, OPV, mobil, c_fons,
-			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
-	else if (camera == CAM_INICI) {
 
-		ViewMatrix = Vista_menu_inici(shader_programID, miCoche, OPV, mobil, c_fons,
-			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
-		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
-		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
-	}
+			configura_Escena();
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, false);
 
-	//  Actualitzar la barra d'estat de l'aplicació amb els valors R,A,B,PVx,PVy,PVz
-	if (true) Barra_Estat();
+			int x_right = w - retrovWidth - 10;
+			glViewport(x_right, y_top_ret, retrovWidth, retrovHeight);
+			//glClear(GL_DEPTH_BUFFER_BIT);
+			ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
+			glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
+			ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, false, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+
+
+			configura_Escena();
+			dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+				textura, texturesID, textura_map, tFlag_invert_Y,
+				npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
+				ObOBJ, ViewMatrix, GTMatrix, false);
+
+
+		}
+		else if (camera == CAM_LLIURE) {
+			ViewMatrix = Vista_Lliure(shader_programID, c_fons, OPV, g_FreeCamPos,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+		}
+		else if (camera == CAM_PAUSA) {
+
+			ViewMatrix = Vista_Pausa(shader_programID, miCoche, OPV, mobil, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+		}
+		else if (camera == CAM_INICI) {
+
+			ViewMatrix = Vista_menu_inici(shader_programID, miCoche, OPV, mobil, c_fons,
+				oculta, test_vis, back_line, ilumina, llum_ambient,
+				llumGL, ifixe, ilum2sides);
+			configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
+			dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
+		}
+
+		//  Actualitzar la barra d'estat de l'aplicació amb els valors R,A,B,PVx,PVy,PVz
+		if (true) Barra_Estat();
+	
 }
 
 // configura_Escena: Funcio que configura els parametres de Model i dibuixa les
@@ -544,7 +579,7 @@ void dibuixa_Escena() {
 
 	// Escalat d'objectes, per adequar-los a les vistes ortogràfiques (Pràctica 2)
 	//	GTMatrix = glm::scale();
- 
+
 	//	Dibuix geometria de l'escena amb comandes GL.
 	dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
 		textura, texturesID, textura_map, tFlag_invert_Y,
@@ -778,21 +813,22 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 			std::string currentState = g_MenuController->getState();
 
 			if (currentState == "Playing") {
-				// Si estamos en PlayingState, cambiamos a PauseMenuState
+
 				g_MenuController->SwitchState(new PauseMenuState());
 				return; // Salimos de la función para no procesar otras teclas.
 			}
-			if(currentState == "Pause") {
+			if (currentState == "Pause") {
 				// Si estamos en PauseMenuState, volvemos a PlayingState
+
 				g_MenuController->SwitchState(new PlayingState());
 				return; // Salimos de la función para no procesar otras teclas.
 			}
 		}
-		else if (key == GLFW_KEY_P && action == GLFW_PRESS){
+		else if (key == GLFW_KEY_M && action == GLFW_PRESS) {
 			g_MenuController->SwitchState(new EndGameState());
 		}
 		else if (camera == CAM_FOLLOW)
-		if (mods == 0 && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
+			if (mods == 0 && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 		// =====================================================
 	// ZONA DE CONTROL DE LUCES DEL COCHE
 	// =====================================================
@@ -816,7 +852,7 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 			case GLFW_KEY_K: // + //INTERMITENT DRET
 				controlLlumsCotxe.intermitenteDerecho = !controlLlumsCotxe.intermitenteDerecho;
 				break;
-			case GLFW_KEY_P: //DOBLE INTERMITENT
+			case GLFW_KEY_H: //DOBLE INTERMITENT
 				bool estado = !(controlLlumsCotxe.intermitenteIzquierdo && controlLlumsCotxe.intermitenteDerecho);
 				controlLlumsCotxe.intermitenteIzquierdo = estado;
 				controlLlumsCotxe.intermitenteDerecho = estado;
@@ -924,7 +960,34 @@ void OnJoystick(GLFWwindow* window) {
 		int count;
 		const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
 
-		static bool lastButtons[15] = { false };
+		int axesCount;
+		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount); 
+
+		static bool lastButtons[20] = { false };
+
+
+		if (count > 9 && buttons[9] == GLFW_PRESS && !lastButtons[9]) {
+
+			// Obtenemos el estado actual del juego
+			std::string currentState = "";
+			if (g_MenuController) currentState = g_MenuController->getState();
+
+			if (currentState == "Playing") {
+				// Pausar juego
+				g_MenuController->SwitchState(new PauseMenuState());
+			}
+			else if (currentState == "Pause") {
+				// Reanudar juego
+				g_MenuController->SwitchState(new PlayingState());
+			}
+		}
+
+
+		if (g_MenuController && g_MenuController->getState() != "Playing") {
+			// Actualizamos la memoria de botones antes de salir para evitar "clics fantasma" al volver
+			for (int i = 0; i < count && i < 20; i++) lastButtons[i] = (buttons[i] == GLFW_PRESS);
+			return; // <--- ¡AQUÍ SE ACABA LA FUNCIÓN SI ESTÁS EN MENÚ!
+		}
 
 		// --- MAPA DE BOTONES PS5 (Indices GLFW estándar) ---
 		// 1: Cruz (Freno mano - Dejamos que coche.cpp lo gestione o lo hacemos aquí si prefieres)
@@ -978,6 +1041,8 @@ void OnJoystick(GLFWwindow* window) {
 		}
 
 
+
+		//flecha de abajo en el mando para cambiar la camara.
 		//flecha de abajo en el mando para cambiar la camara.
 
 		static bool wasCameraPressed = false;
@@ -992,15 +1057,86 @@ void OnJoystick(GLFWwindow* window) {
 				// Resetear posición al volver a externa
 				OPV.R = 25.0f;
 				OPV.alfa = 20.0f;
-				OPV.beta = 0.0f;
+				OPV.beta = 90.0f;
+
+				mobil = false;
+				g_isOrbitingLeft = false;
+				g_isOrbitingRight = false;
+
+
 				camera = CAM_FOLLOW;
 			}
 		}
+
+
+
 		// ACTUALIZAR MEMORIA CÁMARA INMEDIATAMENTE
 		wasCameraPressed = isCameraPressed;
 
+
+
+		static bool lastFrenoState = false;
+
+		// 1. CAMBIO DE ÍNDICE:
+		// Según tu manual: "Fletxa dreta" es el índice 14.
+		// Asegúrate de comprobar que 'count > 14' para evitar errores de memoria.
+		bool FMact = (count > 10 && buttons[16] == GLFW_PRESS);
+
+		// 2. LÓGICA (Idéntica a la cámara):
+		// Si está pulsado AHORA y NO lo estaba ANTES -> Entra.
+		if (FMact && !lastFrenoState) {
+			if (miCoche) {
+				miCoche->FrenoDeMano = !miCoche->FrenoDeMano;
+				printf("Freno Mano: %s\n", miCoche->FrenoDeMano ? "PUESTO" : "QUITADO");
+			}
+		}
+
+		// 3. ACTUALIZAR MEMORIA:
+		lastFrenoState = FMact; 
+
+
+		//controlar camara con r3
+		if (camera == CAM_FOLLOW) {
+			float rightStickX = (axesCount > 2) ? axes[2] : 0.0f;
+			float deadzone = 0.2f;
+
+			// Orbitar Izquierda/Derecha (Igual que Flechas Left/Right)
+			if (rightStickX < -deadzone) {
+				g_isOrbitingLeft = true;
+				g_isOrbitingRight = false;
+				mobil = true; // Activar modo manual
+			}
+			else if (rightStickX > deadzone) {
+				g_isOrbitingRight = true;
+				g_isOrbitingLeft = false;
+				mobil = true;
+			}
+			else {
+				// Si el stick está quieto, solo desactivamos si NO se está usando el teclado
+				if (glfwGetKey(window, GLFW_KEY_LEFT) != GLFW_PRESS) g_isOrbitingLeft = false;
+				if (glfwGetKey(window, GLFW_KEY_RIGHT) != GLFW_PRESS) g_isOrbitingRight = false;
+			}
+		}
+
+		if (count > 10 && buttons[13] == GLFW_PRESS && !lastButtons[13]) {
+			if (camera == CAM_FOLLOW) {
+				// RESET TOTAL
+				OPV.R = 25.0f;
+				OPV.alfa = 20.0f;
+
+				// IMPORTANTE: Pon aquí 90.0f (o el valor que te funcionó antes para que no salte)
+				OPV.beta = 90.0f;
+
+				mobil = false; // Desactiva modo manual -> La cámara sigue al coche
+				g_isOrbitingLeft = false;
+				g_isOrbitingRight = false;
+			}
+		}
+
+
+
 		// --- ACTUALIZAR ESTADO ANTERIOR ---
-		for (int i = 0; i < count && i < 15; i++) {
+		for (int i = 0; i < count && i < 20; i++) {
 			lastButtons[i] = (buttons[i] == GLFW_PRESS);
 		}
 	}
@@ -1508,7 +1644,7 @@ int main(void)
 	float time = elapsedTime;
 	float now;
 	float delta;
-	 
+
 
 
 	// glfw: initialize and configure
@@ -1601,7 +1737,7 @@ int main(void)
 	// Initialize Application control varibles
 	InitGL();
 
-	
+
 	bool g_ShowMenu = true; // Control maestro
 
 	g_GameContext.isGameRunning = false;
@@ -1626,7 +1762,7 @@ int main(void)
 	else {
 		printf("ALERTA: La variable circuit es nula. Revisa dond haces new OBJ.\n");
 	}
-	initEscenaDuplicados(); 
+	initEscenaDuplicados();
 	// ------------- Entorn VGI: Callbacks
 	// Set GLFW event callbacks. I removed glfwSetWindowSizeCallback for conciseness
 	glfwSetWindowSizeCallback(window, OnSize);										// - Windows Size in screen Coordinates
@@ -1645,6 +1781,9 @@ int main(void)
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Habilita flechas del teclado (Arriba/Abajo + Enter)
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Habilita D-Pad/Stick del mando (Cruceta + Botón X/A)
 
 	ImFont* pNewFont = io.Fonts->AddFontFromFileTTF("../include/RobotoSlab-VariableFont_wght.ttf", 24.0f);
 
@@ -1668,19 +1807,26 @@ int main(void)
 		now = glfwGetTime();
 		delta = now - previous;
 		previous = now;
+		if (g_MenuController->GetContext()->isGameRunning) {
+			stepFisicas();
+		}
+		if (g_MenuController && g_MenuController->getState() == "Playing") {
+			g_GameContext.gameTime += delta;
 
-		stepFisicas();
+			// Actualizamos finalTime para que se guarde el último tiempo registrado
+			g_GameContext.finalTime = g_GameContext.gameTime;
+		}
 		// Entorn VGI. Timer: for each timer do this
 		time -= delta;
 		if ((time <= 0.0) && (satelit || anima)) OnTimer();
 
 		if (camera == CAM_FOLLOW && mobil)
 		{
-			
-			float orbitSpeedPerSecond = 120.0f; 
+
+			float orbitSpeedPerSecond = 120.0f;
 
 			if (g_isOrbitingLeft) {
-				
+
 				OPV.beta -= orbitSpeedPerSecond * delta;
 			}
 			if (g_isOrbitingRight) {
@@ -1690,9 +1836,9 @@ int main(void)
 		if (camera == CAM_LLIURE)
 		{
 			float velocity = 100.0f; // AUMETAR PARA QUE LA CAMARA VAYA MAS RAPIDO
-			float moveSpeed = velocity * delta; 
+			float moveSpeed = velocity * delta;
 
-			
+
 			glm::vec3 front;
 			float yaw_rad = glm::radians(OPV.beta);
 			float pitch_rad = glm::radians(OPV.alfa);
@@ -1726,13 +1872,14 @@ int main(void)
 
 			OPV.beta += orbitSpeedPerSecond * delta;
 		}
-		
+
 
 
 
 
 		// Poll for and process events
 		glfwPollEvents();
+		OnJoystick(window);
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -1749,8 +1896,8 @@ int main(void)
 
 		if (GLFW_KEY_ESCAPE && GLFW_PRESS)
 
-		// Crida a OnPaint() per redibuixar l'escena
-		OnPaint(window);
+			// Crida a OnPaint() per redibuixar l'escena
+			OnPaint(window);
 
 		// Entorn VGI: Activa la finestra actual
 		glfwMakeContextCurrent(window);
@@ -1759,7 +1906,22 @@ int main(void)
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
-		glfwPollEvents();
+		glfwPollEvents(); 
+		float velMPH = miCoche->getVelocidad(); // Tendrías que crear este método getter
+		static float damageAcumulado = 0.0f;
+
+		if (velMPH > 100.0f) {
+
+			float damagePerSecond = 0.5f;
+			damageAcumulado += damagePerSecond * delta;	
+			if (damageAcumulado >= 1.0f) {
+				g_GameContext.carHealth -= 1; 
+				damageAcumulado -= 1.0f;      
+
+				
+				if (g_GameContext.carHealth < 0) g_GameContext.carHealth = 0;
+			}
+		}
 	}
 
 

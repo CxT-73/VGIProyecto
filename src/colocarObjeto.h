@@ -11,6 +11,7 @@ public:
     Zones* zonas;
     int zonaIndex;
     btDiscreteDynamicsWorld* mundo;
+    std::vector<glm::vec3> posicionesDuplicados;
 
     std::vector<OBJ*> duplicados;
     std::vector<int> invisibleFlags;
@@ -22,7 +23,7 @@ public:
         const std::map<int, std::vector<int>>& invisiblesPorZona,
         glm::vec3 rot,
         glm::vec3 escala);
-
+    
     void renderDuplicados(GLuint sh_programID,
         glm::mat4 MatriuVista,
         glm::mat4 MatriuTG,

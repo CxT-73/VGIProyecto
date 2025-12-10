@@ -16,7 +16,7 @@ void EndGameState::Render(MenuController& controller) {
     }
 
     controller.DrawBackgroundOverlay();
-
+    controller.setState("NewGame");
     // ----------------------------------------------------------------------
     // CÁLCULO DE ALTURA REQUERIDA (Ajustado para títulos y puntuación grandes)
     // ----------------------------------------------------------------------
