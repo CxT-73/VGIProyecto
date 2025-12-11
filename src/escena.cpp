@@ -20,6 +20,8 @@
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionShapes/btTriangleMesh.h>
 #include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
+#include "MenuController.h"
+
 std::vector<ObjetoSeguidor*> seguidores;
 Coche* miCoche = nullptr;
 OBJ* cono = nullptr;
@@ -39,6 +41,9 @@ btBroadphaseInterface* broadphase = nullptr;
 btDefaultCollisionConfiguration* collisionConfiguration = nullptr;
 btCollisionDispatcher* dispatcher = nullptr;
 btSequentialImpulseConstraintSolver* solver = nullptr;
+
+
+float tiempoInvulnerabilidad = 5.0f;
 
 // Dibuixa Eixos Coordenades Món i Reixes, activant un shader propi.
 void dibuixa_Eixos(GLuint ax_programID, bool eix, GLuint axis_Id, CMask3D reixa, CPunt3D hreixa, 
@@ -1555,6 +1560,8 @@ void Cabina(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_m
 	glDisable(GL_BLEND);
 }
 
+extern MenuController* g_MenuController;
+
 void initFisicas() {
 	//Configuración de colisiones predeterminada
 	collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -1614,6 +1621,7 @@ void crearColisionadorEstatico(OBJ* objetoJuego) {
 void stepFisicas() {
 	if (mundo) {
 		mundo->stepSimulation(1.0f / 60.0f, 10, 1.0f / 120.0f);
+		detectarColisiones();
 	}
 	if (miCoche) miCoche->update();
 }
@@ -1635,9 +1643,58 @@ void cleanFisicas() {
 void iniciarFisicasCoche() {
 	if (miCoche != nullptr && mundo != nullptr) {
 		miCoche->initFisicas(mundo);
+
+		// --- AÑADIDO: Marcamos el rigidbody del coche ---
+		// Obtenemos el cuerpo rigido (asumiendo que tienes un getter, si no, accede a la variable publica)
+		btRigidBody* rbCoche = miCoche->getRigidBody();
+		if (rbCoche) {
+			// Usamos un puntero al propio objeto coche o un ID específico (ej: (void*)1)
+			// Esto nos servirá para identificarlo en la colisión.
+			rbCoche->setUserPointer((void*)miCoche);
+		}
 	}
 	else {
 		printf("Error: No se pudo iniciar el coche (miCoche o mundo son nulos)\n");
 	}
 }
 // FI OBJECTE TIE: FETS PER ALUMNES -----------------------------------------------------------------
+
+void detectarColisiones() {
+	if (!mundo) return;
+
+	if (tiempoInvulnerabilidad > 0.0f) {
+		tiempoInvulnerabilidad -= 1.0f / 60.0f; // Asumiendo 60FPS
+		return; // Si somos invulnerables, no comprobamos colisiones
+	}
+
+	int numManifolds = mundo->getDispatcher()->getNumManifolds();
+
+	for (int i = 0; i < numManifolds; i++) {
+		btPersistentManifold* contactManifold = mundo->getDispatcher()->getManifoldByIndexInternal(i);
+
+		// Obtenemos los dos objetos que están chocando
+		const btCollisionObject* obA = contactManifold->getBody0();
+		const btCollisionObject* obB = contactManifold->getBody1();
+
+		// Chequeamos si alguno de los dos es el coche usando el UserPointer que configuramos en el Paso 1
+		bool esCocheA = (obA->getUserPointer() == (void*)miCoche);
+		bool esCocheB = (obB->getUserPointer() == (void*)miCoche);
+
+		// Si ninguno es el coche, pasamos al siguiente contacto
+		if (!esCocheA && !esCocheB) continue;
+
+		// Verificar si hay contacto real (distancia < 0)
+		int numContacts = contactManifold->getNumContacts();
+		for (int j = 0; j < numContacts; j++) {
+			btManifoldPoint& pt = contactManifold->getContactPoint(j);
+			if (pt.getDistance() < 0.f) {
+
+				tiempoInvulnerabilidad = 1.0f;
+
+				if (g_MenuController) g_MenuController->loseHP(10);
+
+				return; // Salimos tras detectar el primer golpe para no restar vida múltiple en el mismo frame
+			}
+		}
+	}
+}

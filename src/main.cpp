@@ -1890,9 +1890,16 @@ int main(void)
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 
+		if (g_MenuController->getCarHealth() == 0) {
+			g_MenuController->calculateScore();
+			g_MenuController->SwitchState(new EndGameState());
+		}
+
 		if (g_MenuController) {
 			g_MenuController->Render();
 		}
+
+
 
 		if (GLFW_KEY_ESCAPE && GLFW_PRESS)
 

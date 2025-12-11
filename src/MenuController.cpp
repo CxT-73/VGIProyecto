@@ -96,3 +96,39 @@ void MenuController::PopUserNeonStyle() {
     ImGui::PopStyleColor(9); // 5 (Base) + 1 (PopupBg) + 3 (Frames) = 9
     ImGui::PopStyleVar(2);
 }
+
+void MenuController::calculateScore() {
+    if (!contextData) return;
+
+    // --- CONFIGURACIÓN DE PUNTUACIÓN ---
+    const float TIME_LIMIT = 300.0f;      // Tiempo objetivo (ej: 5 minutos / 300 segundos)
+    const int POINTS_PER_HEALTH = 100;    // Puntos por cada 1% de vida
+    const int POINTS_PER_SEC_SAVED = 50;  // Puntos por cada segundo ahorrado respecto al límite
+    const int PENALTY_PER_COLLISION = 200;// Puntos restados por cada choque
+
+    // 1. Puntuación por Vida Restante
+    // GameContext::carHealth
+    int healthScore = contextData->carHealth * POINTS_PER_HEALTH;
+
+    // 2. Puntuación por Tiempo
+    // Usamos finalTime si la carrera terminó, de lo contrario usamos gameTime actual
+    float timeTaken = (contextData->finalTime > 0.0f) ? contextData->finalTime : contextData->gameTime;
+
+    float timeSaved = TIME_LIMIT - timeTaken;
+    if (timeSaved < 0.0f) timeSaved = 0.0f; // No damos puntos negativos por tiempo, solo 0 bonus
+
+    int timeScore = static_cast<int>(timeSaved * POINTS_PER_SEC_SAVED);
+
+    // 3. Penalización por Colisiones
+    // GameContext::collisionCount
+    int collisionPenalty = contextData->collisionCount * PENALTY_PER_COLLISION;
+
+    // 4. Cálculo Total
+    int totalScore = (healthScore + timeScore) - collisionPenalty;
+
+    // Evitamos que la puntuación sea negativa
+    if (totalScore < 0) totalScore = 0;
+
+    // 5. Guardar resultado en el contexto
+    contextData->score = totalScore;
+}

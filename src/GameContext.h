@@ -14,7 +14,7 @@ struct GameContext {
     int collisionCount = 0;
     int score = 0;
     float gameTime = 0.0f;        // Tiempo transcurrido en segundos
-    int carHealth = 100;
+    int carHealth = 10;
 
     // Control de flujo
     bool isGameRunning = false; // Para saber si "Resume" tiene sentido

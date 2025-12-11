@@ -41,8 +41,25 @@ public:
 
     // Add this method to allow access to the current state
     IMenuState* GetCurrentState() const { return currentState; }
-    
-    
+
+    int getCarHealth() const {
+        return contextData->carHealth;
+	}
+
+    bool getRestart() const {
+        return contextData->resetGame;
+    }
+
+    void calculateScore();
+    void setRestart() {
+		contextData->isGameRunning = false;
+		contextData->carHealth = 10;
+		contextData->gameTime = 0.0f;
+		contextData->collisionCount = 0;
+		contextData->finalTime = 0.0f;
+		contextData->score = 0;
+    }
+
     std::string getState() const {
         return contextData->state;
 	}
@@ -50,4 +67,10 @@ public:
     void setState(std::string state) {
         contextData->state = state;
     }
+    void loseHP(int amount) {
+        contextData->carHealth -= amount;
+        if (contextData->carHealth < 0) {
+            contextData->carHealth = 0;
+        }
+	}
 };
