@@ -190,7 +190,7 @@ void Coche::update() {
 
     //CONFIGURACIÓN DE FUERZAS
     float potAcelerar = -5000.0f; // Fuerza para ir adelante
-    float potAtras = 2000.0f;     // Fuerza para ir atrás
+    float potAtras = 4000.0f;     // Fuerza para ir atrás
     float frenoABS = 300.0f;       // Freno suave
     float frenoBloqueo = 3300.0f; // Bloqueo salvaje
     float frenoParking = 100000.0f;

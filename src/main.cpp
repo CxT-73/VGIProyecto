@@ -554,7 +554,7 @@ void OnPaint(GLFWwindow* window)
 		}
 
 		//  Actualitzar la barra d'estat de l'aplicació amb els valors R,A,B,PVx,PVy,PVz
-		if (true) Barra_Estat();
+		/*if (true) Barra_Estat();*/
 	
 }
 
@@ -1705,7 +1705,7 @@ int main(void)
 		delta = now - previous;
 		previous = now;
 		if (g_MenuController->GetContext()->isGameRunning) {
-			stepFisicas();
+			stepFisicas(delta);
 		}
 		if (g_MenuController && g_MenuController->getState() == "Playing") {
 			g_GameContext.gameTime += delta;
@@ -1797,6 +1797,7 @@ int main(void)
 
 		// Entorn VGI: Activa la finestra actual
 		glfwMakeContextCurrent(window);
+		glfwSwapInterval(1);
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
