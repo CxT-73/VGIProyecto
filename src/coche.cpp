@@ -177,6 +177,7 @@ void Coche::update() {
             FrenoDeMano = !FrenoDeMano;
             printf("Freno de Mano: %s\n", FrenoDeMano ? "PUESTO" : "QUITADO");
             pPressed = true;
+
         }
     }
     else {
@@ -206,7 +207,7 @@ void Coche::update() {
     if (FrenoDeMano) {
         fuerzaMotor = 0.0f;
         fuerzaFreno = frenoParking;
-        controlLlumsCotxe.frenando = true;
+        
     }
     else {
         if (W) {

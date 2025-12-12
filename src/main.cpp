@@ -833,7 +833,8 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 	// ZONA DE CONTROL DE LUCES DEL COCHE
 	// =====================================================
 
-		if (key == GLFW_KEY_S) //FRE o MARCHA ENRERE
+
+		if (key == GLFW_KEY_SPACE) //FRE o MARCHA ENRERE
 		{
 			if (action == GLFW_PRESS) controlLlumsCotxe.frenando = true;
 			else if (action == GLFW_RELEASE) controlLlumsCotxe.frenando = false;
@@ -1914,10 +1915,11 @@ int main(void)
 
 		glfwSwapBuffers(window);
 		glfwPollEvents(); 
-		float velMPH = miCoche->getVelocidad(); // Tendrías que crear este método getter
+		float velMPH = miCoche->getVelocidad(); 
+		g_GameContext.velocity = velMPH/3; //truco para que vaya rapido y el limite marque 35 (si no el coche va muy lento)
 		static float damageAcumulado = 0.0f;
 
-		if (velMPH > 100.0f) {
+		if (velMPH > 105.0f) {
 
 			float damagePerSecond = 0.5f;
 			damageAcumulado += damagePerSecond * delta;	
