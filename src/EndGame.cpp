@@ -15,6 +15,8 @@ void EndGameState::Render(MenuController& controller) {
         *cameraPtr = 'I'; 
     }
 
+	controller.GetContext()->resetGame = true;
+
     controller.DrawBackgroundOverlay();
     controller.setState("NewGame");
     // ----------------------------------------------------------------------
@@ -78,7 +80,7 @@ void EndGameState::Render(MenuController& controller) {
     float score_line_width = score_label_size.x + score_value_size.x + 20.0f; // Espacio entre etiqueta y valor
     
     // Centrar la línea completa
-    ImGui::SetCursorPosX((ImGui::GetWindowWidth() - score_line_width) * 0.5f);
+    ImGui::SetCursorPosX(centered_x_pos + (BUTTON_WIDTH - STATS_WIDTH) * 0.5f);
 
     // Etiqueta
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%s", score_label); 
@@ -103,6 +105,10 @@ void EndGameState::Render(MenuController& controller) {
         controller.SwitchState(new MainMenuState());
     }
 
-    controller.PopUserNeonStyle(); 
+    controller.PopUserNeonStyle();
+
+    if(controller.getRestart())
+        restartGame(controller);
+
     ImGui::End();
 }

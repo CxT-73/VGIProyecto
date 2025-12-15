@@ -20,6 +20,8 @@
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionShapes/btTriangleMesh.h>
 #include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
+#include "MenuController.h"
+
 std::vector<ObjetoSeguidor*> seguidores;
 Coche* miCoche = nullptr;
 OBJ* cono = nullptr;
@@ -39,6 +41,9 @@ btBroadphaseInterface* broadphase = nullptr;
 btDefaultCollisionConfiguration* collisionConfiguration = nullptr;
 btCollisionDispatcher* dispatcher = nullptr;
 btSequentialImpulseConstraintSolver* solver = nullptr;
+
+
+float tiempoInvulnerabilidad = 5.0f;
 
 // Dibuixa Eixos Coordenades Món i Reixes, activant un shader propi.
 void dibuixa_Eixos(GLuint ax_programID, bool eix, GLuint axis_Id, CMask3D reixa, CPunt3D hreixa, 
@@ -577,7 +582,7 @@ void initEscenaDuplicados()
 			{5, {2, { {-55.0f, -270.0f, 360.0f}, {-150.0f, -245.0f, 360.0f} }}}, //fet
 			{6, {2, { {30.0f, 50.0f, 300.0f}, {140.0f, -140.0f, 300.0f} }} }, //fet
 			{7, {2, { {-243.0f, -190.0f, 270.0f}, {50.0f, -370.0f, 200.0f} }} }, //fet
-			{8, {1, { {-204.5f, 60.0f, 230.0f}   }} } //fet
+			{8, {1, { {-204.5f, 60.0f, 230.0f}   }} }
 
 		};
 		std::map<int, std::vector<int>> invisibles;
@@ -593,7 +598,7 @@ void initEscenaDuplicados()
 			{2, {2, { {-270.0f, 30.0f, 260.0f}, {70.0f, -100.0f, 260.0f} }} }, //fet
 			{3, {1, { {-220.0f, -100.0f, 260.0f} }}}, //fet
 			{4, {2, { {-130.0f, -480.0f, 248.0f}, {40.0f, -110.0f, 260.0f} }}}, //fet
-			{5, {2, { {-240.0f, 0.0f, 300.0f}, {270.0f, -130.0f, 350.0f} }}}, //fet
+			{5, {2, { {-240.0f, -50.0f, 300.0f}, {270.0f, -130.0f, 350.0f} }}}, //fet
 			{6, {1, { {80.0f, 10.0f, 200.0f} }}}, //fet
 			{7, {1, {  {-100.0f, -350.0f, 250.0f} }} },   //fet
 			{8, {1, { {0.0f, 120.0f, 230.0f}  }} }  //fet
@@ -620,13 +625,19 @@ void initEscenaDuplicados()
 	if (senyal2) {
 		ObjetoSeguidor* seg = new ObjetoSeguidor(senyal2, zonas, 0, mundo);
 		std::map<int, std::pair<int, std::vector<glm::vec3>>> zonasConfig = {
-			{4, {2, { {-130.0f, -480.0f, 248.0f}, {120.0f, 0.0f, 260.0f} }}},
-			{6, {1, { {80.0f, 10.0f, 200.0f} }}} 
+			{2, {1, { { 50.0f, -30.0f, 235.0f} }} }, //fet
+			{3, {1, { {-190.0f, -170.0f, 254.0f} }}}, //fet 
+			{4, {1, { {-80.0f, 235.0f, 200.0f} }}}, //fet
+			{5, {1, { {60.0f, -245.0f, 333.0f} }}},  //fet
+			{6, {2, { {70.0f, -12.0f, 197.0f}, {-160.0f, -140.0f, 185.0f} }}}, //fet
+			{7, {1, {  {-160.0f, -330.0f, 230.0f} }} },   //fet
+			{8, {1, { {-65.0f, 110.0f,135.0f}  }} } //fet
 		};
 		std::map<int, std::vector<int>> invisibles;
 		seg->crearDuplicados(zonasConfig, invisibles, glm::vec3(0.0f), glm::vec3(10.0f));
 		seguidores.push_back(seg);
-	}
+	} 
+
 }
 void renderEscenaDuplicados(GLuint sh_programID,
 	glm::mat4 MatriuVista,
@@ -1549,6 +1560,8 @@ void Cabina(GLint shaderId, glm::mat4 MatriuVista, glm::mat4 MatriuTG, bool sw_m
 	glDisable(GL_BLEND);
 }
 
+extern MenuController* g_MenuController;
+
 void initFisicas() {
 	//Configuración de colisiones predeterminada
 	collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -1607,7 +1620,12 @@ void crearColisionadorEstatico(OBJ* objetoJuego) {
 
 void stepFisicas(float deltaTime) {
 	if (mundo) {
+<<<<<<< HEAD
 		mundo->stepSimulation(deltaTime, 10, 1.0f / 120.0f);
+=======
+		mundo->stepSimulation(1.0f / 60.0f, 10, 1.0f / 120.0f);
+		detectarColisiones();
+>>>>>>> c36bdd961a9a587e0cec46993f3fb73e275e09c1
 	}
 	if (miCoche) miCoche->update();
 }
@@ -1629,9 +1647,58 @@ void cleanFisicas() {
 void iniciarFisicasCoche() {
 	if (miCoche != nullptr && mundo != nullptr) {
 		miCoche->initFisicas(mundo);
+
+		// --- AÑADIDO: Marcamos el rigidbody del coche ---
+		// Obtenemos el cuerpo rigido (asumiendo que tienes un getter, si no, accede a la variable publica)
+		btRigidBody* rbCoche = miCoche->getRigidBody();
+		if (rbCoche) {
+			// Usamos un puntero al propio objeto coche o un ID específico (ej: (void*)1)
+			// Esto nos servirá para identificarlo en la colisión.
+			rbCoche->setUserPointer((void*)miCoche);
+		}
 	}
 	else {
 		printf("Error: No se pudo iniciar el coche (miCoche o mundo son nulos)\n");
 	}
 }
 // FI OBJECTE TIE: FETS PER ALUMNES -----------------------------------------------------------------
+
+void detectarColisiones() {
+	if (!mundo) return;
+
+	if (tiempoInvulnerabilidad > 0.0f) {
+		tiempoInvulnerabilidad -= 1.0f / 60.0f; // Asumiendo 60FPS
+		return; // Si somos invulnerables, no comprobamos colisiones
+	}
+
+	int numManifolds = mundo->getDispatcher()->getNumManifolds();
+
+	for (int i = 0; i < numManifolds; i++) {
+		btPersistentManifold* contactManifold = mundo->getDispatcher()->getManifoldByIndexInternal(i);
+
+		// Obtenemos los dos objetos que están chocando
+		const btCollisionObject* obA = contactManifold->getBody0();
+		const btCollisionObject* obB = contactManifold->getBody1();
+
+		// Chequeamos si alguno de los dos es el coche usando el UserPointer que configuramos en el Paso 1
+		bool esCocheA = (obA->getUserPointer() == (void*)miCoche);
+		bool esCocheB = (obB->getUserPointer() == (void*)miCoche);
+
+		// Si ninguno es el coche, pasamos al siguiente contacto
+		if (!esCocheA && !esCocheB) continue;
+
+		// Verificar si hay contacto real (distancia < 0)
+		int numContacts = contactManifold->getNumContacts();
+		for (int j = 0; j < numContacts; j++) {
+			btManifoldPoint& pt = contactManifold->getContactPoint(j);
+			if (pt.getDistance() < 0.f) {
+
+				tiempoInvulnerabilidad = 1.0f;
+
+				if (g_MenuController) g_MenuController->loseHP(10);
+
+				return; // Salimos tras detectar el primer golpe para no restar vida múltiple en el mismo frame
+			}
+		}
+	}
+}

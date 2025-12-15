@@ -35,7 +35,7 @@ void InitGL()
 
 	OPV.R = 25.0f;
 	OPV.alfa = 20.0f;
-	OPV.beta = 0.0f;
+	OPV.beta = 90.0f;
 
 
 	g_isOrbitingLeft = false;
@@ -960,7 +960,34 @@ void OnJoystick(GLFWwindow* window) {
 		int count;
 		const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
 
-		static bool lastButtons[15] = { false };
+		int axesCount;
+		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount); 
+
+		static bool lastButtons[20] = { false };
+
+
+		if (count > 9 && buttons[9] == GLFW_PRESS && !lastButtons[9]) {
+
+			// Obtenemos el estado actual del juego
+			std::string currentState = "";
+			if (g_MenuController) currentState = g_MenuController->getState();
+
+			if (currentState == "Playing") {
+				// Pausar juego
+				g_MenuController->SwitchState(new PauseMenuState());
+			}
+			else if (currentState == "Pause") {
+				// Reanudar juego
+				g_MenuController->SwitchState(new PlayingState());
+			}
+		}
+
+
+		if (g_MenuController && g_MenuController->getState() != "Playing") {
+			// Actualizamos la memoria de botones antes de salir para evitar "clics fantasma" al volver
+			for (int i = 0; i < count && i < 20; i++) lastButtons[i] = (buttons[i] == GLFW_PRESS);
+			return; // <--- ¡AQUÍ SE ACABA LA FUNCIÓN SI ESTÁS EN MENÚ!
+		}
 
 		// --- MAPA DE BOTONES PS5 (Indices GLFW estándar) ---
 		// 1: Cruz (Freno mano - Dejamos que coche.cpp lo gestione o lo hacemos aquí si prefieres)
@@ -1014,6 +1041,8 @@ void OnJoystick(GLFWwindow* window) {
 		}
 
 
+
+		//flecha de abajo en el mando para cambiar la camara.
 		//flecha de abajo en el mando para cambiar la camara.
 
 		static bool wasCameraPressed = false;
@@ -1028,15 +1057,86 @@ void OnJoystick(GLFWwindow* window) {
 				// Resetear posición al volver a externa
 				OPV.R = 25.0f;
 				OPV.alfa = 20.0f;
-				OPV.beta = 0.0f;
+				OPV.beta = 90.0f;
+
+				mobil = false;
+				g_isOrbitingLeft = false;
+				g_isOrbitingRight = false;
+
+
 				camera = CAM_FOLLOW;
 			}
 		}
+
+
+
 		// ACTUALIZAR MEMORIA CÁMARA INMEDIATAMENTE
 		wasCameraPressed = isCameraPressed;
 
+
+
+		static bool lastFrenoState = false;
+
+		// 1. CAMBIO DE ÍNDICE:
+		// Según tu manual: "Fletxa dreta" es el índice 14.
+		// Asegúrate de comprobar que 'count > 14' para evitar errores de memoria.
+		bool FMact = (count > 10 && buttons[16] == GLFW_PRESS);
+
+		// 2. LÓGICA (Idéntica a la cámara):
+		// Si está pulsado AHORA y NO lo estaba ANTES -> Entra.
+		if (FMact && !lastFrenoState) {
+			if (miCoche) {
+				miCoche->FrenoDeMano = !miCoche->FrenoDeMano;
+				printf("Freno Mano: %s\n", miCoche->FrenoDeMano ? "PUESTO" : "QUITADO");
+			}
+		}
+
+		// 3. ACTUALIZAR MEMORIA:
+		lastFrenoState = FMact; 
+
+
+		//controlar camara con r3
+		if (camera == CAM_FOLLOW) {
+			float rightStickX = (axesCount > 2) ? axes[2] : 0.0f;
+			float deadzone = 0.2f;
+
+			// Orbitar Izquierda/Derecha (Igual que Flechas Left/Right)
+			if (rightStickX < -deadzone) {
+				g_isOrbitingLeft = true;
+				g_isOrbitingRight = false;
+				mobil = true; // Activar modo manual
+			}
+			else if (rightStickX > deadzone) {
+				g_isOrbitingRight = true;
+				g_isOrbitingLeft = false;
+				mobil = true;
+			}
+			else {
+				// Si el stick está quieto, solo desactivamos si NO se está usando el teclado
+				if (glfwGetKey(window, GLFW_KEY_LEFT) != GLFW_PRESS) g_isOrbitingLeft = false;
+				if (glfwGetKey(window, GLFW_KEY_RIGHT) != GLFW_PRESS) g_isOrbitingRight = false;
+			}
+		}
+
+		if (count > 10 && buttons[13] == GLFW_PRESS && !lastButtons[13]) {
+			if (camera == CAM_FOLLOW) {
+				// RESET TOTAL
+				OPV.R = 25.0f;
+				OPV.alfa = 20.0f;
+
+				// IMPORTANTE: Pon aquí 90.0f (o el valor que te funcionó antes para que no salte)
+				OPV.beta = 90.0f;
+
+				mobil = false; // Desactiva modo manual -> La cámara sigue al coche
+				g_isOrbitingLeft = false;
+				g_isOrbitingRight = false;
+			}
+		}
+
+
+
 		// --- ACTUALIZAR ESTADO ANTERIOR ---
-		for (int i = 0; i < count && i < 15; i++) {
+		for (int i = 0; i < count && i < 20; i++) {
 			lastButtons[i] = (buttons[i] == GLFW_PRESS);
 		}
 	}
@@ -1682,6 +1782,9 @@ int main(void)
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Habilita flechas del teclado (Arriba/Abajo + Enter)
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Habilita D-Pad/Stick del mando (Cruceta + Botón X/A)
+
 	ImFont* pNewFont = io.Fonts->AddFontFromFileTTF("../include/RobotoSlab-VariableFont_wght.ttf", 24.0f);
 
 	if (pNewFont)
@@ -1776,6 +1879,7 @@ int main(void)
 
 		// Poll for and process events
 		glfwPollEvents();
+		OnJoystick(window);
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -1786,9 +1890,16 @@ int main(void)
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 
+		if (g_MenuController->getCarHealth() == 0) {
+			g_MenuController->calculateScore();
+			g_MenuController->SwitchState(new EndGameState());
+		}
+
 		if (g_MenuController) {
 			g_MenuController->Render();
 		}
+
+
 
 		if (GLFW_KEY_ESCAPE && GLFW_PRESS)
 
@@ -1803,7 +1914,7 @@ int main(void)
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
-		glfwPollEvents();
+		glfwPollEvents(); 
 		float velMPH = miCoche->getVelocidad(); // Tendrías que crear este método getter
 		static float damageAcumulado = 0.0f;
 

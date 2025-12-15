@@ -41,6 +41,8 @@ public:
             m_chassisBody->activate(true); // Importante: Despierta el cuerpo
         }
     }
+	btRigidBody* getRigidBody() const { return m_chassisBody; }
+
 private:
     COBJModel* model;     // apuntador al modelo de la carroceria
     COBJModel* model_rueda;      // Un solo modelo para todas las ruedas

@@ -13,6 +13,7 @@
 #include "zones.h" 
 #include "colocarObjeto.h" // o donde esté ObjetoSeguidor
 
+
 extern std::vector<ObjetoSeguidor*> seguidores;
 
 //declaramos el coche
@@ -27,7 +28,6 @@ extern OBJ* barril;
 extern Zones* zonas;
 extern OBJ* senyal1;
 extern OBJ* senyal2;
-
 
 //BULLET
 extern btDiscreteDynamicsWorld* mundo;
@@ -70,5 +70,6 @@ void iniciarFisicasCoche();
 void initEscenaDuplicados();
 void renderEscenaDuplicados(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 	CColor col_object, bool sw_mat[5]);
+void detectarColisiones();
 
 #endif
