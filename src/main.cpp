@@ -21,13 +21,13 @@
 
 void InitGL()
 {
-	//------ Entorn VGI: Inicialització de les variables globals de CEntornVGIView
+	//------ Entorn VGI: Inicialitzaci� de les variables globals de CEntornVGIView
 	int i;
 
 	// Entorn VGI: Variable de control per a Status Bar (consola) 
 	statusB = false;
 
-	// Entorn VGI: Variables de control per Menú Càmera: Esfèrica, Navega, Mòbil, Zoom, Satelit, Polars... 
+	// Entorn VGI: Variables de control per Men� C�mera: Esf�rica, Navega, M�bil, Zoom, Satelit, Polars... 
 	camera = CAM_FOLLOW;
 	mobil = false;	zzoom = true;		zzoomO = false;		satelit = false;
 
@@ -53,7 +53,7 @@ void InitGL()
 	skC_VAOID.vaoId = 0;	skC_VAOID.vboId = 0;	skC_VAOID.nVertexs = 0;
 	cubemapTexture = 0;
 
-	// Entorn VGI: Variables de control del menú Transforma
+	// Entorn VGI: Variables de control del men� Transforma
 	transf = false;		trasl = false;		rota = false;		escal = false;
 	fact_Tras = 1;		fact_Rota = 90;
 	TG.VTras.x = 0.0;	TG.VTras.y = 0.0;	TG.VTras.z = 0;	TGF.VTras.x = 0.0;	TGF.VTras.y = 0.0;	TGF.VTras.z = 0;
@@ -63,10 +63,10 @@ void InitGL()
 	transX = false;		transY = false;		transZ = false;
 	GTMatrix = glm::mat4(1.0);		// Inicialitzar a identitat
 
-	// Entorn VGI: Variables de control per les opcions de menú Ocultacions
+	// Entorn VGI: Variables de control per les opcions de men� Ocultacions
 	front_faces = true;	test_vis = false;	oculta = true;		back_line = false;
 
-	// Entorn VGI: Variables de control del menú Iluminació		
+	// Entorn VGI: Variables de control del men� Iluminaci�		
 	ilumina = SUAU;			//ifixe = true;					
 	ilum2sides = false;
 	bool ifixe[NUM_MAX_LLUMS] = { false };  // TODOS A 0
@@ -82,8 +82,8 @@ void InitGL()
 	for (i = 0; i < NUM_MAX_TEXTURES; i++) texturesID[i] = 0;
 	tFlag_invert_Y = false;
 
-	// Entorn VGI: Variables de control del menú Llums
-	// Entorn VGI: Inicialització variables Llums
+	// Entorn VGI: Variables de control del men� Llums
+	// Entorn VGI: Inicialitzaci� variables Llums
 	llum_ambient = true;		llumGL[0].encesa = true;
 	for (i = 1; i < NUM_MAX_LLUMS; i++) llumGL[i].encesa = false;
 	for (i = 0; i < NUM_MAX_LLUMS; i++) {
@@ -96,102 +96,102 @@ void InitGL()
 		llumGL[i].spotcoscutoff = 0.0;		llumGL[i].spotexponent = 0.0;
 	}
 
-	// ---------------- LLUM #0 - (+Z) no restringida, amb atenuació constant (a,b,c) = (0,0,1)
-	// Posició de la font de llum (x,y,z)=(0,200,0):
+	// ---------------- LLUM #0 - (+Z) no restringida, amb atenuaci� constant (a,b,c) = (0,0,1)
+	// Posici� de la font de llum (x,y,z)=(0,200,0):
 	llumGL[0].posicio.x = 0.0;			llumGL[0].posicio.y = 0.0;			llumGL[0].posicio.z = 200.0;	llumGL[0].posicio.w = 1.0;
 
 	// Intensitats difusa i especular de la font de llum (r,g,b) = (1,1,1):
 	llumGL[0].difusa.r = 1.0f;			llumGL[0].difusa.g = 1.0f;			llumGL[0].difusa.b = 1.0f;		llumGL[0].difusa.a = 1.0f;
 	llumGL[0].especular.r = 1.0f;		llumGL[0].especular.g = 1.0f;		llumGL[0].especular.b = 1.0f;	llumGL[0].especular.a = 1.0f;
 
-	// Coeficients factor atenuació f_att=1/(ad2+bd+c). Llum sense atenuació per distància (a,b,c)=(0,0,1):
+	// Coeficients factor atenuaci� f_att=1/(ad2+bd+c). Llum sense atenuaci� per dist�ncia (a,b,c)=(0,0,1):
 	llumGL[0].atenuacio.a = 0.0;		llumGL[0].atenuacio.b = 0.0;		llumGL[0].atenuacio.c = 1.0;
 
-	// Paràmetres font de llum restringida:
+	// Par�metres font de llum restringida:
 	llumGL[0].restringida = false;
 	llumGL[0].spotdirection.x = 0.0;	llumGL[0].spotdirection.y = 0.0;	llumGL[0].spotdirection.z = -1.0;
 	llumGL[0].spotcoscutoff = cos(25.0 * PI / 180);		llumGL[0].spotexponent = 1.0;		// llumGL[0].spotexponent = 45.0; Model de Warn (10, 500)
 
-	// Activació font de llum: ENCESA
+	// Activaci� font de llum: ENCESA
 	llumGL[0].encesa = true;
 
-	// ---------------- LLUM #1 - (+X) no restringida, amb atenuació constant (a,b,c) = (0,0,1)
-	// Posició de la font de llum (x,y,z)=(75,0,0):
+	// ---------------- LLUM #1 - (+X) no restringida, amb atenuaci� constant (a,b,c) = (0,0,1)
+	// Posici� de la font de llum (x,y,z)=(75,0,0):
 	llumGL[1].posicio.x = 75.0;			llumGL[1].posicio.y = 0.0;			llumGL[1].posicio.z = 0.0;		llumGL[1].posicio.w = 1.0;
 
 	// Intensitats difusa i especular de la font de llum (r,g,b) = (1,1,1):
 	llumGL[1].difusa.r = 1.0f;			llumGL[1].difusa.g = 1.0f;			llumGL[1].difusa.b = 1.0f;		llumGL[1].difusa.a = 1.0f;
 	llumGL[1].especular.r = 1.0f;		llumGL[1].especular.g = 1.0f;		llumGL[1].especular.b = 1.0f;	llumGL[1].especular.a = 1.0f;
 
-	// Coeficients factor atenuació f_att=1/(ad2+bd+c). Llum sense atenuació per distància (a,b,c)=(0,0,1):
+	// Coeficients factor atenuaci� f_att=1/(ad2+bd+c). Llum sense atenuaci� per dist�ncia (a,b,c)=(0,0,1):
 	llumGL[1].atenuacio.a = 0.0;		llumGL[1].atenuacio.b = 0.0;		llumGL[1].atenuacio.c = 1.0;
 
-	// Paràmetres font de llum restringida:
+	// Par�metres font de llum restringida:
 	llumGL[1].restringida = false;
 	llumGL[1].spotdirection.x = 0.0;	llumGL[1].spotdirection.y = 0.0;	llumGL[1].spotdirection.z = 0.0;
 	llumGL[1].spotcoscutoff = 0.0;		llumGL[1].spotexponent = 0.0;
 
-	// Activació font de llum: APAGADA
+	// Activaci� font de llum: APAGADA
 	llumGL[1].encesa = false;
 
-	// ---------------- LLUM #2 - (+Y) no restringida, amb atenuació constant (a,b,c) = (0,0,1)
-	// Posició de la font de llum (x,y,z)=(0,75,0):
+	// ---------------- LLUM #2 - (+Y) no restringida, amb atenuaci� constant (a,b,c) = (0,0,1)
+	// Posici� de la font de llum (x,y,z)=(0,75,0):
 	llumGL[2].posicio.x = 0.0;			llumGL[2].posicio.y = 75.0;			llumGL[2].posicio.z = 0.0;		llumGL[2].posicio.w = 1.0;
 
 	// Intensitats difusa i especular de la font de llum (r,g,b) = (1,1,1):
 	llumGL[2].difusa.r = 1.0f;			llumGL[2].difusa.g = 1.0f;			llumGL[2].difusa.b = 1.0f;		llumGL[2].difusa.a = 1.0f;
 	llumGL[2].especular.r = 1.0f;		llumGL[2].especular.b = 1.0f;		llumGL[2].especular.b = 1.0f;	llumGL[2].especular.a = 1.0f;
 
-	// Coeficients factor atenuació f_att=1/(ad2+bd+c). Llum amb atenuació per distància (a,b,c)=(0,0.025,1):
+	// Coeficients factor atenuaci� f_att=1/(ad2+bd+c). Llum amb atenuaci� per dist�ncia (a,b,c)=(0,0.025,1):
 	llumGL[2].atenuacio.a = 0.0;		llumGL[2].atenuacio.b = 0.0;		llumGL[2].atenuacio.c = 1.0;
 
-	// Paràmetres font de llum restringida:
+	// Par�metres font de llum restringida:
 	llumGL[2].restringida = false;
 	llumGL[2].spotdirection.x = 0.0;	llumGL[2].spotdirection.y = -1.0;	llumGL[2].spotdirection.z = 0.0;
 	llumGL[2].spotcoscutoff = cos(2.5 * PI / 180);							llumGL[2].spotexponent = 1.0;
 
-	// Activació font de llum: APAGADA
+	// Activaci� font de llum: APAGADA
 	llumGL[2].encesa = false;
 
-	// ---------------- LLUM #3 - (Y=X), restringida amb 25 graus obertura i exponent 45, amb atenuació constant (a,b,c) = (0,0,1)
-	// Posició de la font de llum (x,y,z)=(75,75,75):
+	// ---------------- LLUM #3 - (Y=X), restringida amb 25 graus obertura i exponent 45, amb atenuaci� constant (a,b,c) = (0,0,1)
+	// Posici� de la font de llum (x,y,z)=(75,75,75):
 	llumGL[3].posicio.x = 75.0;			llumGL[3].posicio.y = 75.0;			llumGL[3].posicio.z = 75.0;		llumGL[3].posicio.w = 1.0;
 
 	// Intensitats difusa i especular de la font de llum (r,g,b) = (0,1,0):
 	llumGL[3].difusa.r = 0.0f;			llumGL[2].difusa.g = 1.0f;			llumGL[3].difusa.b = 0.0f;		llumGL[3].difusa.a = 1.0f;
 	llumGL[3].especular.r = 0.0f;		llumGL[2].especular.g = 1.0f;		llumGL[3].especular.b = 0.0f;	llumGL[3].especular.a = 1.0f;
 
-	// Coeficients factor atenuació f_att=1/(ad2+bd+c). Llum sense atenuació per distància (a,b,c)=(0,0,1):
+	// Coeficients factor atenuaci� f_att=1/(ad2+bd+c). Llum sense atenuaci� per dist�ncia (a,b,c)=(0,0,1):
 	llumGL[3].atenuacio.a = 0.0;		llumGL[3].atenuacio.b = 0.0;		llumGL[3].atenuacio.c = 1.0;
 
-	// Paràmetres font de llum restringida:
+	// Par�metres font de llum restringida:
 	llumGL[3].restringida = true;
 	llumGL[3].spotdirection.x = -1.0;	llumGL[3].spotdirection.y = -1.0;	llumGL[3].spotdirection.z = -1.0;
 	llumGL[3].spotcoscutoff = cos(25.0 * PI / 180);							llumGL[3].spotexponent = 45.0;
 
-	// Activació font de llum: APAGADA
+	// Activaci� font de llum: APAGADA
 	llumGL[3].encesa = false;
 
-	// ---------------- LLUM #4 - (-Z), no restringida, amb atenuació constant (a,b,c) = (0,0,1)
-	// Posició de la font de llum (x,y,z)=(0,0,-75):
+	// ---------------- LLUM #4 - (-Z), no restringida, amb atenuaci� constant (a,b,c) = (0,0,1)
+	// Posici� de la font de llum (x,y,z)=(0,0,-75):
 	llumGL[4].posicio.x = 0.0;			llumGL[4].posicio.y = 0.0;			llumGL[4].posicio.z = -75.0;	llumGL[4].posicio.w = 1.0;
 
 	// Intensitats difusa i especular de la font de llum (r,g,b) = (1,1,1):
 	llumGL[4].difusa.r = 1.0f;			llumGL[4].difusa.g = 1.0f;			llumGL[4].difusa.b = 1.0f;		llumGL[4].difusa.a = 1.0f;
 	llumGL[4].especular.r = 1.0f;		llumGL[4].especular.g = 1.0f;		llumGL[4].especular.b = 1.0f;	llumGL[4].especular.a = 1.0f;
 
-	// Coeficients factor atenuació f_att=1/(ad2+bd+c). Llum sense atenuació per distància (a,b,c)=(0,0,1):
+	// Coeficients factor atenuaci� f_att=1/(ad2+bd+c). Llum sense atenuaci� per dist�ncia (a,b,c)=(0,0,1):
 	llumGL[4].atenuacio.a = 0.0;		llumGL[4].atenuacio.b = 0.0;		llumGL[4].atenuacio.c = 1.0;
 
-	// Paràmetres font de llum restringida:
+	// Par�metres font de llum restringida:
 	llumGL[4].restringida = false;
 	llumGL[4].spotdirection.x = 0.0;	llumGL[4].spotdirection.y = 0.0;	llumGL[4].spotdirection.z = -1.0;
 	llumGL[4].spotcoscutoff = cos(5 * PI / 180);							llumGL[4].spotexponent = 30.0;
 
-	// Activació font de llum: APAGADA
+	// Activaci� font de llum: APAGADA
 	llumGL[4].encesa = false;
 
-	// ---------------- LLUM #5 - (-Z), direccional, no restringida, amb atenuació constant (a,b,c) = (0,0,1)
+	// ---------------- LLUM #5 - (-Z), direccional, no restringida, amb atenuaci� constant (a,b,c) = (0,0,1)
 	// Vector de la font de llum direccional (x,y,z)=(-1,-1,-1):
 	llumGL[5].posicio.x = -1.0;			llumGL[5].posicio.y = -1.0;			llumGL[5].posicio.z = -1.0;		llumGL[5].posicio.w = 0.0;
 
@@ -199,76 +199,76 @@ void InitGL()
 	llumGL[5].difusa.r = 1.0f;			llumGL[5].difusa.g = 0.0f;			llumGL[5].difusa.b = 0.0f;		llumGL[5].difusa.a = 1.0f;
 	llumGL[5].especular.r = 1.0f;		llumGL[5].especular.g = 0.0f;		llumGL[5].especular.b = 0.0f;	llumGL[5].especular.a = 1.0f;
 
-	// Coeficients factor atenuació f_att=1/(ad2+bd+c). Llum sense atenuació per distància (a,b,c)=(0,0,1):
+	// Coeficients factor atenuaci� f_att=1/(ad2+bd+c). Llum sense atenuaci� per dist�ncia (a,b,c)=(0,0,1):
 	llumGL[5].atenuacio.a = 0.0;		llumGL[5].atenuacio.b = 0.0;		llumGL[5].atenuacio.c = 1.0;
 
-	// Paràmetres font de llum restringida:
+	// Par�metres font de llum restringida:
 	llumGL[5].restringida = false;
 	llumGL[5].spotdirection.x = 0.0;	llumGL[5].spotdirection.y = 0.0;	llumGL[5].spotdirection.z = 0.0;
 	llumGL[5].spotcoscutoff = 0.0;		llumGL[5].spotexponent = 0.0;
 
-	// Activació font de llum: APAGADA
+	// Activaci� font de llum: APAGADA
 	llumGL[5].encesa = false;
 
-	// ---------------- LLUM #6 - Llum Vaixell, configurada a la funció vaixell() en escena.cpp.
-	// Posició de la font de llum (x,y,z)=(-75,75,75):
+	// ---------------- LLUM #6 - Llum Vaixell, configurada a la funci� vaixell() en escena.cpp.
+	// Posici� de la font de llum (x,y,z)=(-75,75,75):
 	llumGL[6].posicio.x = -75.0;		llumGL[6].posicio.y = 75.0;			llumGL[6].posicio.z = 75.0;		llumGL[6].posicio.w = 1.0;
 
 	// Intensitats difusa i especular de la font de llum (r,g,b) = (1,1,1):
 	llumGL[6].difusa.r = 1.0f;			llumGL[6].difusa.g = 1.0f;			llumGL[6].difusa.b = 1.0f;		llumGL[6].difusa.a = 1.0f;
 	llumGL[6].especular.r = 1.0f;		llumGL[6].especular.g = 1.0f;		llumGL[6].especular.b = 1.0f;	llumGL[6].especular.a = 1;
 
-	// Coeficients factor atenuació f_att=1/(ad2+bd+c). Llum sense atenuació per distància (a,b,c)=(0,0,1):
+	// Coeficients factor atenuaci� f_att=1/(ad2+bd+c). Llum sense atenuaci� per dist�ncia (a,b,c)=(0,0,1):
 	llumGL[6].atenuacio.a = 0.0;		llumGL[6].atenuacio.b = 0.0;		llumGL[6].atenuacio.c = 1.0;
 
-	// Paràmetres font de llum restringida:
+	// Par�metres font de llum restringida:
 	llumGL[6].restringida = false;
 	llumGL[6].spotdirection.x = 0.0;	llumGL[6].spotdirection.y = 0.0;	llumGL[6].spotdirection.z = 0.0;
 	llumGL[6].spotcoscutoff = 0.0;		llumGL[6].spotexponent = 0.0;
 
-	// Activació font de llum: APAGADA
+	// Activaci� font de llum: APAGADA
 	llumGL[6].encesa = false;
 
-	// ---------------- LLUM #7 - Llum Far, configurada a la funció faro() en escena.cpp.
-	// Posició de la font de llum (x,y,z)=(75,75,-75). Cap posició definida, definida en funció faro() en escena.cpp:
+	// ---------------- LLUM #7 - Llum Far, configurada a la funci� faro() en escena.cpp.
+	// Posici� de la font de llum (x,y,z)=(75,75,-75). Cap posici� definida, definida en funci� faro() en escena.cpp:
 	llumGL[7].posicio.x = 75.0;			llumGL[7].posicio.y = 75.0;			llumGL[7].posicio.z = -75.0;	llumGL[7].posicio.w = 1.0;
 
 	// Intensitats difusa i especular de la font de llum (r,g,b) = (1,1,1):
 	llumGL[7].difusa.r = 1.0f;			llumGL[7].difusa.g = 1.0f;			llumGL[7].difusa.b = 1.0f;		llumGL[7].difusa.a = 1.0f;
 	llumGL[7].especular.r = 1.0f;		llumGL[7].especular.g = 1.0f;		llumGL[7].especular.b = 1.0f;	llumGL[7].especular.a = 1;
 
-	// Coeficients factor atenuació f_att=1/(ad2+bd+c). Llum sense atenuació per distància (a,b,c)=(0,0,1):
+	// Coeficients factor atenuaci� f_att=1/(ad2+bd+c). Llum sense atenuaci� per dist�ncia (a,b,c)=(0,0,1):
 	llumGL[7].atenuacio.a = 0.0;		llumGL[7].atenuacio.b = 0.0;		llumGL[7].atenuacio.c = 1.0;
 
-	// Paràmetres font de llum restringida:
+	// Par�metres font de llum restringida:
 	llumGL[7].restringida = false;
 	llumGL[7].spotdirection.x = 0.0;	llumGL[7].spotdirection.y = 0.0;	llumGL[7].spotdirection.z = 0.0;
 	llumGL[7].spotcoscutoff = 0.0;		llumGL[7].spotexponent = 0.0;
 
-	// Activació font de llum: APAGADA
+	// Activaci� font de llum: APAGADA
 	llumGL[7].encesa = false;
-	// ---------------- FI DEFINICIÓ LLUMS
+	// ---------------- FI DEFINICI� LLUMS
 
-	// Entorn VGI: Variables de control del menú Shaders
+	// Entorn VGI: Variables de control del men� Shaders
 	shader = CAP_SHADER;	shader_programID = 0;
 	shaderLighting.releaseAllShaders();
-	// Càrrega Shader de Gouraud
+	// C�rrega Shader de Gouraud
 	shader_programID = 0;
 	fprintf(stderr, "Phong_shdrML: \n");
 
 	if (!shader_programID) shader_programID = shaderLighting.loadFileShaders(".\\shaders\\phong_shdrML.vert", ".\\shaders\\phong_shdrML.frag");
 	shader = PHONG_SHADER;
 
-	// Càrrega SHADERS
-	// Càrrega Shader Eixos
+	// C�rrega SHADERS
+	// C�rrega Shader Eixos
 	fprintf(stderr, "Eixos: \n");
 	if (!eixos_programID) eixos_programID = shaderEixos.loadFileShaders(".\\shaders\\eixos.VERT", ".\\shaders\\eixos.FRAG");
 
-	// Càrrega Shader Skybox
+	// C�rrega Shader Skybox
 	fprintf(stderr, "SkyBox: \n");
 	if (!skC_programID) skC_programID = shader_SkyBoxC.loadFileShaders(".\\shaders\\skybox.VERT", ".\\shaders\\skybox.FRAG");
 
-	// Càrrega VAO Skybox Cube
+	// C�rrega VAO Skybox Cube
 	if (skC_VAOID.vaoId == 0) skC_VAOID = loadCubeSkybox_VAO();
 	Set_VAOList(CUBE_SKYBOX, skC_VAOID);
 
@@ -292,12 +292,12 @@ void InitGL()
 	m_EsfeEAvall.R = 0.0;		m_EsfeEAvall.alfa = 0.0;	m_EsfeEAvall.beta = 0.0;
 	m_EsfeIncEAvall.R = 0.0;	m_EsfeIncEAvall.alfa = 0.0;	m_EsfeIncEAvall.beta = 0.0;
 
-	// Entorn VGI: Variables que controlen paràmetres visualització: Mides finestra Windows i PV
-	w = 640;			h = 480;			// Mides de la finestra Windows (w-amplada,h-alçada)
-	width_old = 640;	height_old = 480;	// Mides de la resolució actual de la pantalla (finestra Windows)
-	w_old = 640;		h_old = 480;		// Mides de la finestra Windows (w-amplada,h-alçada) per restaurar Finestra des de fullscreen
-	//OPV.R = cam_Esferica[0];	OPV.alfa = cam_Esferica[1];		OPV.beta = cam_Esferica[2];		// Origen PV en esfèriques
-	//OPV.R = 15.0;		OPV.alfa = 0.0;		OPV.beta = 0.0;										// Origen PV en esfèriques
+	// Entorn VGI: Variables que controlen par�metres visualitzaci�: Mides finestra Windows i PV
+	w = 640;			h = 480;			// Mides de la finestra Windows (w-amplada,h-al�ada)
+	width_old = 640;	height_old = 480;	// Mides de la resoluci� actual de la pantalla (finestra Windows)
+	w_old = 640;		h_old = 480;		// Mides de la finestra Windows (w-amplada,h-al�ada) per restaurar Finestra des de fullscreen
+	//OPV.R = cam_Esferica[0];	OPV.alfa = cam_Esferica[1];		OPV.beta = cam_Esferica[2];		// Origen PV en esf�riques
+	//OPV.R = 15.0;		OPV.alfa = 0.0;		OPV.beta = 0.0;										// Origen PV en esf�riques
 	Vis_Polar = POLARZ;	oPolars = -1;
 
 	// Entorn VGI: Color de fons i de l'objecte
@@ -321,7 +321,7 @@ void InitGL()
 	mida = 1.0;			nom = "";		buffer = "";
 	initVAOList();	// Inicialtzar llista de VAO'S.
 
-	// CREACIÓ DE COTXE
+	// CREACI� DE COTXE
 	if (miCoche == nullptr) {
 		miCoche = new Coche();
 
@@ -384,30 +384,30 @@ void GetGLVersion(int* major, int* minor)
 
 void OnSize(GLFWwindow* window, int width, int height)
 {
-	// TODO: Agregue aquí su código de controlador de mensajes
+	// TODO: Agregue aqu� su c�digo de controlador de mensajes
 
 	// A resize event occured; cx and cy are the window's new width and height.
 	// Find the OpenGL change size function given in the Lab 1 notes and call it here
 
-	// Entorn VGI: MODIFICACIÓ ->Establim les mides de la finestra actual
+	// Entorn VGI: MODIFICACI� ->Establim les mides de la finestra actual
 	w = width;	h = height;
 
 	// Crida a OnPaint per a redibuixar la pantalla
 	//	OnPaint();
 }
 
-// OnPaint: Funció de dibuix i visualització en frame buffer del frame
+// OnPaint: Funci� de dibuix i visualitzaci� en frame buffer del frame
 void OnPaint(GLFWwindow* window)
 {
 	int fbW, fbH;
 	glfwGetFramebufferSize(window, &fbW, &fbH);
 	glViewport(0, 0, fbW, fbH);
 
-	// Si usas w/h en el resto del código, sincronízalos
+	// Si usas w/h en el resto del c�digo, sincron�zalos
 	w = fbW;
 	h = fbH;
 
-	// TODO: Agregue aquí su código de controlador de mensajes
+	// TODO: Agregue aqu� su c�digo de controlador de mensajes
 	GLdouble vpv[3] = { 0.0, 0.0, 1.0 };
 
 	ifixe[8] = true;
@@ -421,26 +421,26 @@ void OnPaint(GLFWwindow* window)
 	ifixe[16] = true;
 	ifixe[17] = true;
 
-	// Entorn VGI.ImGui: Menú ImGui condicionat al color de fons
+	// Entorn VGI.ImGui: Men� ImGui condicionat al color de fons
 	if ((c_fons.r < 0.5) || (c_fons.g < 0.5) || (c_fons.b < 0.5))
 		ImGui::StyleColorsLight();
 	else ImGui::StyleColorsDark();
 
-	// Entorn VGI: PROJECCIÓ PERSPECTIVA
+	// Entorn VGI: PROJECCI� PERSPECTIVA
 				//glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Set Perspective Calculations To Most Accurate
-	glDisable(GL_SCISSOR_TEST);		// Desactivació del retall de pantalla
+	glDisable(GL_SCISSOR_TEST);		// Desactivaci� del retall de pantalla
 
-	// Entorn VGI: Activar shader Visualització Escena
+	// Entorn VGI: Activar shader Visualitzaci� Escena
 	glUseProgram(shader_programID);
 
 	//LLUMS COTXE
 	controlLlumsCotxe.tiempoTotal += 1.0f / 90.0f;
 	func_llumsCotxe(miCoche, controlLlumsCotxe, llumGL);
 
-	// Entorn VGI: Definició de Viewport, Projecció i Càmara
+	// Entorn VGI: Definici� de Viewport, Projecci� i C�mara
 	ProjectionMatrix = Projeccio_Perspectiva(shader_programID, 0, 0, w, h, OPV.R);
 
-	// Entorn VGI: Definició de la càmera.
+	// Entorn VGI: Definici� de la c�mera.
 	//if (camera == CAM_ESFERICA) {
 	//	n[0] = 0;		n[1] = 0;		n[2] = 0;
 	//	ViewMatrix = Vista_Esferica(shader_programID, OPV, Vis_Polar, pan, tr_cpv, tr_cpvF, c_fons, col_obj, objecte, mida, pas,
@@ -579,26 +579,26 @@ void dibuixa_Escena() {
 
 	//glUseProgram(shader_programID);
 
-//	Dibuix SkyBox Cúbic.
+//	Dibuix SkyBox C�bic.
 	if (SkyBoxCube) dibuixa_Skybox(skC_programID, cubemapTexture, Vis_Polar, ProjectionMatrix, ViewMatrix);
 
-	//	Dibuix Coordenades Món i Reixes.
+	//	Dibuix Coordenades M�n i Reixes.
 	dibuixa_Eixos(eixos_programID, eixos, eixos_Id, grid, hgrid, ProjectionMatrix, ViewMatrix);
 
-	// Escalat d'objectes, per adequar-los a les vistes ortogràfiques (Pràctica 2)
+	// Escalat d'objectes, per adequar-los a les vistes ortogr�fiques (Pr�ctica 2)
 	//	GTMatrix = glm::scale();
 
 	//	Dibuix geometria de l'escena amb comandes GL.
 	dibuixa_EscenaGL(shader_programID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
 		textura, texturesID, textura_map, tFlag_invert_Y,
 		npts_T, PC_t, pas_CS, sw_Punts_Control, dibuixa_TriedreFrenet,
-		ObOBJ,				// Classe de l'objecte OBJ que conté els VAO's
+		ObOBJ,				// Classe de l'objecte OBJ que cont� els VAO's
 		ViewMatrix, GTMatrix);
 }
 
 
-// Barra_Estat: Actualitza la barra d'estat (Status Bar) de l'aplicació en la consola amb els
-//      valors R,A,B,PVx,PVy,PVz en Visualització Interactiva.
+// Barra_Estat: Actualitza la barra d'estat (Status Bar) de l'aplicaci� en la consola amb els
+//      valors R,A,B,PVx,PVy,PVz en Visualitzaci� Interactiva.
 void Barra_Estat()
 {
 	std::string buffer, sss;
@@ -608,10 +608,10 @@ void Barra_Estat()
 	// Status Bar fitxer fractal
 	if (nom != "") fprintf(stderr, "Fitxer: %s \n", nom.c_str());
 
-	// Càlcul dels valors per l'opció Vista->Navega
+	// C�lcul dels valors per l'opci� Vista->Navega
 	if (projeccio != CAP && projeccio != ORTO) {
 		if (camera == CAM_ESFERICA)
-		{	// Càmera Esfèrica
+		{	// C�mera Esf�rica
 			OPVAux.R = OPV.R; OPVAux.alfa = OPV.alfa; OPVAux.beta = OPV.beta;
 		}
 	}
@@ -623,42 +623,42 @@ void Barra_Estat()
 	if (projeccio == CAP) buffer = "       ";
 	else if (projeccio == ORTO) buffer = " ORTO   ";
 	else buffer = std::to_string(OPVAux.R);
-	// Refrescar posició R Status Bar
+	// Refrescar posici� R Status Bar
 	fprintf(stderr, "R=: %s", buffer.c_str());
 
 	// Status Bar angle alfa Origen Punt de Vista
 	if (projeccio == CAP) buffer = "       ";
 	else if (projeccio == ORTO) buffer = "ORTO   ";
 	else buffer = std::to_string(OPVAux.alfa);
-	// Refrescar posició angleh Status Bar
+	// Refrescar posici� angleh Status Bar
 	fprintf(stderr, " a=: %s", buffer.c_str());
 
 	// Status Bar angle beta Origen Punt de Vista
 	if (projeccio == CAP) buffer = "       ";
 	else if (projeccio == ORTO) buffer = "ORTO   ";
 	else buffer = std::to_string(OPVAux.beta);
-	// Refrescar posició anglev Status Bar
-	fprintf(stderr, " ß=: %s  ", buffer.c_str());
+	// Refrescar posici� anglev Status Bar
+	fprintf(stderr, " �=: %s  ", buffer.c_str());
 
 	// Status Bar PVx
 	if (projeccio == CAP) buffer = "       ";
 	else if (pan) buffer = std::to_string(tr_cpv.x);
 	//sss = _T("PVx=") + buffer;
-// Refrescar posició PVx Status Bar
+// Refrescar posici� PVx Status Bar
 	fprintf(stderr, "PVx= %s", buffer.c_str());
 
 	// Status Bar PVy
 	if (projeccio == CAP) buffer = "       ";
 	else if (pan) buffer = std::to_string(tr_cpv.y);
 	//sss = "PVy=" + buffer;
-// Refrescar posició PVy Status Bar
+// Refrescar posici� PVy Status Bar
 	fprintf(stderr, " PVy= %s", buffer.c_str());
 
 	// Status Bar PVz
 	if (projeccio == CAP) buffer = "       ";
 	else if (pan) buffer = std::to_string(tr_cpv.z);
 	//sss = "PVz=" + buffer;
-// Refrescar posició PVz Status Bar
+// Refrescar posici� PVz Status Bar
 	fprintf(stderr, " PVz= %s \n", buffer.c_str());
 
 	// Status Bar per indicar el modus de canvi de color (FONS o OBJECTE)
@@ -667,20 +667,20 @@ void Barra_Estat()
 	else if (pan) sss = "PAN ";
 	else if (sw_color) sss = "OBJ ";
 	else sss = "FONS ";
-	// Refrescar posició Transformacions en Status Bar
+	// Refrescar posici� Transformacions en Status Bar
 	fprintf(stderr, "%s ", sss.c_str());
 
-	// Status Bar per indicar tipus de Transformació (TRAS, ROT, ESC)
+	// Status Bar per indicar tipus de Transformaci� (TRAS, ROT, ESC)
 	sss = " ";
 	if (transf) {
 		if (rota) sss = "ROT";
 		else if (trasl) sss = "TRA";
 		else if (escal) sss = "ESC";
 	}
-	// Refrescar posició Transformacions en Status Bar
+	// Refrescar posici� Transformacions en Status Bar
 	fprintf(stderr, "%s ", sss.c_str());
 
-	// Status Bar dels paràmetres de Transformació, Color i posicions de Robot i Cama
+	// Status Bar dels par�metres de Transformaci�, Color i posicions de Robot i Cama
 	sss = " ";
 	if (transf)
 	{
@@ -719,7 +719,7 @@ void Barra_Estat()
 		}
 	}
 
-	// Refrescar posició PVz Status Bar
+	// Refrescar posici� PVz Status Bar
 	fprintf(stderr, "%s \n", sss.c_str());
 	// -----------------------------------------------------
 	// --- NOU CODI LLUMS: VISUALITZAR ESTAT COTXE ---------
@@ -756,22 +756,46 @@ void Barra_Estat()
 		sss = "          ";
 		fprintf(stderr, "%s \n", sss.c_str());
 	}
+
+	// -----------------------------------------------------
+	// --- NOU CODI LLUMS: VISUALITZAR ESTAT COTXE ---------
+	// -----------------------------------------------------
+	std::string infoLlums = "COTXE: ";
+
+	// Estat Faros
+	if (controlLlumsCotxe.modoFaros == 0) infoLlums += "[OFF] ";
+	else if (controlLlumsCotxe.modoFaros == 1) infoLlums += "[CURTES] ";
+	else if (controlLlumsCotxe.modoFaros == 2) infoLlums += "[LLARGUES] ";
+
+	// Estat Frens
+	if (controlLlumsCotxe.frenando) infoLlums += " [!!!FRE!!!] ";
+	else infoLlums += "           ";
+
+	// Estat Intermitents
+	if (controlLlumsCotxe.intermitenteIzquierdo) infoLlums += "<< ";
+	else infoLlums += "   ";
+
+	if (controlLlumsCotxe.intermitenteDerecho) infoLlums += ">>";
+	else infoLlums += "  ";
+
+	// Imprimir al final de tot
+	fprintf(stderr, "%s \n--------------------------------\n", infoLlums.c_str());
 }
 
 /* -------------------------------------------------------------------------------- */
 /*					5. VISTA: Pantalla Completa, Pan i Eixos	                    */
 /* -------------------------------------------------------------------------------- */
 
-// SKYBOX: Visualitzar Skybox en l'escena (opció booleana)
+// SKYBOX: Visualitzar Skybox en l'escena (opci� booleana)
 void OnVistaSkyBox()
 {
-	// TODO: Agregue aquí su código de controlador de comandos
+	// TODO: Agregue aqu� su c�digo de controlador de comandos
 	//SkyBoxCube = !SkyBoxCube;
 
-// Càrrega Shader Skybox
+// C�rrega Shader Skybox
 	if (!skC_programID) skC_programID = shader_SkyBoxC.loadFileShaders(".\\shaders\\skybox.VERT", ".\\shaders\\skybox.FRAG");
 
-	// Càrrega VAO Skybox Cube
+	// C�rrega VAO Skybox Cube
 	if (skC_VAOID.vaoId == 0) skC_VAOID = loadCubeSkybox_VAO();
 	Set_VAOList(CUBE_SKYBOX, skC_VAOID);
 
@@ -795,15 +819,15 @@ void OnVistaSkyBox()
 /*                           CONTROL DEL TECLAT                              */
 /* ------------------------------------------------------------------------- */
 
-// OnKeyDown: Funció de tractament de teclat (funció que es crida quan es prem una tecla)
-//   PARÀMETRES:
+// OnKeyDown: Funci� de tractament de teclat (funci� que es crida quan es prem una tecla)
+//   PAR�METRES:
 //    - key: Codi del caracter seleccionat
-//    - scancode: Nombre de vegades que s'ha apretat la tecla (acceleració)
-//    - action: Acció de la tecla: GLFW_PRESS (si s'ha apretat), GLFW_REPEAT, si s'ha repetit pressió i GL_RELEASE, si es deixa d'apretar.
+//    - scancode: Nombre de vegades que s'ha apretat la tecla (acceleraci�)
+//    - action: Acci� de la tecla: GLFW_PRESS (si s'ha apretat), GLFW_REPEAT, si s'ha repetit pressi� i GL_RELEASE, si es deixa d'apretar.
 //    - mods: Variable que identifica si la tecla s'ha pulsat directa (mods=0), juntament amb la tecla Shift (mods=1) o la tecla Ctrl (mods=2).
 void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	// TODO: Agregue aquí su código de controlador de mensajes o llame al valor predeterminado
+	// TODO: Agregue aqu� su c�digo de controlador de mensajes o llame al valor predeterminado
 	const double incr = 0.025f;
 	double modul = 0;
 	GLdouble vdir[3] = { 0, 0, 0 };
@@ -814,8 +838,8 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 	//io.AddMouseButtonEvent(button, true);
 
 	// (2) ONLY forward mouse data to your underlying app/game.
-	if (!io.WantCaptureKeyboard) { //<Tractament mouse de l'aplicació>}
-		// EntornVGI: Si tecla pulsada és ESCAPE, tancar finestres i aplicació.
+	if (!io.WantCaptureKeyboard) { //<Tractament mouse de l'aplicaci�>}
+		// EntornVGI: Si tecla pulsada �s ESCAPE, tancar finestres i aplicaci�.
 		if (mods == 0 && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 
 			std::string currentState = g_MenuController->getState();
@@ -882,11 +906,11 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 			{
 				if (key == GLFW_KEY_LEFT) {
 					g_isOrbitingLeft = true; // Activa la bandera izquierda
-					mobil = true; // Pone la cámara en modo manual
+					mobil = true; // Pone la c�mara en modo manual
 				}
 				if (key == GLFW_KEY_RIGHT) {
 					g_isOrbitingRight = true; // Activa la bandera derecha
-					mobil = true; // Pone la cámara en modo manual
+					mobil = true; // Pone la c�mara en modo manual
 				}
 			}
 
@@ -998,19 +1022,19 @@ void OnJoystick(GLFWwindow* window) {
 		if (g_MenuController && g_MenuController->getState() != "Playing") {
 			// Actualizamos la memoria de botones antes de salir para evitar "clics fantasma" al volver
 			for (int i = 0; i < count && i < 20; i++) lastButtons[i] = (buttons[i] == GLFW_PRESS);
-			return; // <--- ¡AQUÍ SE ACABA LA FUNCIÓN SI ESTÁS EN MENÚ!
+			return; // <--- �AQU� SE ACABA LA FUNCI�N SI EST�S EN MEN�!
 		}
 
-		// --- MAPA DE BOTONES PS5 (Indices GLFW estándar) ---
-		// 1: Cruz (Freno mano - Dejamos que coche.cpp lo gestione o lo hacemos aquí si prefieres)
-		// 2: Círculo (ABS)
+		// --- MAPA DE BOTONES PS5 (Indices GLFW est�ndar) ---
+		// 1: Cruz (Freno mano - Dejamos que coche.cpp lo gestione o lo hacemos aqu� si prefieres)
+		// 2: C�rculo (ABS)
 		// 0: Cuadrado (Warning)
-		// 3: Triángulo (Luces)
+		// 3: Tri�ngulo (Luces)
 		// 4: L1 (Intermitente Izq)
 		// 5: R1 (Intermitente Der)
 
 		// ------------------------------------------
-		// 1. CONTROL DE LUCES (Btn 3 - Triángulo)
+		// 1. CONTROL DE LUCES (Btn 3 - Tri�ngulo)
 		// ------------------------------------------
 		if (buttons[3] == GLFW_PRESS && !lastButtons[3]) {
 			controlLlumsCotxe.modoFaros = (controlLlumsCotxe.modoFaros + 1) % 3;
@@ -1046,7 +1070,7 @@ void OnJoystick(GLFWwindow* window) {
 		// 5. ABS (Btn 15 - Flecha arriba)
 		// ------------------------------------------
 		// NOTA: Necesitamos acceder a la variable del coche. 
-		// Asegúrate de que 'miCoche' es accesible aquí y 'activadoABS' es público.
+		// Aseg�rate de que 'miCoche' es accesible aqu� y 'activadoABS' es p�blico.
 		if (buttons[15] == GLFW_PRESS && !lastButtons[15]) {
 			miCoche->activadoABS = !miCoche->activadoABS;
 			// printf("ABS: %d\n", miCoche->activadoABS);
@@ -1066,7 +1090,7 @@ void OnJoystick(GLFWwindow* window) {
 				camera = CAM_PRIMERA_PERSONA;
 			}
 			else {
-				// Resetear posición al volver a externa
+				// Resetear posici�n al volver a externa
 				OPV.R = 25.0f;
 				OPV.alfa = 20.0f;
 				OPV.beta = 90.0f;
@@ -1082,20 +1106,20 @@ void OnJoystick(GLFWwindow* window) {
 
 
 
-		// ACTUALIZAR MEMORIA CÁMARA INMEDIATAMENTE
+		// ACTUALIZAR MEMORIA C�MARA INMEDIATAMENTE
 		wasCameraPressed = isCameraPressed;
 
 
 
 		static bool lastFrenoState = false;
 
-		// 1. CAMBIO DE ÍNDICE:
-		// Según tu manual: "Fletxa dreta" es el índice 14.
-		// Asegúrate de comprobar que 'count > 14' para evitar errores de memoria.
+		// 1. CAMBIO DE �NDICE:
+		// Seg�n tu manual: "Fletxa dreta" es el �ndice 14.
+		// Aseg�rate de comprobar que 'count > 14' para evitar errores de memoria.
 		bool FMact = (count > 10 && buttons[16] == GLFW_PRESS);
 
-		// 2. LÓGICA (Idéntica a la cámara):
-		// Si está pulsado AHORA y NO lo estaba ANTES -> Entra.
+		// 2. L�GICA (Id�ntica a la c�mara):
+		// Si est� pulsado AHORA y NO lo estaba ANTES -> Entra.
 		if (FMact && !lastFrenoState) {
 			if (miCoche) {
 				miCoche->FrenoDeMano = !miCoche->FrenoDeMano;
@@ -1124,7 +1148,7 @@ void OnJoystick(GLFWwindow* window) {
 				mobil = true;
 			}
 			else {
-				// Si el stick está quieto, solo desactivamos si NO se está usando el teclado
+				// Si el stick est� quieto, solo desactivamos si NO se est� usando el teclado
 				if (glfwGetKey(window, GLFW_KEY_LEFT) != GLFW_PRESS) g_isOrbitingLeft = false;
 				if (glfwGetKey(window, GLFW_KEY_RIGHT) != GLFW_PRESS) g_isOrbitingRight = false;
 			}
@@ -1136,10 +1160,10 @@ void OnJoystick(GLFWwindow* window) {
 				OPV.R = 25.0f;
 				OPV.alfa = 20.0f;
 
-				// IMPORTANTE: Pon aquí 90.0f (o el valor que te funcionó antes para que no salte)
+				// IMPORTANTE: Pon aqu� 90.0f (o el valor que te funcion� antes para que no salte)
 				OPV.beta = 90.0f;
 
-				mobil = false; // Desactiva modo manual -> La cámara sigue al coche
+				mobil = false; // Desactiva modo manual -> La c�mara sigue al coche
 				g_isOrbitingLeft = false;
 				g_isOrbitingRight = false;
 			}
@@ -1166,7 +1190,7 @@ void OnTextDown(GLFWwindow* window, unsigned int codepoint)
 {
 }
 
-// Teclat_Shift: Shortcuts per Pop Ups Fitxer, Finestra, Vista, Projecció i Objecte
+// Teclat_Shift: Shortcuts per Pop Ups Fitxer, Finestra, Vista, Projecci� i Objecte
 void Teclat_Shift(int key, GLFWwindow* window)
 {
 	//const char* nomfitxer;
@@ -1180,7 +1204,7 @@ void Teclat_Shift(int key, GLFWwindow* window)
 }
 
 
-// Teclat_Ctrl: Shortcuts per Pop Ups Transforma, Iluminació, llums, Shaders
+// Teclat_Ctrl: Shortcuts per Pop Ups Transforma, Iluminaci�, llums, Shaders
 void Teclat_Ctrl(int key)
 {
 	std::string nomVert, nomFrag;	// Nom de fitxer.
@@ -1192,13 +1216,13 @@ void Teclat_Ctrl(int key)
 /*                           CONTROL DEL RATOLI                              */
 /* ------------------------------------------------------------------------- */
 
-// OnMouseButton: Funció que es crida quan s'apreta algun botó (esquerra o dreta) del mouse.
+// OnMouseButton: Funci� que es crida quan s'apreta algun bot� (esquerra o dreta) del mouse.
 //      PARAMETRES: - window: Finestra activa
-//					- button: Botó seleccionat (GLFW_MOUSE_BUTTON_LEFT o GLFW_MOUSE_BUTTON_RIGHT)
-//					- action: Acció de la tecla: GLFW_PRESS (si s'ha apretat), GLFW_REPEAT, si s'ha repetit pressió i GL_RELEASE, si es deixa d'apretar.
+//					- button: Bot� seleccionat (GLFW_MOUSE_BUTTON_LEFT o GLFW_MOUSE_BUTTON_RIGHT)
+//					- action: Acci� de la tecla: GLFW_PRESS (si s'ha apretat), GLFW_REPEAT, si s'ha repetit pressi� i GL_RELEASE, si es deixa d'apretar.
 void OnMouseButton(GLFWwindow* window, int button, int action, int mods)
 {
-	// TODO: Agregue aquí su código de controlador de mensajes o llame al valor predeterminado
+	// TODO: Agregue aqu� su c�digo de controlador de mensajes o llame al valor predeterminado
 	// Get the cursor position when the mouse key has been pressed or released.
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
@@ -1209,22 +1233,22 @@ void OnMouseButton(GLFWwindow* window, int button, int action, int mods)
 	io.AddMouseButtonEvent(button, action);
 
 	// (2) ONLY forward mouse data to your underlying app/game.
-	if (!io.WantCaptureMouse) { //<Tractament mouse de l'aplicació>}
+	if (!io.WantCaptureMouse) { //<Tractament mouse de l'aplicaci�>}
 		// OnLButtonDown
 		if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 		{
-			// Entorn VGI: Detectem en quina posició s'ha apretat el botó esquerra del
+			// Entorn VGI: Detectem en quina posici� s'ha apretat el bot� esquerra del
 			//				mouse i ho guardem a la variable m_PosEAvall i activem flag m_ButoEAvall
 			m_ButoEAvall = true;
 			m_PosEAvall.x = xpos;	m_PosEAvall.y = ypos;
 			m_EsfeEAvall = OPV;
 		}
-		// OnLButtonUp: Funció que es crida quan deixem d'apretar el botó esquerra del mouse.
+		// OnLButtonUp: Funci� que es crida quan deixem d'apretar el bot� esquerra del mouse.
 		else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-		{	// Entorn VGI: Desactivem flag m_ButoEAvall quan deixem d'apretar botó esquerra del mouse.
+		{	// Entorn VGI: Desactivem flag m_ButoEAvall quan deixem d'apretar bot� esquerra del mouse.
 			m_ButoEAvall = false;
 
-			// OPCIÓ VISTA-->SATÈLIT: Càlcul increment desplaçament del Punt de Vista
+			// OPCI� VISTA-->SAT�LIT: C�lcul increment despla�ament del Punt de Vista
 			if ((satelit) && (projeccio != ORTO))
 			{	//m_EsfeIncEAvall.R = m_EsfeEAvall.R - OPV.R;
 				m_EsfeIncEAvall.alfa = 0.01f * (OPV.alfa - m_EsfeEAvall.alfa); //if (abs(m_EsfeIncEAvall.alfa)<0.01) { if ((m_EsfeIncEAvall.alfa)>0.0) m_EsfeIncEAvall.alfa = 0.01 else m_EsfeIncEAvall.alfa=0.01}
@@ -1240,30 +1264,30 @@ void OnMouseButton(GLFWwindow* window, int button, int action, int mods)
 		}
 		// OnRButtonDown
 		else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-		{	// Entorn VGI: Detectem en quina posició s'ha apretat el botó esquerra del
+		{	// Entorn VGI: Detectem en quina posici� s'ha apretat el bot� esquerra del
 			//				mouse i ho guardem a la variable m_PosEAvall i activem flag m_ButoEAvall
 			m_ButoDAvall = true;
 			//m_PosDAvall = point;
 			m_PosDAvall.x = xpos;	m_PosDAvall.y = ypos;
 		}
-		// OnLButtonUp: Funció que es crida quan deixem d'apretar el botó esquerra del mouse.
+		// OnLButtonUp: Funci� que es crida quan deixem d'apretar el bot� esquerra del mouse.
 		else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
-		{	// Entorn VGI: Desactivem flag m_ButoEAvall quan deixem d'apretar botó esquerra del mouse.
+		{	// Entorn VGI: Desactivem flag m_ButoEAvall quan deixem d'apretar bot� esquerra del mouse.
 			m_ButoDAvall = false;
 		}
 	}
 }
 
-// OnMouseMove: Funció que es crida quan es mou el mouse. La utilitzem per la 
-//				  Visualització Interactiva amb les tecles del mouse apretades per 
-//				  modificar els paràmetres de P.V. (R,angleh,anglev) segons els 
+// OnMouseMove: Funci� que es crida quan es mou el mouse. La utilitzem per la 
+//				  Visualitzaci� Interactiva amb les tecles del mouse apretades per 
+//				  modificar els par�metres de P.V. (R,angleh,anglev) segons els 
 //				  moviments del mouse.
 //      PARAMETRES: - window: Finestra activa
-//					- xpos: Posició X del cursor del mouse (coord. pantalla) quan el botó s'ha apretat.
-//					- ypos: Posició Y del cursor del mouse(coord.pantalla) quan el botó s'ha apretat.
+//					- xpos: Posici� X del cursor del mouse (coord. pantalla) quan el bot� s'ha apretat.
+//					- ypos: Posici� Y del cursor del mouse(coord.pantalla) quan el bot� s'ha apretat.
 void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 {
-	// TODO: Agregue aquí su código de controlador de mensajes o llame al valor predeterminado
+	// TODO: Agregue aqu� su c�digo de controlador de mensajes o llame al valor predeterminado
 	double modul = 0;
 	GLdouble vdir[3] = { 0, 0, 0 };
 	CSize gir = { 0,0 }, girn = { 0,0 }, girT = { 0,0 }, zoomincr = { 0,0 };
@@ -1271,12 +1295,12 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 	// TODO: Add your message handler code here and/or call default
 	if (m_ButoEAvall && mobil && projeccio != CAP)
 	{
-		// Entorn VGI: Determinació dels angles (en graus) segons l'increment
-		//				horitzontal i vertical de la posició del mouse.
+		// Entorn VGI: Determinaci� dels angles (en graus) segons l'increment
+		//				horitzontal i vertical de la posici� del mouse.
 		gir.cx = m_PosEAvall.x - xpos;		gir.cy = m_PosEAvall.y - ypos;
 		m_PosEAvall.x = xpos;				m_PosEAvall.y = ypos;
 		if (camera == CAM_ESFERICA || camera == CAM_LLIURE)
-		{	// Càmera Esfèrica
+		{	// C�mera Esf�rica
 			OPV.beta = OPV.beta - gir.cx / 2.0;
 			OPV.alfa = OPV.alfa + gir.cy / 2.0;
 
@@ -1287,7 +1311,7 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 			while (OPV.beta < 0)		OPV.beta = OPV.beta + 360.0;
 
 		}
-		else { // Càmera Geode
+		else { // C�mera Geode
 			OPV_G.beta = OPV_G.beta + gir.cx / 2.0;
 			OPV_G.alfa = OPV_G.alfa + gir.cy / 2.0;
 			// Entorn VGI: Control per evitar el creixement desmesurat dels angles
@@ -1299,15 +1323,15 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 		// Crida a OnPaint() per redibuixar l'escena
 		//OnPaint(window);
 	}
-	else if (m_ButoEAvall && (camera == CAM_NAVEGA) && (projeccio != CAP && projeccio != ORTO)) // Opció Navegació
-	{	// Entorn VGI: Canviar orientació en opció de Navegació
+	else if (m_ButoEAvall && (camera == CAM_NAVEGA) && (projeccio != CAP && projeccio != ORTO)) // Opci� Navegaci�
+	{	// Entorn VGI: Canviar orientaci� en opci� de Navegaci�
 		girn.cx = m_PosEAvall.x - xpos;		girn.cy = m_PosEAvall.y - ypos;
 		angleZ = girn.cx / 2.0;
 		// Entorn VGI: Control per evitar el creixement desmesurat dels angles.
 		while (angleZ >= 360, 0) angleZ = angleZ - 360;
 		while (angleZ < 0.0)	angleZ = angleZ + 360;
 
-		// Entorn VGI: Segons orientació dels eixos Polars (Vis_Polar)
+		// Entorn VGI: Segons orientaci� dels eixos Polars (Vis_Polar)
 		if (Vis_Polar == POLARZ) { // (X,Y,Z)
 			n[0] = n[0] - opvN.x;
 			n[1] = n[1] - opvN.y;
@@ -1338,7 +1362,7 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 		//OnPaint(window);
 	}
 
-	// Entorn VGI: Transformació Geomètrica interactiva pels eixos X,Y boto esquerra del mouse.
+	// Entorn VGI: Transformaci� Geom�trica interactiva pels eixos X,Y boto esquerra del mouse.
 	else {
 		bool transE = transX || transY;
 		if (m_ButoEAvall && transE && transf)
@@ -1401,8 +1425,8 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 		}
 	}
 
-	// Entorn VGI: Determinació del desplaçament del pan segons l'increment
-	//				vertical de la posició del mouse (tecla dreta apretada).
+	// Entorn VGI: Determinaci� del despla�ament del pan segons l'increment
+	//				vertical de la posici� del mouse (tecla dreta apretada).
 	if (m_ButoDAvall && pan && (projeccio != CAP && projeccio != ORTO))
 	{
 		//CSize zoomincr = m_PosDAvall - point;
@@ -1410,12 +1434,12 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 		long int incrx = zoomincr.cx;
 		long int incry = zoomincr.cy;
 
-		// Desplaçament pan vertical
+		// Despla�ament pan vertical
 		tr_cpv.y -= incry * fact_pan;
 		if (tr_cpv.y > 100000.0) tr_cpv.y = 100000.0;
 		else if (tr_cpv.y < -100000.0) tr_cpv.y = -100000.0;
 
-		// Desplaçament pan horitzontal
+		// Despla�ament pan horitzontal
 		tr_cpv.x += incrx * fact_pan;
 		if (tr_cpv.x > 100000.0) tr_cpv.x = 100000.0;
 		else if (tr_cpv.x < -100000.0) tr_cpv.x = -100000.0;
@@ -1425,21 +1449,21 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 		// Crida a OnPaint() per redibuixar l'escena
 		//OnPaint(window);
 	}
-	// Determinació del paràmetre R segons l'increment
-	//   vertical de la posició del mouse (tecla dreta apretada)
+	// Determinaci� del par�metre R segons l'increment
+	//   vertical de la posici� del mouse (tecla dreta apretada)
 		//else if (m_ButoDAvall && zzoom && (projeccio!=CAP && projeccio!=ORTO))
 	else if (m_ButoDAvall && zzoom && (projeccio != CAP))
 	{	//CSize zoomincr = m_PosDAvall - point;
 		zoomincr.cx = m_PosDAvall.x - xpos;		zoomincr.cy = m_PosDAvall.y - ypos;
 		long int incr = zoomincr.cy / 1.0;
 
-		if (camera == CAM_ESFERICA || camera == CAM_LLIURE) {	// Càmera Esfèrica
+		if (camera == CAM_ESFERICA || camera == CAM_LLIURE) {	// C�mera Esf�rica
 			OPV.R = OPV.R + incr;
 			//if (OPV.R < 0.25) OPV.R = 0.25;
 			if (OPV.R < p_near) OPV.R = p_near;
 			if (OPV.R > p_far) OPV.R = p_far;
 		}
-		else { // Càmera Geode
+		else { // C�mera Geode
 			OPV_G.R = OPV_G.R + incr;
 			if (OPV_G.R < 0.0) OPV_G.R = 0.0;
 		}
@@ -1450,7 +1474,7 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 		//OnPaint(window);
 	}
 
-	// Entorn VGI: Transformació Geomètrica interactiva per l'eix Z amb boto dret del mouse.
+	// Entorn VGI: Transformaci� Geom�trica interactiva per l'eix Z amb boto dret del mouse.
 	else if (m_ButoDAvall && transZ && transf)
 	{	// Calcular increment
 		girT.cx = m_PosDAvall.x - xpos;		girT.cy = m_PosDAvall.y - ypos;
@@ -1486,14 +1510,14 @@ void OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 	}
 }
 
-// OnMouseWheel: Funció que es crida quan es mou el rodet del mouse. La utilitzem per la 
-//				  Visualització Interactiva per modificar el paràmetre R de P.V. (R,angleh,anglev) 
+// OnMouseWheel: Funci� que es crida quan es mou el rodet del mouse. La utilitzem per la 
+//				  Visualitzaci� Interactiva per modificar el par�metre R de P.V. (R,angleh,anglev) 
 //				  segons el moviment del rodet del mouse.
-//      PARAMETRES: -  (xoffset,yoffset): Estructura (x,y) que dóna la posició del mouse 
-//							 (coord. pantalla) quan el botó s'ha apretat.
+//      PARAMETRES: -  (xoffset,yoffset): Estructura (x,y) que d�na la posici� del mouse 
+//							 (coord. pantalla) quan el bot� s'ha apretat.
 void OnMouseWheel(GLFWwindow* window, double xoffset, double yoffset)
 {
-	// TODO: Agregue aquí su código de controlador de mensajes o llame al valor predeterminado
+	// TODO: Agregue aqu� su c�digo de controlador de mensajes o llame al valor predeterminado
 	double modul = 0;
 	GLdouble vdir[3] = { 0, 0, 0 };
 
@@ -1503,11 +1527,11 @@ void OnMouseWheel(GLFWwindow* window, double xoffset, double yoffset)
 	//io.AddMouseButtonEvent(button, true);
 
 // (2) ONLY forward mouse data to your underlying app/game.
-	if (!io.WantCaptureMouse) { // <Tractament mouse de l'aplicació>}
-		// Funció de zoom quan està activada la funció pan o les T. Geomètriques
+	if (!io.WantCaptureMouse) { // <Tractament mouse de l'aplicaci�>}
+		// Funci� de zoom quan est� activada la funci� pan o les T. Geom�triques
 		if ((zzoom || zzoomO) || (transX) || (transY) || (transZ))
 		{
-			if (camera == CAM_ESFERICA) {	// Càmera Esfèrica
+			if (camera == CAM_ESFERICA) {	// C�mera Esf�rica
 				OPV.R = OPV.R + yoffset / 4.0;
 				if (OPV.R < 0.25) OPV.R = 0.25;
 				//InvalidateRect(NULL, false);
@@ -1518,18 +1542,18 @@ void OnMouseWheel(GLFWwindow* window, double xoffset, double yoffset)
 
 
 /* ------------------------------------------------------------------------- */
-/*					     TIMER (ANIMACIÓ)									 */
+/*					     TIMER (ANIMACI�)									 */
 /* ------------------------------------------------------------------------- */
 void OnTimer()
 {
-	// TODO: Agregue aquí su código de controlador de mensajes o llame al valor predeterminado
+	// TODO: Agregue aqu� su c�digo de controlador de mensajes o llame al valor predeterminado
 	if (anima) {
-		// Codi de tractament de l'animació quan transcorren els ms. del crono.
+		// Codi de tractament de l'animaci� quan transcorren els ms. del crono.
 
 		// Crida a OnPaint() per redibuixar l'escena
 		//InvalidateRect(NULL, false);
 	}
-	else if (satelit) {	// OPCIÓ SATÈLIT: Increment OPV segons moviments mouse.
+	else if (satelit) {	// OPCI� SAT�LIT: Increment OPV segons moviments mouse.
 		//OPV.R = OPV.R + m_EsfeIncEAvall.R;
 		OPV.alfa = OPV.alfa + m_EsfeIncEAvall.alfa;
 		while (OPV.alfa > 360.0) OPV.alfa = OPV.alfa - 360.0;
@@ -1545,7 +1569,7 @@ void OnTimer()
 
 // ---------------- Entorn VGI: Funcions locals a main.cpp
 
-// Log2: Càlcul del log base 2 de num
+// Log2: C�lcul del log base 2 de num
 int Log2(int num)
 {
 	int tlog;
@@ -1682,9 +1706,9 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 		draw->AddLine(ImVec2(0, y), ImVec2(size.x, y), gridColor);
 
 
-	// -------- TÍTULO PRINCIPAL --------
+	// -------- T�TULO PRINCIPAL --------
 	ImGui::SetWindowFontScale(4.0f);
-	const char* title = u8"GIMCANA AUTOMOBILÍSTICA";
+	const char* title = u8"GIMCANA AUTOMOBIL�STICA";
 	ImVec2 titleSize = ImGui::CalcTextSize(title);
 
 	ImVec2 titlePos(center.x - titleSize.x * 0.5f, center.y - 170);
@@ -1705,7 +1729,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 
 	ImGui::SetWindowFontScale(1.0f);
 
-	// -------- SUBTÍTULO -------
+	// -------- SUBT�TULO -------
 	const char* loading = u8"Carregant...";
 	ImVec2 loadSize = ImGui::CalcTextSize(loading);
 	ImVec2 loadPos(center.x - loadSize.x * 0.5f, center.y - 40);
@@ -1727,7 +1751,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 	// -------- CONSEJO --------
 	const char* tip =
 		u8"Consell: Controla l'accelerador,\n"
-		u8"             no tot és velocitat.";
+		u8"             no tot �s velocitat.";
 
 	ImVec2 tipSize = ImGui::CalcTextSize(tip);
 	ImVec2 tipPos(center.x - tipSize.x * 0.5f, center.y + 45);
@@ -1789,7 +1813,7 @@ int main(void)
 	const GLFWvidmode* modes = glfwGetVideoModes(primary, &countVM);
 
 	// Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(mode->width, mode->height, u8"Gimcana Automobilística", primary, NULL);
+	window = glfwCreateWindow(mode->width, mode->height, u8"Gimcana Automobil�stica", primary, NULL);
 	if (!window)
 	{
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 4.6 compatible. Try the 2.1 version of the tutorials.\n");
@@ -1801,7 +1825,7 @@ int main(void)
 	// Make the window's context current
 	glfwMakeContextCurrent(window);
 
-	// Llegir resolució actual de pantalla
+	// Llegir resoluci� actual de pantalla
 	glfwGetWindowSize(window, &width_old, &height_old);
 
 	// Initialize GLEW
@@ -1824,11 +1848,11 @@ int main(void)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor); // GL 4.6
 
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Si funcions deprecades són eliminades (no ARB_COMPATIBILITY)
-	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_FALSE);  // Si funcions deprecades NO són eliminades (Si ARB_COMPATIBILITY)
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Si funcions deprecades s�n eliminades (no ARB_COMPATIBILITY)
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_FALSE);  // Si funcions deprecades NO s�n eliminades (Si ARB_COMPATIBILITY)
 
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);	// Creació contexte CORE
-	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);	// Creació contexte ARB_COMPATIBILITY
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);	// Creaci� contexte CORE
+	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);	// Creaci� contexte ARB_COMPATIBILITY
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE); // comment this line in a release build! 
 
 
@@ -1862,7 +1886,7 @@ int main(void)
 	ImGuiIO& io = ImGui::GetIO();
 
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Habilita flechas del teclado (Arriba/Abajo + Enter)
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Habilita D-Pad/Stick del mando (Cruceta + Botón X/A)
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Habilita D-Pad/Stick del mando (Cruceta + Bot�n X/A)
 
 	ImFontConfig cfg;
 	cfg.OversampleH = 3;
@@ -1932,7 +1956,7 @@ int main(void)
 		crearColisionadorEstatico(muro);
 	}
 	iniciarFisicasCoche();
-	// Convertimos el circuito gráfico en suelo físico
+	// Convertimos el circuito gr�fico en suelo f�sico
 	if (circuit != nullptr) {
 		crearColisionadorEstatico(circuit);
 		crearColisionadorEstatico(muro);
@@ -1959,7 +1983,7 @@ int main(void)
 		if (g_MenuController && g_MenuController->getState() == "Playing") {
 			g_GameContext.gameTime += delta;
 
-			// Actualizamos finalTime para que se guarde el último tiempo registrado
+			// Actualizamos finalTime para que se guarde el �ltimo tiempo registrado
 			g_GameContext.finalTime = g_GameContext.gameTime;
 		}
 		// Entorn VGI. Timer: for each timer do this
@@ -1996,7 +2020,7 @@ int main(void)
 			glm::vec3 worldUp = glm::vec3(0.0f, 0.0f, 1.0f);
 			glm::vec3 cameraRight = glm::normalize(glm::cross(cameraFront, worldUp));
 
-			// Mover la posición de la cámara
+			// Mover la posici�n de la c�mara
 			if (g_isMovingForward)  g_FreeCamPos += cameraFront * moveSpeed;
 			if (g_isMovingBackward) g_FreeCamPos -= cameraFront * moveSpeed;
 			if (g_isMovingLeft)     g_FreeCamPos -= cameraRight * moveSpeed;
@@ -2030,12 +2054,12 @@ int main(void)
 		ImGuiIO& io = ImGui::GetIO();
 		if (g_MenuController && g_MenuController->getState() == "Playing") {
 			// ESTAMOS JUGANDO: Mentimos a ImGui diciendo que NO hay mando.
-			// Esto evita que el botón Cuadrado active el menú de ventanas (NavWindowing)
+			// Esto evita que el bot�n Cuadrado active el men� de ventanas (NavWindowing)
 			io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableGamepad;
 			io.BackendFlags &= ~ImGuiBackendFlags_HasGamepad;
 		}
 		else {
-			// ESTAMOS EN MENÚ: Volvemos a conectar el mando
+			// ESTAMOS EN MEN�: Volvemos a conectar el mando
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 			io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
 		}
@@ -2044,7 +2068,7 @@ int main(void)
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// 2. Comprobar si debemos cerrar app desde el menú
+		// 2. Comprobar si debemos cerrar app desde el men�
 		if (g_GameContext.shouldCloseApp) {
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
