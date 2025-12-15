@@ -1786,7 +1786,7 @@ int main(void)
 	const GLFWvidmode* modes = glfwGetVideoModes(primary, &countVM);
 
 	// Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(mode->width, mode->height, "Entorn Grafic VS2022 amb GLFW i OpenGL 4.6", primary, NULL);
+	window = glfwCreateWindow(mode->width, mode->height, u8"Gimcana Automobilística", primary, NULL);
 	if (!window)
 	{
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 4.6 compatible. Try the 2.1 version of the tutorials.\n");
