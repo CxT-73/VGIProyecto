@@ -1624,7 +1624,7 @@ void OBJ::destroyFisicas(btDiscreteDynamicsWorld* mundo)
 void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 {
 	glm::vec3 finalPos = posicion;
-	 
+
 	float sepX = offset.x;
 	float sepY = offset.y;
 	float offsetZ = offset.z;
@@ -1639,24 +1639,24 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 
 	else if (nom == "barril")
 		scaleFactor = 5.0f;
-	  
+
 	else if (nom == "muro")
 		scaleFactor = 100.0f;
-	 
+
 	btScalar masa = 0.0f;
 
 	if (nom == "cono" || nom == "cono_estatic")
 	{
 		btConvexHullShape* shape = new btConvexHullShape();
-		float baseWidth = 3.69f * scaleFactor;  // Ancho total de la base
-		float baseHeight = 0.434f * scaleFactor; // Altura de la base hexagonal
-		float totalHeight = 6.12f * scaleFactor; // Altura total hasta la punta
+		float baseWidth = 3.69f * scaleFactor;
+		float baseHeight = 0.434f * scaleFactor;
+		float totalHeight = 6.12f * scaleFactor;
 		float r_base = baseWidth * 0.5f;
-		float r_top = 0.15f * scaleFactor; // Radio de la punta (estimado)
+		float r_top = 0.15f * scaleFactor;
 		float z_suelo = 0.0f;
 		float z_tope_base = baseHeight;
 		float z_punta = totalHeight;
-		float c = r_base * 0.3f; // Ajuste para la forma octogonal de la base
+		float c = r_base * 0.3f;
 
 		float nivelesBase[] = { z_suelo, z_tope_base };
 
@@ -1675,13 +1675,13 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 
 		shape->initializePolyhedralFeatures();
 		m_collisionShape = shape;
-		if (nom == "cono") masa = 500.0f;
-		else masa = 99999.0f;
+
+		if (nom == "cono") masa = 4.0f;
+		else masa = 0.0f;
 
 	}
 	else if (nom == "barril")
 	{
-		// Cilindro: dimensiones (radio, altura/2, radio)
 		m_collisionShape = new btCylinderShapeZ(
 			btVector3(0.43f * scaleFactor, 0.43f * scaleFactor, 0.63f * scaleFactor)
 		);
@@ -1689,7 +1689,6 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 	}
 	else if (nom == "barrera")
 	{
-		//m_collisionShape = new btBoxShape(btVector3(0.915f * scaleFactor, 2.535f * scaleFactor, 1.37f * scaleFactor)); // AJUSTAR
 		btConvexHullShape* shape = new btConvexHullShape();
 		float s = scaleFactor;
 
@@ -1722,7 +1721,7 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 		m_collisionShape = new btBoxShape(btVector3(1, 1, 1));
 		masa = 0;
 	}
-	 
+
 	btVector3 inertia(0, 0, 0);
 	if (masa > 0)
 		m_collisionShape->calculateLocalInertia(masa, inertia);
@@ -1736,25 +1735,34 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 	m_rigidBody = new btRigidBody(info);
 
 	mundo->addRigidBody(m_rigidBody);
+
+	if (nom == "cono" || nom == "cono_estatic")
+	{
+		m_rigidBody->setFriction(0.6f);
+		m_rigidBody->setRestitution(0.3f);
+		m_rigidBody->setRollingFriction(0.3f);
+		m_rigidBody->setSpinningFriction(0.3f);
+		m_rigidBody->setDamping(0.1f, 0.5f);
+	}
+	else if (nom == "barrera" || nom == "senyal1" || nom == "senyal2") {
+		m_rigidBody->setFriction(0.9f);
+		m_rigidBody->setRestitution(0.05f);
+		m_rigidBody->setRollingFriction(0.9f);
+	}
+	else if (nom == "bloc")
+	{
+		m_rigidBody->setFriction(0.85f);
+		m_rigidBody->setRestitution(0.02f);
+		m_rigidBody->setRollingFriction(0.5f);
+	}
+	else if (nom == "barril")
+	{
+		m_rigidBody->setFriction(0.5f);
+		m_rigidBody->setRestitution(0.35f);
+		m_rigidBody->setRollingFriction(0.05f);
+	}
 }
 
-
-
-//z --> azul
-//j --> verde
-//i --> rojo
-
-//coloca el objeto en una cuadrícula 3D separada 15 unidades entre filas (i) y columnas (j), a una altura fija de 160 en el eje Z
-//ModelMatrix = glm::translate(MatriuTG, vec3(i * 15.0f, j * 15.0f, 160.0f));
-
-//Esto es necesario porque las normales deben transformarse sin verse afectadas por escalados o proyecciones no uniformes que distorsionarían la iluminación.
-//NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
-
-//mueve cada objeto 15 unidades en las tres direcciones, según sus índices i, j, k.
-//TransMatrix = glm::translate(MatriuTG, vec3(i * 15.0f, j * 15.0f, k * 15.0f));
-
-//primero se mueve (traslación con TransMatrix), luego se escala el modelo.
-//ModelMatrix = glm::scale(TransMatrix, vec3(5.0f, 5.0f, 5.0f));
 void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 	CColor col_object, bool sw_mat[5])
 {
@@ -1764,36 +1772,13 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 	float scaleFactor = 1.0f;
 
 	if (nom == "cono" || nom == "cono_estatic")
-	{
 		scaleFactor = 0.8f;
-
-		m_rigidBody->setFriction(0.6f);
-		m_rigidBody->setRestitution(0.3f);
-		m_rigidBody->setRollingFriction(0.3f);
-		m_rigidBody->setSpinningFriction(0.3f);
-		m_rigidBody->setDamping(0.1f, 0.5f);
-	}
-	else if (nom == "barrera" || nom == "senyal1" || nom == "senyal2") {
+	else if (nom == "barrera" || nom == "senyal1" || nom == "senyal2" || nom == "bloc")
 		scaleFactor = 1.0f;
-		m_rigidBody->setFriction(0.9f); 
-		m_rigidBody->setRestitution(0.05f);
-		m_rigidBody->setRollingFriction(0.9f);
-	}
-	else if (nom == "bloc")
-	{
-		scaleFactor = 1.0f;
-		m_rigidBody->setFriction(0.85f);
-		m_rigidBody->setRestitution(0.02f);
-		m_rigidBody->setRollingFriction(0.5f);
-	}
 	else if (nom == "barril")
-	{
 		scaleFactor = 5.0f;
-		m_rigidBody->setFriction(0.5f);
-		m_rigidBody->setRestitution(0.35f);
-		m_rigidBody->setRollingFriction(0.05f);
-	}
-	else if (nom == "muro") scaleFactor = 100.0f;
+	else if (nom == "muro")
+		scaleFactor = 100.0f;
 
 	if (m_rigidBody && m_rigidBody->getMotionState())
 	{
@@ -1808,13 +1793,12 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 	}
 	else
 	{
-
 		glm::vec3 finalPos = posicion;
 
 		float offsetX = 0.0f, offsetY = 0.0f, offsetZ = 1000.0f;
 		float sepX = 0.0f, sepY = 0.0f, sepZ = 0.0f;
-		float escala = 0.0f, y = 0.0f, rad = 90.0f, z = 0.0f, x = 1.0f;
-		// Configurar separaciones según el objeto
+		float escala = 0.0f;
+
 		if (nom == "cono" || nom == "cono_estatic" || nom == "senyal1" || nom == "senyal2") {
 			sepX = -100.0f;
 			sepY = -50.0f;
@@ -1852,10 +1836,8 @@ void OBJ::render(GLuint sh_programID, glm::mat4 MatriuVista, glm::mat4 MatriuTG,
 		finalPos.z += offsetZ;
 
 		glm::mat4 TransMatrix = glm::translate(MatriuTG, finalPos);
-
 		ModelMatrix = glm::scale(TransMatrix, glm::vec3(escala));
 	}
-
 
 	glm::mat4 NormalMatrix = transpose(inverse(MatriuVista * ModelMatrix));
 
