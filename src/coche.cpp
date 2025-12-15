@@ -129,25 +129,28 @@ void Coche::initFisicas(btDiscreteDynamicsWorld* mundo) {
     for (int i = 0; i < m_vehicle->getNumWheels(); i++) {
         btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
 
-        //AMORTIGUACIÓN
-        wheel.m_wheelsDampingRelaxation = 15.0f;
-        wheel.m_wheelsDampingCompression = 15.0f;
+        // AMORTIGUACIÓN (DAMPING)
+        // Aumentamos la compresión para que no se hunda tan rápido el morro
+        wheel.m_wheelsDampingRelaxation = 20.0f;
+        wheel.m_wheelsDampingCompression = 30.0f; // Antes 15.0f -> Ahora 30.0f (Resiste el hundimiento)
 
         //AGARRE Y SEGURIDAD
-        wheel.m_frictionSlip = 1.5f;
-        wheel.m_rollInfluence = 0.0f;
+        wheel.m_frictionSlip = 3.0f;
+        wheel.m_rollInfluence = 0.1f; // Pequeño truco: 0.1 ayuda a que no vuelque tan fácil lateralmente
 
         //FUERZA MÁXIMA
         wheel.m_maxSuspensionForce = 40000.0f;
         wheel.m_maxSuspensionTravelCm = 500.0f;
-        //RIGIDEZ
-        if (i == 2 || i == 3) {
-            wheel.m_suspensionStiffness = 120.0f; // Prueba con 150. Si rebota mucho, baja a 120.
+
+        // RIGIDEZ (STIFFNESS)
+        if (i == 2 || i == 3) { // TRASERAS
+            wheel.m_suspensionStiffness = 120.0f;
             wheel.m_suspensionRestLength1 = 0.7f;
         }
         else {
-            //DELANTERAS 
-            wheel.m_suspensionStiffness = 90.0f;
+            // DELANTERAS (IMPORTANTE)
+            // Subimos de 90 a 160 para que el morro no toque el suelo al frenar
+            wheel.m_suspensionStiffness = 160.0f;
             wheel.m_suspensionRestLength1 = 0.65f;
         }
     }
@@ -177,7 +180,6 @@ void Coche::update() {
             FrenoDeMano = !FrenoDeMano;
             printf("Freno de Mano: %s\n", FrenoDeMano ? "PUESTO" : "QUITADO");
             pPressed = true;
-
         }
     }
     else {
@@ -189,11 +191,13 @@ void Coche::update() {
     float fuerzaMotor = 0.0f;
     float fuerzaFreno = 0.0f;
 
-    //CONFIGURACIÓN DE FUERZAS
+    // CONFIGURACIÓN DE FUERZAS
     float potAcelerar = -5000.0f; // Fuerza para ir adelante
     float potAtras = 4000.0f;     // Fuerza para ir atrás
-    float frenoABS = 300.0f;       // Freno suave
-    float frenoBloqueo = 3300.0f; // Bloqueo salvaje
+
+    // VALORES AUMENTADOS PARA QUE FRENE DE VERDAD
+    float frenoABS = 300.0f;
+    float frenoBloqueo = 15000.0f;
     float frenoParking = 100000.0f;
 
     // INPUTS
@@ -207,7 +211,6 @@ void Coche::update() {
     if (FrenoDeMano) {
         fuerzaMotor = 0.0f;
         fuerzaFreno = frenoParking;
-        
     }
     else {
         if (W) {
@@ -226,7 +229,6 @@ void Coche::update() {
             }
         }
     }
-
 
     // DIRECCIÓN
     float incremento = 0.01f;
@@ -253,48 +255,30 @@ void Coche::update() {
     }
 
     if (glfwJoystickPresent(GLFW_JOYSTICK_1)) {
-        //joystick connectat
-
-        //comprobacions
 
         int axisCount;
         const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axisCount);
-
-        std::cout << "S'han detectat " << axisCount << " eixos." << std::endl;
-
         int buttonCount;
         const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonCount);
 
-
-
-        const char* joystickName = glfwGetJoystickName(GLFW_JOYSTICK_1);
-        if (joystickName) {
-            std::cout << "Joystick detectat: " << joystickName << std::endl;
-        }
-
-
         if (std::abs(axes[0]) > 0.1f) {
-            // Multiplicamos por -0.5f para invertir (si es necesario) y escalar el giro
             angulo_ruedas = axes[0] * -0.5f;
         }
-
 
         if (!FrenoDeMano) {
             float valorR2 = axes[4];
             float valorL2 = axes[3];
             float deadzoneTriggers = 0.05f;
 
-            if (valorR2 > deadzoneTriggers) { // Si presionas R2
+            if (valorR2 > deadzoneTriggers) {
                 fuerzaMotor = potAcelerar * valorR2;
             }
             else if (valorL2 > deadzoneTriggers) {
                 fuerzaMotor = potAtras * valorL2;
             }
 
-
-
             if (buttons[0] == GLFW_PRESS) {
-                Espacio = true;
+                Espacio = true; // Actualizamos para lógica interna
                 if (activadoABS) fuerzaFreno = frenoABS;
                 else fuerzaFreno = frenoBloqueo;
             }
@@ -303,25 +287,24 @@ void Coche::update() {
                 controlLlumsCotxe.frenando = true;
             }
             else {
-                // Si no tocamos ni L2 ni Cruz, apagamos la luz de freno.
-                // (Nota: Esto sobrescribe el teclado si pulsas 'S' y tienes mando conectado,
-                // pero es el comportamiento esperado para que no se quede encendida).
                 controlLlumsCotxe.frenando = false;
             }
         }
     }
 
-    // Motor 
+    // PRIORIDAD DE FRENO: Si frenamos, cortamos motor
+    if (fuerzaFreno > 0.0f) {
+        fuerzaMotor = 0.0f;
+    }
+
+    // APLICAR FUERZAS AL MOTOR
     m_vehicle->applyEngineForce(fuerzaMotor, 2);
     m_vehicle->applyEngineForce(fuerzaMotor, 3);
-
-    // Aseguramos que las delanteras no tengan motor
     m_vehicle->applyEngineForce(0, 0);
     m_vehicle->applyEngineForce(0, 1);
 
-    // Frenos
+    // APLICAR FRENOS
     if (fuerzaFreno > 0.0f) {
-
         if (FrenoDeMano) {
             m_vehicle->setBrake(fuerzaFreno, 0);
             m_vehicle->setBrake(fuerzaFreno, 1);
@@ -329,39 +312,38 @@ void Coche::update() {
             m_vehicle->setBrake(fuerzaFreno, 3);
         }
         else if (activadoABS) {
+            // Reparto 60% Delante / 40% Detrás para frenada estable
             m_vehicle->setBrake(fuerzaFreno * 0.6f, 0);
             m_vehicle->setBrake(fuerzaFreno * 0.6f, 1);
             m_vehicle->setBrake(fuerzaFreno * 0.4f, 2);
             m_vehicle->setBrake(fuerzaFreno * 0.4f, 3);
         }
         else {
+            // Frenada bloqueo (solo traseras para derrape o todas según prefieras)
+            // Aquí pongo bloqueo trasero para facilitar derrape controlado
             m_vehicle->setBrake(0.0f, 0);
             m_vehicle->setBrake(0.0f, 1);
-
             m_vehicle->setBrake(fuerzaFreno, 2);
             m_vehicle->setBrake(fuerzaFreno, 3);
         }
-
     }
     else {
-        // Liberar frenos si soltamos la tecla
+        // Liberar frenos
         m_vehicle->setBrake(0, 0);
         m_vehicle->setBrake(0, 1);
         m_vehicle->setBrake(0, 2);
         m_vehicle->setBrake(0, 3);
     }
 
-    // Dirección con penalización si bloqueamos ruedas 
+    // Dirección con penalización si bloqueamos ruedas (solo sin ABS)
     float anguloFinal = angulo_ruedas;
-
     if (!activadoABS && Espacio && std::abs(velocidadActual) > 1.0f && !FrenoDeMano) {
-        anguloFinal *= 0.05f; // El volante apenas responde
+        anguloFinal *= 0.05f; // El volante apenas responde bloqueando
     }
 
     m_vehicle->setSteeringValue(anguloFinal, 0);
     m_vehicle->setSteeringValue(anguloFinal, 1);
 }
-
 
 void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
     if (!model) return;
