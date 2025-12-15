@@ -1,5 +1,6 @@
 #pragma once
 #include "IMenuState.h"
+#include "MenuController.h"
 
 class EndGameState : public IMenuState {
 public:

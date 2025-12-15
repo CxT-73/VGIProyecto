@@ -146,4 +146,53 @@ void PlayingState::Render(MenuController& controller) {
 
     // Quitar estilos Pushados
     ImGui::PopStyleVar(2);
+    // =====================================================
+    // 3. VELOCIDAD DEL COCHE
+    // =====================================================
+    const float VELOCITY_WINDOW_WIDTH = 400.0f;
+    const float VELOCITY_WINDOW_HEIGHT = 100.0f;
+    const float VEL_SCALE = 3.5f;
+
+    // 1. Obtener datos
+    float velocitat = controller.GetContext()->velocity;
+    char vBuffer[32];
+    snprintf(vBuffer, sizeof(vBuffer), "%.0f MPH", velocitat);
+
+    // 2. Calcular posición (BOTTOM-LEFT)
+    float display_w_v = ImGui::GetIO().DisplaySize.x;
+    float display_h_v = ImGui::GetIO().DisplaySize.y; // <--- Necesitamos la altura
+    float padding = 20.0f; // Margen de separación del borde
+
+    ImVec2 window_pos_v(
+        padding,                                            // Izquierda (X)
+        display_h_v - VELOCITY_WINDOW_HEIGHT - padding        // Abajo (Y)
+    );
+
+    ImGui::SetNextWindowPos(window_pos_v);
+    ImGui::SetNextWindowSize(ImVec2(VELOCITY_WINDOW_WIDTH, VELOCITY_WINDOW_HEIGHT));
+
+    // Flags transparentes
+    ImGuiWindowFlags hud_flags = ImGuiWindowFlags_NoDecoration |
+        ImGuiWindowFlags_NoInputs |
+        ImGuiWindowFlags_NoBackground;
+
+    // 3. Dibujar
+    if (ImGui::Begin("##VelocityHUD", nullptr, hud_flags)) {
+
+        ImGui::SetWindowFontScale(VEL_SCALE);
+
+        // Centrar texto en la ventana
+        float text_width = ImGui::CalcTextSize(vBuffer).x;
+        ImGui::SetCursorPosX((VELOCITY_WINDOW_WIDTH - text_width) * 0.5f);
+        ImGui::SetCursorPosY((VELOCITY_WINDOW_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f);
+
+        // Color Cyan Neón
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f));
+        ImGui::Text("%s", vBuffer);
+        ImGui::PopStyleColor();
+
+        ImGui::SetWindowFontScale(1.0f);
+    }
+    ImGui::End();
 }
+

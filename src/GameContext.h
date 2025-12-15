@@ -21,5 +21,5 @@ struct GameContext {
     bool shouldCloseApp = false;
     bool resetGame = false; // Flag para reiniciar variables
     std::string state = "Main";
-
+    float velocity = 0.0f;
 };
