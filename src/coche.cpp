@@ -461,3 +461,37 @@ glm::mat4 Coche::getModelMatrixCar(float escala) const {
     M = glm::scale(M, glm::vec3(escala));
     return M;
 }
+
+void Coche::reiniciarPosicion() {
+    if (!m_chassisBody || !m_vehicle) return;
+
+    //DETENER EL COCHE
+    m_chassisBody->setLinearVelocity(btVector3(0, 0, 0));
+    m_chassisBody->setAngularVelocity(btVector3(0, 0, 0));
+
+    //PREPARAR LA POSICIÓN Y ROTACIÓN INICIAL
+    btTransform tr;
+    tr.setIdentity();
+
+    // Posición original (La misma que en initFisicas)
+    tr.setOrigin(btVector3(-502.5f, 985.0f, 304.8f));
+
+    // Rotación original
+    btQuaternion rotacion;
+    rotacion.setRotation(btVector3(0, 0, -1), btScalar(2.00713f));
+    tr.setRotation(rotacion);
+
+    //APLICAR EL "TELETRANSPORTE" AL CUERPO FÍSICO
+    m_chassisBody->setCenterOfMassTransform(tr);
+
+    if (m_chassisBody->getMotionState()) {
+        m_chassisBody->getMotionState()->setWorldTransform(tr);
+    }
+
+    angulo_ruedas = 0.0f;    
+    m_vehicle->setSteeringValue(0.0f, 0);
+    m_vehicle->setSteeringValue(0.0f, 1);
+
+    FrenoDeMano = true;
+
+}

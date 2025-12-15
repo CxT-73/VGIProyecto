@@ -22,6 +22,7 @@ public:
     ~Coche();             // Destructor to free memory
     void initFisicas(btDiscreteDynamicsWorld* mundo);
     void update();
+    void reiniciarPosicion();
     void render(GLuint sh_programID, glm::mat4 MatriuVista);
     glm::mat4 getModelMatrixCar(float escala = 0.8f) const;
     btRigidBody* getChassisBody() const { return m_chassisBody; }
