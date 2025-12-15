@@ -1858,6 +1858,9 @@ int main(void)
 
 	ImGuiIO& io = ImGui::GetIO();
 
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Habilita flechas del teclado (Arriba/Abajo + Enter)
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Habilita D-Pad/Stick del mando (Cruceta + Botón X/A)
+
 	ImFontConfig cfg;
 	cfg.OversampleH = 3;
 	cfg.OversampleV = 3;
@@ -2020,6 +2023,19 @@ int main(void)
 		// Poll for and process events
 		glfwPollEvents();
 		OnJoystick(window);
+
+		ImGuiIO& io = ImGui::GetIO();
+		if (g_MenuController && g_MenuController->getState() == "Playing") {
+			// ESTAMOS JUGANDO: Mentimos a ImGui diciendo que NO hay mando.
+			// Esto evita que el botón Cuadrado active el menú de ventanas (NavWindowing)
+			io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableGamepad;
+			io.BackendFlags &= ~ImGuiBackendFlags_HasGamepad;
+		}
+		else {
+			// ESTAMOS EN MENÚ: Volvemos a conectar el mando
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+			io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+		}
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
