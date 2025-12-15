@@ -1620,12 +1620,8 @@ void crearColisionadorEstatico(OBJ* objetoJuego) {
 
 void stepFisicas(float deltaTime) {
 	if (mundo) {
-<<<<<<< HEAD
 		mundo->stepSimulation(deltaTime, 10, 1.0f / 120.0f);
-=======
-		mundo->stepSimulation(1.0f / 60.0f, 10, 1.0f / 120.0f);
 		detectarColisiones();
->>>>>>> c36bdd961a9a587e0cec46993f3fb73e275e09c1
 	}
 	if (miCoche) miCoche->update();
 }
