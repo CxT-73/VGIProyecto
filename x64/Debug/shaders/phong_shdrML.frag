@@ -39,6 +39,7 @@ in vec3 vertexPV;
 in vec3 vertexNormalPV;
 in vec2 vertexTexCoord;
 in vec4 vertexColor;
+in vec4 FragPosLightSpace;
 
 // Uniforms
 uniform mat4 viewMatrix;            // Necesaria para transformar luces fijas
@@ -51,9 +52,33 @@ uniform bvec4 sw_intensity;
 uniform vec4 LightModelAmbient;
 uniform Light LightSource[MaxLights];
 uniform Material material;
+uniform sampler2D shadowMap;
 
 // Salida
 out vec4 FragColor;
+
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+    // 1. Divisió perspectiva
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // 2. Transformar al rang [0,1]
+    projCoords = projCoords * 0.5 + 0.5;
+    
+    // Si està fora del rang del mapa, no fem ombra
+    if(projCoords.z > 1.0)
+        return 0.0;
+
+    // 3. Llegir profunditat del mapa d'ombres
+    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    // 4. Profunditat actual
+    float currentDepth = projCoords.z;
+    
+    // 5. Comparació amb bias
+    float bias = 0.005; 
+    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+    return shadow;
+}
 
 void main()
 {
@@ -157,6 +182,12 @@ void main()
     }
 
     vec3 finalRGB = Iemissive + Iambient + ILlums;
+    float shadow = ShadowCalculation(FragPosLightSpace);
+    if(shadow > 0.0)
+    {
+        
+        finalRGB = finalRGB * 0.5; 
+    }
     if (sw_material && numMat > 0) alpha = aValue / float(numMat);
     
     vec4 finalColor = vec4(finalRGB, alpha);
