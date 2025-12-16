@@ -1374,7 +1374,7 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 	}
 	else { lumin[15].encesa = false; lumin[17].encesa = false; }
 }
-
+/*
 void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 {
 	if (coche == nullptr) return;
@@ -1570,7 +1570,7 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 	}
 	else { lumin[15].encesa = false; lumin[17].encesa = false; }
 }
-
+*/
 // instancia: Aplica Transformacions Geometriques d'instanciació, segons els parametres 
 //            definits a la persiana Transformacions
 glm::mat4 instancia(bool TR, INSTANCIA tg, INSTANCIA tgF)

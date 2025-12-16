@@ -18,6 +18,8 @@
 #include "PauseMenu.h"
 #include "EndGame.h"
 
+ShadowMapData shadowData;            // VARIABLE OMBRES
+GLuint simpleDepthShaderID = 0; // VARIABLE OMBRES
 
 void InitGL()
 {
@@ -437,6 +439,41 @@ void OnPaint(GLFWwindow* window)
 	controlLlumsCotxe.tiempoTotal += 1.0f / 90.0f;
 	func_llumsCotxe(miCoche, controlLlumsCotxe, llumGL);
 
+	//OMBRES
+	glm::vec3 lightPos(llumGL[0].posicio.x, llumGL[0].posicio.y, llumGL[0].posicio.z);
+	glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, 1.0f, 300.0f);
+	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
+	glViewport(0, 0, shadowData.width, shadowData.height);
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowData.FBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	glUseProgram(simpleDepthShaderID);
+	glUniformMatrix4fv(glGetUniformLocation(simpleDepthShaderID, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+
+	configura_Escena();
+	dibuixa_EscenaGL(simpleDepthShaderID, eixos, eixos_Id, grid, hgrid, objecte, col_obj, sw_material,
+		textura, texturesID, textura_map, tFlag_invert_Y,
+		npts_T, PC_t, pas_CS, sw_Punts_Control, false,
+		ObOBJ, lightView, GTMatrix, false);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glViewport(0, 0, w, h);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if ((c_fons.r < 0.5) || (c_fons.g < 0.5) || (c_fons.b < 0.5)) ImGui::StyleColorsLight();
+	else ImGui::StyleColorsDark();
+
+	glUseProgram(shader_programID);
+	glUniformMatrix4fv(glGetUniformLocation(shader_programID, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, shadowData.texture);
+	glUniform1i(glGetUniformLocation(shader_programID, "shadowMap"), 1);
+	glActiveTexture(GL_TEXTURE0);
+	//FI OMBRES
+
 	// Entorn VGI: Definici� de Viewport, Projecci� i C�mara
 	ProjectionMatrix = Projeccio_Perspectiva(shader_programID, 0, 0, w, h, OPV.R);
 
@@ -756,30 +793,6 @@ void Barra_Estat()
 		sss = "          ";
 		fprintf(stderr, "%s \n", sss.c_str());
 	}
-
-	// -----------------------------------------------------
-	// --- NOU CODI LLUMS: VISUALITZAR ESTAT COTXE ---------
-	// -----------------------------------------------------
-	std::string infoLlums = "COTXE: ";
-
-	// Estat Faros
-	if (controlLlumsCotxe.modoFaros == 0) infoLlums += "[OFF] ";
-	else if (controlLlumsCotxe.modoFaros == 1) infoLlums += "[CURTES] ";
-	else if (controlLlumsCotxe.modoFaros == 2) infoLlums += "[LLARGUES] ";
-
-	// Estat Frens
-	if (controlLlumsCotxe.frenando) infoLlums += " [!!!FRE!!!] ";
-	else infoLlums += "           ";
-
-	// Estat Intermitents
-	if (controlLlumsCotxe.intermitenteIzquierdo) infoLlums += "<< ";
-	else infoLlums += "   ";
-
-	if (controlLlumsCotxe.intermitenteDerecho) infoLlums += ">>";
-	else infoLlums += "  ";
-
-	// Imprimir al final de tot
-	fprintf(stderr, "%s \n--------------------------------\n", infoLlums.c_str());
 }
 
 /* -------------------------------------------------------------------------------- */
