@@ -58,7 +58,7 @@ public:
 		contextData->collisionCount = 0;
 		contextData->finalTime = 0.0f;
 		contextData->score = 0;
-		miCoche->reiniciarPosicion();
+		//miCoche->reiniciarPosicion();
     }
 
     std::string getState() const {

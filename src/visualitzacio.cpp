@@ -20,7 +20,7 @@
 
 #include "visualitzacio.h"
 #include "escena.h"
-
+#include <btBulletDynamicsCommon.h>
 // Iluminació: Configurar iluminació de l'escena
 
 void Iluminacio(GLint sh_programID, char ilumin, bool ifix[], bool ilu2sides, bool ll_amb, LLUM* lumin, char obj, bool frnt_fcs,
@@ -1217,12 +1217,13 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 
 			if (control.modoFaros == 1) 
 			{
+				float factorProximidad = calcularFactorProximidad(mundo, body, posFaro_world, worldDir, 8.0f);
 				
 				lumin[i].spotcoscutoff = cos(glm::radians(40.0f));
 				lumin[i].spotexponent = 10.0f; 
 
 				
-				lumin[i].difusa = { 200.0f, 200.0f, 180.0f, 1.0f };
+				lumin[i].difusa = { 200.0f * factorProximidad, 200.0f * factorProximidad, 180.0f * factorProximidad, 1.0f };
 				lumin[i].especular = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 
@@ -1231,11 +1232,13 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 			else 
 			{
 				
+				float factorLargas = calcularFactorProximidad(mundo, body, posFaro_world, worldDir, 16.0f);
+
 				lumin[i].spotcoscutoff = cos(glm::radians(15.0f));
 				lumin[i].spotexponent = 120.0f; 
 
 				
-				lumin[i].difusa = { 1500.0f, 1500.0f, 1400.0f, 1.0f };
+				lumin[i].difusa = { 1500.0f * factorLargas, 1500.0f * factorLargas, 1400.0f * factorLargas, 1.0f };
 				lumin[i].especular = { 10.0f, 10.0f, 10.0f, 1.0f }; 
 
 				
@@ -1274,15 +1277,15 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[i].spotcoscutoff = cos(glm::radians(30.0f));
 		lumin[i].spotexponent = 10.0f;
 		lumin[i].especular = { 1.0f, 0.5f, 0.5f, 1.0f };
-
+		float factorFreno = calcularFactorProximidad(mundo, body, posCola, dirFreno, 4.0f);
 		if (frenando) {
 			lumin[i].encesa = true;
-			lumin[i].difusa = { 80.0f, 0.0f, 0.0f, 1.0f };
+			lumin[i].difusa = { 80.0f * factorFreno, 0.0f, 0.0f, 1.0f };
 			lumin[i].atenuacio = { 0.5f, 0.5f, 0.5f };
 		}
 		else if (control.modoFaros != 0) {
 			lumin[i].encesa = true;
-			lumin[i].difusa = { 5.0f, 0.0f, 0.0f, 1.0f };
+			lumin[i].difusa = { 5.0f * factorFreno, 0.0f, 0.0f, 1.0f };
 			lumin[i].atenuacio = { 0.5f, 0.5f, 0.5f };
 		}
 		else lumin[i].encesa = false;
@@ -1308,10 +1311,10 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[i].spotcoscutoff = cos(glm::radians(45.0f));
 		lumin[i].spotexponent = 5.0f;
 		lumin[i].especular = { 1.0f, 1.0f, 1.0f, 1.0f };
-
+		float factorAtras = calcularFactorProximidad(mundo, body, posMarcha, dirMarcha, 6.0f);
 		if (enMarchaAtras) {
 			lumin[i].encesa = true;
-			lumin[i].difusa = { 30.0f, 30.0f, 30.0f, 1.0f };
+			lumin[i].difusa = { 30.0f* factorAtras, 30.0f* factorAtras, 30.0f* factorAtras, 1.0f };
 			lumin[i].atenuacio = { 0.5f, 0.5f, 0.5f };
 		}
 		else lumin[i].encesa = false;
@@ -1329,8 +1332,7 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 	if (control.intermitenteIzquierdo && parpadeoOn)
 	{
 		// DELANTE IZQUIERDA (14)
-		lumin[14].encesa = true;
-		lumin[14].difusa = { 20.0f, 10.0f, 0.0f, 1.0f };   
+		lumin[14].encesa = true; 
 		lumin[14].restringida = true;
 		lumin[14].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
 		lumin[14].atenuacio = { 1.0f, 2.0f, 3.0f };
@@ -1343,10 +1345,11 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[14].spotdirection = { dir.x, dir.y, dir.z };
 		lumin[14].spotcoscutoff = cos(glm::radians(80.0f));
 		//lumin[14].spotexponent = 10.0f;
+		float factorint14 = calcularFactorProximidad(mundo, body, pos, dir, 3.0f);
+		lumin[14].difusa = { 20.0f * factorint14, 10.0f * factorint14, 0.0f, 1.0f };
 
 		// DETRÁS IZQUIERDA (16)
 		lumin[16].encesa = true;
-		lumin[16].difusa = { 20.0f, 10.0f, 0.0f, 1.0f };
 		lumin[16].restringida = true;
 		lumin[16].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
 		lumin[16].atenuacio = { 1.0f, 2.0f, 3.0f };
@@ -1359,6 +1362,8 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[16].spotdirection = { dir.x, dir.y, dir.z };
 		lumin[16].spotcoscutoff = cos(glm::radians(80.0f));
 		//lumin[16].spotexponent = 10.0f;
+		float factorint16 = calcularFactorProximidad(mundo, body, pos, dir, 3.0f);
+		lumin[16].difusa = { 20.0f * factorint16, 10.0f * factorint16, 0.0f, 1.0f };
 	}
 	else { lumin[14].encesa = false; lumin[16].encesa = false; }
 
@@ -1366,7 +1371,6 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 	{
 		// DELANTE DERECHA (15)
 		lumin[15].encesa = true;
-		lumin[15].difusa = { 20.0f, 10.0f, 0.0f, 1.0f };
 		lumin[15].restringida = true;
 		lumin[15].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
 		lumin[15].atenuacio = { 1.0f, 2.0f, 3.0f };
@@ -1379,10 +1383,11 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[15].spotdirection = { dir.x, dir.y, dir.z };
 		lumin[15].spotcoscutoff = cos(glm::radians(80.0f));
 		//lumin[15].spotexponent = 10.0f;
+		float factorint15 = calcularFactorProximidad(mundo, body, pos, dir, 3.0f);
+		lumin[15].difusa = { 20.0f * factorint15, 10.0f * factorint15, 0.0f, 1.0f };
 
 		// DETRÁS DERECHA (17)
 		lumin[17].encesa = true;
-		lumin[17].difusa = { 20.0f, 10.0f, 0.0f, 1.0f };
 		lumin[17].restringida = true;
 		lumin[17].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
 		lumin[17].atenuacio = { 1.0f, 2.0f, 3.0f };
@@ -1395,9 +1400,32 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[17].spotdirection = { dir.x, dir.y, dir.z };
 		lumin[17].spotcoscutoff = cos(glm::radians(80.0f));
 		//lumin[17].spotexponent = 10.0f;
+		float factorint17 = calcularFactorProximidad(mundo, body, pos, dir, 3.0f);
+		lumin[17].difusa = { 20.0f * factorint17, 10.0f * factorint17, 0.0f, 1.0f };
 	}
 	else { lumin[15].encesa = false; lumin[17].encesa = false; }
 }
+
+float calcularFactorProximidad(btDynamicsWorld* world, btRigidBody* me, const glm::vec3& start, const glm::vec3& dir, float maxDist) {
+	btVector3 from(start.x, start.y, start.z);
+	btVector3 to = from + btVector3(dir.x, dir.y, dir.z) * maxDist;
+
+	btCollisionWorld::ClosestRayResultCallback rayCallback(from, to);
+	// Opcional: Evitar que el rayo choque con el propio coche
+	rayCallback.m_collisionFilterMask = ~0;
+
+	world->rayTest(from, to, rayCallback);
+
+	if (rayCallback.hasHit()) {
+		float dist = (rayCallback.m_hitPointWorld - from).length();
+		// Si está muy cerca (ej. < 0.5m), la intensidad baja a casi 0
+		// Si está a maxDist, la intensidad es 1.0
+		float factor = (dist - 0.5f) / (maxDist - 0.5f);
+		return glm::clamp(factor, 0.0f, 1.0f);
+	}
+	return 1.0f; // No hay nada cerca, luz total
+}
+
 /*
 void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 {

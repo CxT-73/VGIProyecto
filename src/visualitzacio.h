@@ -72,8 +72,13 @@ glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool 
 
 void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin);
 
+class btDynamicsWorld;
+class btRigidBody;
+
 //Llums cotxe
 void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin);
+
+float calcularFactorProximidad(btDynamicsWorld* world, btRigidBody* me, const glm::vec3& start, const glm::vec3& dir, float maxDist);
 
 // Entorn VGI: Càrrega TG
 glm::mat4 instancia(bool TR, INSTANCIA tg, INSTANCIA tgF);
