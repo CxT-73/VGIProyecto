@@ -1094,6 +1094,10 @@ void OnJoystick(GLFWwindow* window) {
 			// printf("ABS: %d\n", miCoche->activadoABS);
 		}
 
+		if (buttons[18] == GLFW_PRESS && !lastButtons[18]) {
+			if (miCoche) miCoche->reiniciarPosicion();
+		}
+
 
 
 		//flecha de abajo en el mando para cambiar la camara.
