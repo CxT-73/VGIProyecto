@@ -4,6 +4,7 @@
 #include "Controls.h"
 
 void PauseMenuState::Render(MenuController& controller) {
+    PlaySound(NULL, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
     controller.n = 2;
     char* cameraPtr = controller.GetCameraPtr();
     if (cameraPtr) {
@@ -38,6 +39,7 @@ void PauseMenuState::Render(MenuController& controller) {
         }
         controller.GetContext()->isGameRunning = true;
         controller.SwitchState(new PlayingState());
+        PlaySound(TEXT("motor.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
     }
     ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos); 
 

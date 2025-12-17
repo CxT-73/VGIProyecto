@@ -3,6 +3,7 @@
 #include "IMenuState.h"
 #include <iostream>
 #include "coche.h"
+#include <mmsystem.h>
 
 const float BUTTON_WIDTH = 380.0f;
 const float BUTTON_HEIGHT = 75.0f;
@@ -54,6 +55,7 @@ public:
 
     void calculateScore();
     void setRestart() {
+        PlaySound(NULL, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 		contextData->isGameRunning = false;
 		contextData->carHealth = 100;
 		contextData->gameTime = 0.0f;

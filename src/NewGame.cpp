@@ -96,6 +96,7 @@ void NewGameState::Render(MenuController& controller) {
 
         // Cambiar al nuevo estado
         controller.SwitchState(new PlayingState());
+        PlaySound(TEXT("motor.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
     }
     ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
     if (ImGui::Button("Enrere", button_size)) {
