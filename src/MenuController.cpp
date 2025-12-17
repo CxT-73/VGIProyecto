@@ -1,7 +1,7 @@
 #include "MenuController.h"
 
-MenuController::MenuController(GameContext* data, char* cameraPtr)
-    : currentState(nullptr), contextData(data), externalCameraPtr(cameraPtr) {
+MenuController::MenuController(GameContext* data, char* cameraPtr, Coche* coche)
+    : currentState(nullptr), contextData(data), externalCameraPtr(cameraPtr), miCoche(coche){
 }
 
 MenuController::~MenuController() {
@@ -108,35 +108,51 @@ void MenuController::PopUserNeonStyle() {
 void MenuController::calculateScore() {
     if (!contextData) return;
 
-    // --- CONFIGURACIÓN DE PUNTUACIÓN ---
-    const float TIME_LIMIT = 300.0f;      // Tiempo objetivo (ej: 5 minutos / 300 segundos)
-    const int POINTS_PER_HEALTH = 100;    // Puntos por cada 1% de vida
-    const int POINTS_PER_SEC_SAVED = 50;  // Puntos por cada segundo ahorrado respecto al límite
-    const int PENALTY_PER_COLLISION = 200;// Puntos restados por cada choque
+    // 1. REGLA DE ORO: SI NO HAY VIDA, PUNTUACIÓN 0
+    if (contextData->carHealth <= 0) {
+        contextData->score = 0;
+        return;
+    }
 
-    // 1. Puntuación por Vida Restante
-    // GameContext::carHealth
-    int healthScore = contextData->carHealth * POINTS_PER_HEALTH;
+    // Empezamos con la nota máxima
+    float notaFinal = 10.0f;
 
-    // 2. Puntuación por Tiempo
-    // Usamos finalTime si la carrera terminó, de lo contrario usamos gameTime actual
+    // --- CONFIGURACIÓN DE REGLAS ---
+    const float TIEMPO_PERFECTO = 240.0f; // 4 minutos (en segundos)
+    const float TIEMPO_LIMITE_SUSPENSO = 600.0f; // 10 minutos (puntuación de tiempo llega a 0)
+    const float PENALIZACION_POR_CHOQUE = 1.0f; // Se resta 1 punto por cada choque
+
+    // 2. CÁLCULO POR TIEMPO
     float timeTaken = (contextData->finalTime > 0.0f) ? contextData->finalTime : contextData->gameTime;
 
-    float timeSaved = TIME_LIMIT - timeTaken;
-    if (timeSaved < 0.0f) timeSaved = 0.0f; // No damos puntos negativos por tiempo, solo 0 bonus
+    if (timeTaken > TIEMPO_PERFECTO) {
+        // Restamos puntos proporcionalmente si tarda más de 4 minutos
+        // Calculamos cuánto se ha pasado del tiempo perfecto
+        float exceso = timeTaken - TIEMPO_PERFECTO;
+        float rangoTolerancia = TIEMPO_LIMITE_SUSPENSO - TIEMPO_PERFECTO;
 
-    int timeScore = static_cast<int>(timeSaved * POINTS_PER_SEC_SAVED);
+        // Penalización: puede restar hasta 5 puntos de la nota total por lentitud
+        float penalizacionTiempo = (exceso / rangoTolerancia) * 5.0f;
+        notaFinal -= penalizacionTiempo;
+    }
 
-    // 3. Penalización por Colisiones
-    // GameContext::collisionCount
-    int collisionPenalty = contextData->collisionCount * PENALTY_PER_COLLISION;
+    // 3. CÁLCULO POR COLISIONES
+    // Restamos la penalización por cada choque registrado
+    notaFinal -= (contextData->collisionCount * PENALIZACION_POR_CHOQUE);
 
-    // 4. Cálculo Total
-    int totalScore = (healthScore + timeScore) - collisionPenalty;
+    // 4. REGLA DE LOS 5 CHOQUES (CAP)
+    // "Si se choca más de 5 veces, el máximo al que aspiras es un 5"
+    if (contextData->collisionCount > 5) {
+        if (notaFinal > 5.0f) {
+            notaFinal = 5.0f;
+        }
+    }
 
-    // Evitamos que la puntuación sea negativa
-    if (totalScore < 0) totalScore = 0;
+    // 5. AJUSTE FINAL DE RANGOS
+    if (notaFinal < 0.0f) notaFinal = 0.0f;
+    if (notaFinal > 10.0f) notaFinal = 10.0f;
 
-    // 5. Guardar resultado en el contexto
-    contextData->score = totalScore;
+    // Guardamos el resultado (puedes multiplicarlo por 10 si quieres guardar un decimal, 
+    // ej: 8.5 -> 85, pero si tu score es int lo dejamos como entero)
+    contextData->score = static_cast<int>(notaFinal);
 }

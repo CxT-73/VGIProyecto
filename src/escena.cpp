@@ -1685,11 +1685,6 @@ void detectarColisiones() {
             if (pt.getDistance() < 0.f) {
                 const btCollisionObject* elOtro = esCocheA ? obB : obA;
 
-                // 💡 FILTRO 1: SI ES EL SUELO, IGNORAMOS COMPLETAMENTE
-                if (elOtro->getUserPointer() == (void*)"SUELO") {
-                    continue; // No sumamos colisión ni restamos vida, pasamos al siguiente contacto
-                }
-
                 // 🏁 FILTRO 2: SI ES LA META
                 if (elOtro->getUserPointer() == (void*)"META") {
                     g_MenuController->GetContext()->isGameRunning = false;
@@ -1700,7 +1695,7 @@ void detectarColisiones() {
 
                 // 🚗 LÓGICA DE DAÑO PARA OBSTÁCULOS (Conos, muros, etc.)
                 if (tiempoInvulnerabilidad <= 0.0f) {
-                    tiempoInvulnerabilidad = 1.0f;
+                    tiempoInvulnerabilidad = 5.0f;
                     if (g_MenuController) {
                         g_MenuController->loseHP(10);
 						g_MenuController->GetContext()->collisionCount++; // Solo sumamos si NO es suelo y NO es invulnerable
@@ -1714,6 +1709,6 @@ void detectarColisiones() {
     
     // Actualizar invulnerabilidad...
     if (tiempoInvulnerabilidad > 0.0f) {
-        tiempoInvulnerabilidad -= 1.0f / 60.0f;
+        tiempoInvulnerabilidad -= 1.0f;
     }
 }
