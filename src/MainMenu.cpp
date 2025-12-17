@@ -1,6 +1,7 @@
 #include "MainMenu.h"
 #include "NewGame.h"
 #include "Controls.h"
+#include "Credits.h"
 
 void MainMenuState::Render(MenuController& controller) {
     controller.n = 1;
@@ -54,8 +55,8 @@ void MainMenuState::Render(MenuController& controller) {
 
     ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
 
-    if (ImGui::Button(u8"Crèdits", button_size)) {
-        // Lógica
+    if (ImGui::Button(u8"Crèdits", button_size)) { 
+        controller.SwitchState(new CreditsState());
     }
     ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
 
