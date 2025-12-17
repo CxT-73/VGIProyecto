@@ -1692,7 +1692,10 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 	//std::cout << std::endl;
 	fprintf(stderr, "\n");
 
-}void RenderLoadingScreenSimple()
+}
+
+
+void RenderLoadingScreenSimple()
 {
 	// ---------- Fondo base neutro ----------
 	glClearColor(0.12f, 0.14f, 0.18f, 1.0f);
@@ -1727,7 +1730,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 		draw->AddLine(ImVec2(0, y), ImVec2(size.x, y), gridColor);
 
 
-	// -------- T�TULO PRINCIPAL --------
+	// -------- TÍTULO PRINCIPAL --------
 	ImGui::SetWindowFontScale(4.0f);
 	const char* title = u8"GIMCANA AUTOMOBILÍSTICA";
 	ImVec2 titleSize = ImGui::CalcTextSize(title);
@@ -1791,6 +1794,98 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 		tip
 	);
 
+
+	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void RenderExitScreenSimple()
+{
+	// ---------- Fondo ----------
+	glClearColor(0.12f, 0.14f, 0.18f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	ImGuiIO& io = ImGui::GetIO();
+	ImVec2 size = io.DisplaySize;
+	ImVec2 center(size.x * 0.5f, size.y * 0.5f);
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(size);
+
+	ImGui::Begin("##ExitScreenBG", nullptr,
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoBackground |
+		ImGuiWindowFlags_NoInputs);
+
+	ImDrawList* draw = ImGui::GetWindowDrawList(); 
+	const float grid = 60.0f;
+	ImU32 gridColor = IM_COL32(255, 255, 255, 25);
+
+	for (float x = 0; x < size.x; x += grid)
+		draw->AddLine(ImVec2(x, 0), ImVec2(x, size.y), gridColor);
+
+	for (float y = 0; y < size.y; y += grid)
+		draw->AddLine(ImVec2(0, y), ImVec2(size.x, y), gridColor);
+
+	// ---------- TÍTULO ----------
+	ImGui::SetWindowFontScale(3.5f);
+	const char* title = u8"GIMCANA AUTOMOBILÍSTICA";
+	ImVec2 titleSize = ImGui::CalcTextSize(title);
+	ImVec2 titlePos(center.x - titleSize.x * 0.5f, center.y - 160);
+
+	draw->AddText(
+		ImVec2(titlePos.x + 3, titlePos.y + 3),
+		IM_COL32(0, 0, 0, 160),
+		title);
+
+	draw->AddText(
+		titlePos,
+		IM_COL32(255, 255, 255, 255),
+		title);
+
+	ImGui::SetWindowFontScale(1.0f);
+
+	// ---------- MENSAJE FINAL ----------
+	const char* msg = u8"Gràcies per jugar!";
+	ImVec2 msgSize = ImGui::CalcTextSize(msg);
+	ImVec2 msgPos(center.x - msgSize.x * 0.5f, center.y - 20);
+
+	draw->AddText(
+		ImVec2(msgPos.x + 2, msgPos.y + 2),
+		IM_COL32(0, 0, 0, 120),
+		msg);
+
+	draw->AddText(
+		msgPos,
+		IM_COL32(220, 220, 220, 255),
+		msg);
+	 
+	const char* credits =
+		u8"                                 Projecte acadèmic · UAB · 2025\n"
+		u8"                                Visualització Gràfica Interactiva\n" 
+		u8"Jose Angel Boza Zapater · Alvaro Ruiz Hi · Joana Figueroa Zapata\n"
+		u8" Oussama Berrouhou · Iker Bolancel Fernández · Pau Pérez Cardús";
+
+	ImVec2 credSize = ImGui::CalcTextSize(credits);
+	ImVec2 credPos(center.x - credSize.x * 0.5f, center.y + 50);
+
+	draw->AddText(
+		ImVec2(credPos.x + 2, credPos.y + 2),
+		IM_COL32(0, 0, 0, 120),
+		credits);
+
+	draw->AddText(
+		credPos,
+		IM_COL32(150, 180, 220, 255),
+		credits);
 
 	ImGui::End();
 
@@ -2141,6 +2236,16 @@ int main(void)
 	// Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
 		glfwWindowShouldClose(window) == 0);
+
+
+	// -------- PANTALLA DE CIERRE --------
+	RenderExitScreenSimple();
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+
+	// Pequeña pausa para que se vea
+	glfwWaitEventsTimeout(6);
+
 	cleanFisicas();
 	// Entorn VGI.ImGui: Cleanup ImGui
 	ImGui_ImplOpenGL3_Shutdown();

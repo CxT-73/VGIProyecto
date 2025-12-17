@@ -18,11 +18,16 @@ void MainMenuState::Render(MenuController& controller) {
     float total_content_height = 3.0f * BUTTON_HEIGHT + 2.0f * SPACING + 2 * SPACING + 2.0f * BUTTON_HEIGHT;
 
     // Iniciar ventana, centrarla y obtener la posición X
-    float centered_x_pos = controller.BeginButtonWindow("MainMenuButtons", total_content_height);
+    float centered_x_pos =
+        controller.BeginButtonWindow("MainMenuButtons", total_content_height);
+
+    // --- CENTRADO VERTICAL VISUAL ---
+    float start_y = ImGui::GetWindowHeight() * 0.16f;
+    ImGui::SetCursorPosY(start_y);
 
     // --- TÍTULO (Escala 2x) ---
     ImGui::SetWindowFontScale(2.0f);
-    const char* title = u8"--- Menú principal ---";
+    const char* title = u8"-- Menú principal --";
     float text_width = ImGui::CalcTextSize(title).x;
 
     // Centrar el título dentro del área de la ventana
@@ -41,13 +46,7 @@ void MainMenuState::Render(MenuController& controller) {
     if (ImGui::Button("Jugar", button_size)) {
         controller.SwitchState(new NewGameState());
     }
-    ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
-
-    if (ImGui::Button("Opcions", button_size)) {
-        controller.SwitchState(new NewGameState());
-    }
-
-    ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
+    ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos); 
 
     if (ImGui::Button("Controls", button_size)) { 
         controller.SwitchState(new ControlsState());

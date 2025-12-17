@@ -39,10 +39,7 @@ void PauseMenuState::Render(MenuController& controller) {
         controller.GetContext()->isGameRunning = true;
         controller.SwitchState(new PlayingState());
     }
-    ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
-
-    if (ImGui::Button("Opcions", button_size)) {}
-    ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
+    ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos); 
 
     if (ImGui::Button("Controls", button_size)) {
         controller.SwitchState(new ControlsState());

@@ -16,7 +16,7 @@ void CreditsState::Render(MenuController& controller)
     controller.PushUserNeonStyle();
      
     ImGui::SetWindowFontScale(2.0f);
-    const char* title = u8"CRÈDITS";
+    const char* title = u8"-- CRÈDITS --";
     float title_width = ImGui::CalcTextSize(title).x;
     ImGui::SetCursorPosX((ImGui::GetWindowWidth() - title_width) * 0.5f);
     ImGui::TextColored(NEON_CYAN_TITLE, title);

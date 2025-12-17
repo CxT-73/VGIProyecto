@@ -18,7 +18,14 @@ void NewGameState::Render(MenuController& controller) {
     // Cálculo de altura
     float total_content_height = 3.0f * ImGui::GetTextLineHeight() + 3.0f * BUTTON_HEIGHT + 2.0f * BUTTON_HEIGHT + 7.0f * SPACING;
 
-    float centered_x_pos = controller.BeginButtonWindow("NewGameButtons", total_content_height);
+    float centered_x_pos =
+        controller.BeginButtonWindow("NewGameButtons", total_content_height);
+
+    // --- CENTRADO VERTICAL REAL ---
+    float window_height = ImGui::GetWindowHeight(); 
+    float start_y = window_height * 0.20f;  // 20% desde arriba
+    ImGui::SetCursorPosY(start_y);
+     
 
     controller.PushUserNeonStyle();
 
@@ -35,41 +42,45 @@ void NewGameState::Render(MenuController& controller) {
     // 1. Altura: Padding vertical a 17.0f (para altura ~50px)
     // 2. Centrado: Padding horizontal a 40.0f (CLAVE: Empuja el texto desde la izquierda)
     ImVec2 original_padding = ImGui::GetStyle().FramePadding;
+    // --- Padding local ---
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(40.0f, 17.0f));
 
-    // VEHÍCULO
-    ImGui::Text("Vehicle:");
+    // VEHICLE
+    ImGui::SetCursorPosX(centered_x_pos);
+    ImGui::Text(u8"Vehicle:");
     ImGui::SetCursorPosX(centered_x_pos);
 
     ImGui::PushItemWidth(BUTTON_WIDTH);
-
-    // El texto ahora será blanco (Neon) sobre el fondo oscuro del selector Y el fondo oscuro del desplegable.
-    ImGui::Combo("##Coche", &controller.GetContext()->selectedCar, carOptions, IM_ARRAYSIZE(carOptions));
-
+    ImGui::Combo("##Coche", &controller.GetContext()->selectedCar,
+        carOptions, IM_ARRAYSIZE(carOptions));
     ImGui::PopItemWidth();
-    ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
 
-    // CIRCUITO
-    ImGui::Text("Circuit:");
+    ImGui::Spacing();
+
+    // CIRCUIT
+    ImGui::SetCursorPosX(centered_x_pos);
+    ImGui::Text(u8"Circuit:");
     ImGui::SetCursorPosX(centered_x_pos);
 
     ImGui::PushItemWidth(BUTTON_WIDTH);
-    ImGui::Combo("##Circuito", &controller.GetContext()->selectedCircuit, trackOptions, IM_ARRAYSIZE(trackOptions));
+    ImGui::Combo("##Circuito", &controller.GetContext()->selectedCircuit,
+        trackOptions, IM_ARRAYSIZE(trackOptions));
     ImGui::PopItemWidth();
 
-    ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
+    ImGui::Spacing();
 
-    // ILUMINACIONES
-    ImGui::Text("Ambient:"); // Texto para la etiqueta
+    // IL·LUMINACIÓ
+    ImGui::SetCursorPosX(centered_x_pos);
+    ImGui::Text(u8"Ambient:");
     ImGui::SetCursorPosX(centered_x_pos);
 
     ImGui::PushItemWidth(BUTTON_WIDTH);
-    // Asegúrate de agregar 'selectedLighting' (int) a tu GameContext
-    ImGui::Combo("##Iluminacion", &controller.GetContext()->selectedLLum, IluminacioOptions, IM_ARRAYSIZE(IluminacioOptions));
+    ImGui::Combo("##Iluminacion", &controller.GetContext()->selectedLLum,
+        IluminacioOptions, IM_ARRAYSIZE(IluminacioOptions));
     ImGui::PopItemWidth();
 
-    // --- FIN DEL AJUSTE DE ESTILO LOCAL ---
-    ImGui::PopStyleVar(); // Quita FramePadding
+    ImGui::PopStyleVar(); // FramePadding
+
 
     // --- Botones Inferiores ---
     ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
