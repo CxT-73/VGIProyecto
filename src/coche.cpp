@@ -169,7 +169,7 @@ void Coche::update() {
     if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
         if (!kPressed) {
             activadoABS = !activadoABS;
-            printf("Sistema ABS: %s\n", activadoABS ? "ACTIVADO" : "DESACTIVADO");
+            printf("Sistema ABS: %s\n", activadoABS ? "Activat" : "Desactivat");
             kPressed = true;
         }
     }
@@ -181,7 +181,7 @@ void Coche::update() {
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
         if (!pPressed) {
             FrenoDeMano = !FrenoDeMano;
-            printf("Freno de Mano: %s\n", FrenoDeMano ? "PUESTO" : "QUITADO");
+            printf("Fre de mà: %s\n", FrenoDeMano ? "Activat" : "Desactivat");
             pPressed = true;
         }
     }

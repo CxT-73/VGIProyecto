@@ -203,8 +203,8 @@ void PlayingState::Render(MenuController& controller) {
         const float HANDBRAKE_WINDOW_WIDTH = 750.0f;  // Aumentado para que quepa todo el texto
         const float HANDBRAKE_WINDOW_HEIGHT = 120.0f;
         const float HANDBRAKE_SCALE = 2.0f;
-        const char* handbrakeText = "FRENO DE MANO PUESTO";
-        const char* instructionText = "Presiona [P] o [->] para quitar";
+        const char* handbrakeText = u8"FRE DE MÀ ACTIVAT!";
+        const char* instructionText = u8"Prem [p] o [->] per treure";
 
         // Calcular posición (BOTTOM-RIGHT)
         ImVec2 handbrake_pos(
@@ -241,4 +241,49 @@ void PlayingState::Render(MenuController& controller) {
             ImGui::End(); // <--- IMPORTANTE: End del freno de mano AQUÍ
         }
     }
+
+
+
+    // =====================================================
+// 5. INDICADOR REINICIAR POSICIÓN (Esquina Superior Derecha)
+// =====================================================
+
+    const char* instructionText1 =
+        u8"Prem [r] o [<-] per reiniciar posició del cotxe";
+
+    float text_width1 = ImGui::CalcTextSize(instructionText1).x;
+
+    const float INFO_WINDOW_WIDTH = text_width1 + 40.0f;
+    const float INFO_WINDOW_HEIGHT = 40.0f;
+    const float padding_info = 20.0f;
+     
+    ImVec2 info_pos(
+        display_w - INFO_WINDOW_WIDTH - padding_info,
+        padding_info
+    );
+
+    ImGui::SetNextWindowPos(info_pos);
+    ImGui::SetNextWindowSize(ImVec2(INFO_WINDOW_WIDTH, INFO_WINDOW_HEIGHT));
+
+    ImGuiWindowFlags info_flags =
+        ImGuiWindowFlags_NoDecoration |
+        ImGuiWindowFlags_NoInputs |
+        ImGuiWindowFlags_NoBackground;
+
+    if (ImGui::Begin("##ResetPositionHUD", nullptr, info_flags)) {
+
+        ImGui::SetCursorPosX(
+            (INFO_WINDOW_WIDTH - text_width1) * 0.5f
+        );
+        ImGui::SetCursorPosY(
+            (INFO_WINDOW_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f
+        );
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 0.8f));
+        ImGui::Text("%s", instructionText1);
+        ImGui::PopStyleColor();
+
+        ImGui::End();
+    }
+
 }

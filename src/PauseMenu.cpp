@@ -22,10 +22,13 @@ void PauseMenuState::Render(MenuController& controller) {
 
     float centered_x_pos = controller.BeginButtonWindow("PauseMenuButtons", total_content_height);
 
-    // Título
-    float text_width = ImGui::CalcTextSize("Partida en pausa").x;
+    // Título 
+    const char* title = u8"-- Partida en pausa --";
+    float text_width = ImGui::CalcTextSize(title).x;
+
     ImGui::SetCursorPosX((ImGui::GetWindowWidth() - text_width) * 0.5f);
-    ImGui::TextColored(NEON_CYAN_TITLE, "-- Partida en pausa --");
+    ImGui::TextColored(NEON_CYAN_TITLE, title);
+
     ImGui::Spacing(); ImGui::Spacing();
     ImGui::SetCursorPosX(centered_x_pos);
 
