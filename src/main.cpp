@@ -878,6 +878,7 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 			}
 		}
 		else if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+			g_MenuController->GetContext()->isGameRunning = false;
 			g_MenuController->SwitchState(new EndGameState());
 		}
 		else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
@@ -2190,6 +2191,7 @@ int main(void)
 		}
 
 		if (g_MenuController->getCarHealth() == 0) {
+			g_MenuController->GetContext()->isGameRunning = false;
 			g_MenuController->SwitchState(new EndGameState());
 		}
 

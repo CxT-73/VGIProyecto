@@ -1685,7 +1685,6 @@ void detectarColisiones() {
             if (pt.getDistance() < 0.f) {
                 const btCollisionObject* elOtro = esCocheA ? obB : obA;
 
-                // 🏁 FILTRO 2: SI ES LA META
                 if (elOtro->getUserPointer() == (void*)"META") {
                     g_MenuController->GetContext()->isGameRunning = false;
 					g_MenuController->GetContext()->finalTime = g_MenuController->GetContext()->gameTime;
@@ -1693,10 +1692,9 @@ void detectarColisiones() {
                     return;
                 }
 
-                // 🚗 LÓGICA DE DAÑO PARA OBSTÁCULOS (Conos, muros, etc.)
                 if (tiempoInvulnerabilidad <= 0.0f) {
                     tiempoInvulnerabilidad = 5.0f;
-                    if (g_MenuController) {
+                    if (g_MenuController->GetContext()->isGameRunning) {
                         g_MenuController->loseHP(10);
 						g_MenuController->GetContext()->collisionCount++; // Solo sumamos si NO es suelo y NO es invulnerable
                     }

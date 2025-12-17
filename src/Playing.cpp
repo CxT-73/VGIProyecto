@@ -1,6 +1,4 @@
-﻿// Playing.cpp
-
-#include "Playing.h"
+﻿#include "Playing.h"
 #include <cstdio>
 // ¡CLAVE! Necesario para el centrado manual del texto en la barra de vida
 #include "ImGui/imgui_internal.h" 
@@ -11,6 +9,7 @@
 #define HEALTH_COLOR_WARN ImVec4(1.0f, 1.0f, 0.0f, 1.0f) // Amarillo
 #define HEALTH_COLOR_LOW ImVec4(1.0f, 0.0f, 0.0f, 1.0f) // Rojo
 #define TEXT_COLOR_INSIDE_BAR ImVec4(0.0f, 0.0f, 0.0f, 1.0f) // Negro, para el porcentaje
+#define HANDBRAKE_COLOR ImVec4(1.0f, 0.3f, 0.0f, 1.0f) // Naranja/Rojo
 
 void PlayingState::Render(MenuController& controller) {
 
@@ -146,6 +145,7 @@ void PlayingState::Render(MenuController& controller) {
 
     // Quitar estilos Pushados
     ImGui::PopStyleVar(2);
+
     // =====================================================
     // 3. VELOCIDAD DEL COCHE
     // =====================================================
@@ -160,12 +160,12 @@ void PlayingState::Render(MenuController& controller) {
 
     // 2. Calcular posición (BOTTOM-LEFT)
     float display_w_v = ImGui::GetIO().DisplaySize.x;
-    float display_h_v = ImGui::GetIO().DisplaySize.y; // <--- Necesitamos la altura
+    float display_h_v = ImGui::GetIO().DisplaySize.y;
     float padding = 20.0f; // Margen de separación del borde
 
     ImVec2 window_pos_v(
-        padding,                                            // Izquierda (X)
-        display_h_v - VELOCITY_WINDOW_HEIGHT - padding        // Abajo (Y)
+        padding,                                       // Izquierda (X)
+        display_h_v - VELOCITY_WINDOW_HEIGHT - padding // Abajo (Y)
     );
 
     ImGui::SetNextWindowPos(window_pos_v);
@@ -192,7 +192,53 @@ void PlayingState::Render(MenuController& controller) {
         ImGui::PopStyleColor();
 
         ImGui::SetWindowFontScale(1.0f);
+        ImGui::End(); // <--- IMPORTANTE: End del velocímetro AQUÍ
     }
-    ImGui::End();
-}
 
+    // =====================================================
+    // 4. INDICADOR DE FRENO DE MANO (Esquina Inferior Derecha)
+    // =====================================================
+
+    if (controller.GetCoche()->FrenoDeMano) {
+        const float HANDBRAKE_WINDOW_WIDTH = 750.0f;  // Aumentado para que quepa todo el texto
+        const float HANDBRAKE_WINDOW_HEIGHT = 120.0f;
+        const float HANDBRAKE_SCALE = 2.0f;
+        const char* handbrakeText = "FRENO DE MANO PUESTO";
+        const char* instructionText = "Presiona [P] o [->] para quitar";
+
+        // Calcular posición (BOTTOM-RIGHT)
+        ImVec2 handbrake_pos(
+            display_w - HANDBRAKE_WINDOW_WIDTH - padding,  // Derecha (X)
+            display_h - HANDBRAKE_WINDOW_HEIGHT - padding  // Abajo (Y)
+        );
+
+        ImGui::SetNextWindowPos(handbrake_pos);
+        ImGui::SetNextWindowSize(ImVec2(HANDBRAKE_WINDOW_WIDTH, HANDBRAKE_WINDOW_HEIGHT));
+
+        if (ImGui::Begin("##HandbrakeHUD", nullptr, hud_flags)) {
+
+            // Texto principal "FRENO DE MANO PUESTO"
+            ImGui::SetWindowFontScale(HANDBRAKE_SCALE);
+            float main_text_width = ImGui::CalcTextSize(handbrakeText).x;
+            ImGui::SetCursorPosX((HANDBRAKE_WINDOW_WIDTH - main_text_width) * 0.5f);
+            ImGui::SetCursorPosY(20.0f);
+
+            ImGui::PushStyleColor(ImGuiCol_Text, HANDBRAKE_COLOR);
+            ImGui::Text("%s", handbrakeText);
+            ImGui::PopStyleColor();
+
+            // Texto de instrucción "Presiona [P] para quitar"
+            ImGui::SetWindowFontScale(1.5f);
+            float instruction_text_width = ImGui::CalcTextSize(instructionText).x;
+            ImGui::SetCursorPosX((HANDBRAKE_WINDOW_WIDTH - instruction_text_width) * 0.5f);
+            ImGui::SetCursorPosY(70.0f);
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.8f)); // Blanco semi-transparente
+            ImGui::Text("%s", instructionText);
+            ImGui::PopStyleColor();
+
+            ImGui::SetWindowFontScale(1.0f);
+            ImGui::End(); // <--- IMPORTANTE: End del freno de mano AQUÍ
+        }
+    }
+}

@@ -108,51 +108,45 @@ void MenuController::PopUserNeonStyle() {
 void MenuController::calculateScore() {
     if (!contextData) return;
 
-    // 1. REGLA DE ORO: SI NO HAY VIDA, PUNTUACIÓN 0
+    // 1. REGLA DE ORO: SI MUERE (VIDA <= 0), PUNTUACIÓN AUTOMÁTICA 0
     if (contextData->carHealth <= 0) {
         contextData->score = 0;
         return;
     }
 
-    // Empezamos con la nota máxima
-    float notaFinal = 10.0f;
+    float notaFinal = 10.0f; // Empezamos en la nota máxima
 
-    // --- CONFIGURACIÓN DE REGLAS ---
-    const float TIEMPO_PERFECTO = 240.0f; // 4 minutos (en segundos)
-    const float TIEMPO_LIMITE_SUSPENSO = 600.0f; // 10 minutos (puntuación de tiempo llega a 0)
-    const float PENALIZACION_POR_CHOQUE = 1.0f; // Se resta 1 punto por cada choque
+    // --- CONFIGURACIÓN DE LÍMITES ---
+    const float TIEMPO_PERFECTO = 240.0f;      // 4 minutos
+    const float TIEMPO_MAXIMO_ADMITIDO = 600.0f; // 10 minutos
+    const float PENALIZACION_CHOQUE = 1.0f;    // -1 punto por choque
 
-    // 2. CÁLCULO POR TIEMPO
     float timeTaken = (contextData->finalTime > 0.0f) ? contextData->finalTime : contextData->gameTime;
 
+    // 2. PENALIZACIÓN POR TIEMPO
     if (timeTaken > TIEMPO_PERFECTO) {
-        // Restamos puntos proporcionalmente si tarda más de 4 minutos
-        // Calculamos cuánto se ha pasado del tiempo perfecto
+        // Calculamos cuánto se ha pasado de los 4 minutos
         float exceso = timeTaken - TIEMPO_PERFECTO;
-        float rangoTolerancia = TIEMPO_LIMITE_SUSPENSO - TIEMPO_PERFECTO;
+        float margen = TIEMPO_MAXIMO_ADMITIDO - TIEMPO_PERFECTO;
 
-        // Penalización: puede restar hasta 5 puntos de la nota total por lentitud
-        float penalizacionTiempo = (exceso / rangoTolerancia) * 5.0f;
+        // Si tarda 10 min o más, la penalización máxima por tiempo es de 5 puntos
+        float penalizacionTiempo = (exceso / margen) * 5.0f;
         notaFinal -= penalizacionTiempo;
     }
 
-    // 3. CÁLCULO POR COLISIONES
-    // Restamos la penalización por cada choque registrado
-    notaFinal -= (contextData->collisionCount * PENALIZACION_POR_CHOQUE);
+    // 3. PENALIZACIÓN POR COLISIONES
+    notaFinal -= (contextData->collisionCount * PENALIZACION_CHOQUE);
 
     // 4. REGLA DE LOS 5 CHOQUES (CAP)
-    // "Si se choca más de 5 veces, el máximo al que aspiras es un 5"
     if (contextData->collisionCount > 5) {
         if (notaFinal > 5.0f) {
-            notaFinal = 5.0f;
+            notaFinal = 5.0f; // Máximo aspiras a 5
         }
     }
 
-    // 5. AJUSTE FINAL DE RANGOS
+    // 5. AJUSTE FINAL Y GUARDADO
     if (notaFinal < 0.0f) notaFinal = 0.0f;
     if (notaFinal > 10.0f) notaFinal = 10.0f;
 
-    // Guardamos el resultado (puedes multiplicarlo por 10 si quieres guardar un decimal, 
-    // ej: 8.5 -> 85, pero si tu score es int lo dejamos como entero)
     contextData->score = static_cast<int>(notaFinal);
 }

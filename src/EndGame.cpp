@@ -41,8 +41,20 @@ void EndGameState::Render(MenuController& controller) {
     // Estadísticas (Mostramos los datos reales que vienen de escena.cpp)
     const float STATS_WIDTH = 350.0f;
     ImGui::SetCursorPosX(centered_x_pos + (BUTTON_WIDTH - STATS_WIDTH) * 0.5f);
-    ImGui::Text("TIEMPO:"); ImGui::SameLine(centered_x_pos + STATS_WIDTH * 0.5f);
-    ImGui::TextColored(NEON_CYAN_TITLE, "%.2f s", controller.GetContext()->finalTime);
+    float timeTaken = controller.GetContext()->finalTime;
+
+    ImGui::Text("TIEMPO:");
+    ImGui::SameLine(centered_x_pos + STATS_WIDTH * 0.5f);
+
+    if (timeTaken >= 60.0f) {
+        int minutes = static_cast<int>(timeTaken) / 60;
+        int seconds = static_cast<int>(timeTaken) % 60;
+        // Formato 00:00
+        ImGui::TextColored(NEON_CYAN_TITLE, "%02d:%02d min", minutes, seconds);
+    }
+    else {
+        ImGui::TextColored(NEON_CYAN_TITLE, "%.2f s", timeTaken);
+    }
 
     ImGui::SetCursorPosX(centered_x_pos + (BUTTON_WIDTH - STATS_WIDTH) * 0.5f);
     ImGui::Text("COLISIONES:"); ImGui::SameLine(centered_x_pos + STATS_WIDTH * 0.5f);
@@ -56,6 +68,16 @@ void EndGameState::Render(MenuController& controller) {
     ImGui::TextColored(NEON_CYAN_TITLE, "%s", score_buffer);
 
     ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+
+    if (controller.GetContext()->carHealth <= 0) {
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "VEHICULO DESTRUIDO");
+    }
+    else if (controller.GetContext()->score >= 5) {
+        ImGui::TextColored(ImVec4(0, 1, 0, 1), "PRUEBA SUPERADA - APTO");
+    }
+    else {
+        ImGui::TextColored(ImVec4(1, 0.5f, 0, 1), "PUNTUACION INSUFICIENTE - NO APTO");
+    }
 
     // BOTÓN: Aquí es donde realmente queremos limpiar los datos al salir
     ImGui::SetCursorPosX(centered_x_pos);
