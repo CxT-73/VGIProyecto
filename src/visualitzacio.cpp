@@ -1051,9 +1051,9 @@ glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool 
 
 		glm::vec3 cameraPos;
 		//aplicamos los calculos al punto del coche
-		cameraPos.x = puntMig.x + horizontalDist * cosf(azimut_final_rad) * 30;
-		cameraPos.y = puntMig.y - horizontalDist * sinf(azimut_final_rad) * 30;
-		cameraPos.z = puntMig.z + verticalDist * 160;
+		cameraPos.x = puntMig.x + horizontalDist * cosf(azimut_final_rad) * 20;
+		cameraPos.y = puntMig.y - horizontalDist * sinf(azimut_final_rad) * 20;
+		cameraPos.z = puntMig.z + verticalDist * 150;
 
 
 		glm::vec3 cameraTarget = puntMig;
