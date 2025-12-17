@@ -53,11 +53,12 @@ public:
     void calculateScore();
     void setRestart() {
 		contextData->isGameRunning = false;
-		contextData->carHealth = 10;
+		contextData->carHealth = 100;
 		contextData->gameTime = 0.0f;
 		contextData->collisionCount = 0;
 		contextData->finalTime = 0.0f;
 		contextData->score = 0;
+		miCoche->reiniciarPosicion();
     }
 
     std::string getState() const {

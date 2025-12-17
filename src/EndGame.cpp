@@ -8,107 +8,62 @@
 const ImVec4 NEON_GREEN_TITLE = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
 
 void EndGameState::Render(MenuController& controller) {
-
+    // 1. CAMBIO DE CÁMARA (Solo si es necesario)
     char* cameraPtr = controller.GetCameraPtr();
-    if (cameraPtr) {
-        // Asumiendo que 'I' es CAM_INICI (Cámara de inicio/menú)
-        *cameraPtr = 'I'; 
+    if (cameraPtr && *cameraPtr != 'I') {
+        *cameraPtr = 'I';
     }
 
-	controller.GetContext()->resetGame = true;
+    // 2. CÁLCULO DE PUNTUACIÓN
+    // Calculamos solo si el score es 0 (para no recalcular lo mismo cada frame)
+    if (controller.GetContext()->score == 0) {
+        controller.calculateScore();
+    }
 
     controller.DrawBackgroundOverlay();
-    controller.setState("NewGame");
-    // ----------------------------------------------------------------------
-    // CÁLCULO DE ALTURA REQUERIDA (Ajustado para títulos y puntuación grandes)
-    // ----------------------------------------------------------------------
+    controller.setState("EndGame");
+
+    // --- Lógica de ImGui (Cálculo de alturas y ventanas) ---
     float base_lh = ImGui::GetTextLineHeight();
-    float total_content_height = (3.0f * base_lh) + // Título grande
-                                 (3.0f * base_lh) + (3.0f * SPACING) + // Stats
-                                 (3.0f * base_lh) + // Score resaltado
-                                 BUTTON_HEIGHT + (3.0f * SPACING); // Botón y espaciado
+    float total_content_height = (3.0f * base_lh) + (3.0f * base_lh) + (3.0f * SPACING) +
+        (3.0f * base_lh) + BUTTON_HEIGHT + (3.0f * SPACING);
 
     float centered_x_pos = controller.BeginButtonWindow("EndGameButtons", total_content_height);
 
     controller.PushUserNeonStyle();
-    
-    // ======================================================================
-    // 1. TÍTULO DE IMPACTO (Centrado y Grande)
-    // ======================================================================
+
+    // Título
     const char* title = "PRACTICA FINALIZADA";
-    ImGui::SetWindowFontScale(1.0f); 
-    float title_width = ImGui::CalcTextSize(title).x;
+    ImGui::SetCursorPosX((ImGui::GetWindowWidth() - ImGui::CalcTextSize(title).x) * 0.5f);
+    ImGui::TextColored(NEON_GREEN_TITLE, title);
+    ImGui::Separator();
 
-    // Centrar el título dentro del área de la ventana
-    ImGui::SetCursorPosX((ImGui::GetWindowWidth() - title_width) * 0.5f);
-    ImGui::TextColored(NEON_GREEN_TITLE, title); // Usamos verde para el éxito
-    ImGui::SetWindowFontScale(1.0f); 
-    ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing(); ImGui::Spacing();
-    
-    // ======================================================================
-    // 2. ESTADÍSTICAS ALINEADAS
-    // ======================================================================
-
-    // Movemos el cursor para que las estadísticas se vean centradas en la ventana
-    // Usaremos el ancho del botón como referencia de centrado.
-    const float STATS_WIDTH = 350.0f; 
+    // Estadísticas (Mostramos los datos reales que vienen de escena.cpp)
+    const float STATS_WIDTH = 350.0f;
     ImGui::SetCursorPosX(centered_x_pos + (BUTTON_WIDTH - STATS_WIDTH) * 0.5f);
-    
-    // Etiqueta (Blanca) y Valor (Por defecto)
     ImGui::Text("TIEMPO:"); ImGui::SameLine(centered_x_pos + STATS_WIDTH * 0.5f);
     ImGui::TextColored(NEON_CYAN_TITLE, "%.2f s", controller.GetContext()->finalTime);
-    ImGui::Spacing();
-    
+
     ImGui::SetCursorPosX(centered_x_pos + (BUTTON_WIDTH - STATS_WIDTH) * 0.5f);
     ImGui::Text("COLISIONES:"); ImGui::SameLine(centered_x_pos + STATS_WIDTH * 0.5f);
     ImGui::TextColored(NEON_CYAN_TITLE, "%d", controller.GetContext()->collisionCount);
-    ImGui::Spacing(); ImGui::Spacing();
-    
-    // ======================================================================
-    // 3. PUNTUACIÓN RESALTADA Y CENTRADA
-    // ======================================================================
-    
-    const char* score_label = "PUNTUACION FINAL:";
+
+    // Puntuación
     char score_buffer[64];
     snprintf(score_buffer, sizeof(score_buffer), "%d pts", controller.GetContext()->score);
-
-    ImGui::SetWindowFontScale(1.0f); 
-    
-    ImVec2 score_label_size = ImGui::CalcTextSize(score_label);
-    ImVec2 score_value_size = ImGui::CalcTextSize(score_buffer);
-    
-    float score_line_width = score_label_size.x + score_value_size.x + 20.0f; // Espacio entre etiqueta y valor
-    
-    // Centrar la línea completa
     ImGui::SetCursorPosX(centered_x_pos + (BUTTON_WIDTH - STATS_WIDTH) * 0.5f);
+    ImGui::Text("PUNTUACION FINAL:"); ImGui::SameLine();
+    ImGui::TextColored(NEON_CYAN_TITLE, "%s", score_buffer);
 
-    // Etiqueta
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%s", score_label); 
-    ImGui::SameLine(); 
-    
-    // Valor (Color Neón)
-    ImGui::TextColored(NEON_CYAN_TITLE, "%s", score_buffer); 
+    ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
 
-    ImGui::SetWindowFontScale(1.0f); 
-    ImGui::Spacing(); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing(); 
-    
-    // ======================================================================
-    // 4. BOTÓN
-    // ======================================================================
-
-    ImGui::SetCursorPosX(centered_x_pos); 
-    ImVec2 button_size(BUTTON_WIDTH, BUTTON_HEIGHT);
-
-    if (ImGui::Button("Volver al Menu Principal", button_size)) {
-        // Lógica de salida
-        controller.GetContext()->isGameRunning = false;
+    // BOTÓN: Aquí es donde realmente queremos limpiar los datos al salir
+    ImGui::SetCursorPosX(centered_x_pos);
+    if (ImGui::Button("Volver al Menu Principal", ImVec2(BUTTON_WIDTH, BUTTON_HEIGHT))) {
+        controller.setRestart(); // <--- LIMPIAMOS DATOS AQUÍ, AL SALIR
         controller.SwitchState(new MainMenuState());
     }
 
     controller.PopUserNeonStyle();
-
-    if(controller.getRestart())
-        restartGame(controller);
-
     ImGui::End();
 }

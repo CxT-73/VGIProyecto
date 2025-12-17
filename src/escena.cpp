@@ -1609,6 +1609,8 @@ void crearColisionadorEstatico(OBJ* objetoJuego) {
 	btRigidBody::btRigidBodyConstructionInfo infoCuerpo(0.0f, estadoMovimiento, formaSuelo, btVector3(0, 0, 0));
 	btRigidBody* cuerpoRigido = new btRigidBody(infoCuerpo);
 
+	cuerpoRigido->setUserPointer((void*)"SUELO");
+
 	//Aplicar la escala GIGANTE que tienes en el render
 	cuerpoRigido->getCollisionShape()->setLocalScaling(btVector3(100.0f, 100.0f, 100.0f));
 
@@ -1661,56 +1663,57 @@ void iniciarFisicasCoche() {
 // FI OBJECTE TIE: FETS PER ALUMNES -----------------------------------------------------------------
 
 void detectarColisiones() {
-	if (!mundo || !g_MenuController->GetContext()->isGameRunning) return;
+    if (!mundo) return;
 
-	int numManifolds = mundo->getDispatcher()->getNumManifolds();
+    int numManifolds = mundo->getDispatcher()->getNumManifolds();
 
-	for (int i = 0; i < numManifolds; i++) {
-		btPersistentManifold* contactManifold = mundo->getDispatcher()->getManifoldByIndexInternal(i);
+    for (int i = 0; i < numManifolds; i++) {
+        btPersistentManifold* contactManifold = mundo->getDispatcher()->getManifoldByIndexInternal(i);
 
-		const btCollisionObject* obA = contactManifold->getBody0();
-		const btCollisionObject* obB = contactManifold->getBody1();
+        const btCollisionObject* obA = contactManifold->getBody0();
+        const btCollisionObject* obB = contactManifold->getBody1();
 
-		bool esCocheA = (obA->getUserPointer() == (void*)miCoche);
-		bool esCocheB = (obB->getUserPointer() == (void*)miCoche);
+        bool esCocheA = (obA->getUserPointer() == (void*)miCoche);
+        bool esCocheB = (obB->getUserPointer() == (void*)miCoche);
 
-		if (!esCocheA && !esCocheB) continue;
+        if (!esCocheA && !esCocheB) continue;
 
-		// Si hay contactos...
-		int numContacts = contactManifold->getNumContacts();
-		for (int j = 0; j < numContacts; j++) {
-			btManifoldPoint& pt = contactManifold->getContactPoint(j);
+        int numContacts = contactManifold->getNumContacts();
+        for (int j = 0; j < numContacts; j++) {
+            btManifoldPoint& pt = contactManifold->getContactPoint(j);
+            
+            if (pt.getDistance() < 0.f) {
+                const btCollisionObject* elOtro = esCocheA ? obB : obA;
 
-			if (pt.getDistance() < 0.f) {
-				// Identificamos quién es el objeto que NO es el coche
-				const btCollisionObject* elOtro = esCocheA ? obB : obA;
+                // 💡 FILTRO 1: SI ES EL SUELO, IGNORAMOS COMPLETAMENTE
+                if (elOtro->getUserPointer() == (void*)"SUELO") {
+                    continue; // No sumamos colisión ni restamos vida, pasamos al siguiente contacto
+                }
 
-				// 🏁 1. COMPROBAR SI ES LA META
-				if (elOtro->getUserPointer() == (void*)"META") {
-					g_MenuController->GetContext()->isGameRunning = false;
+                // 🏁 FILTRO 2: SI ES LA META
+                if (elOtro->getUserPointer() == (void*)"META") {
+                    g_MenuController->GetContext()->isGameRunning = false;
 					g_MenuController->GetContext()->finalTime = g_MenuController->GetContext()->gameTime;
+                    if (g_MenuController) g_MenuController->SwitchState(new EndGameState());
+                    return;
+                }
 
-					if (g_MenuController) {
-						g_MenuController->SwitchState(new EndGameState());
-					}
-					return; // Salimos, el juego ha terminado
-				}
+                // 🚗 LÓGICA DE DAÑO PARA OBSTÁCULOS (Conos, muros, etc.)
+                if (tiempoInvulnerabilidad <= 0.0f) {
+                    tiempoInvulnerabilidad = 1.0f;
+                    if (g_MenuController) {
+                        g_MenuController->loseHP(10);
+						g_MenuController->GetContext()->collisionCount++; // Solo sumamos si NO es suelo y NO es invulnerable
+                    }
+                }
 
-				// 🚗 2. LÓGICA DE DAÑO (Solo si no es invulnerable)
-				if (tiempoInvulnerabilidad <= 0.0f) {
-					tiempoInvulnerabilidad = 1.0f;
-					if (g_MenuController) {
-						g_MenuController->loseHP(10);
-					}
-				}
-
-				return; // Salimos tras procesar el primer choque
-			}
-		}
-	}
-
-	// Actualizar tiempo de invulnerabilidad si no ha habido choques en este frame
-	if (tiempoInvulnerabilidad > 0.0f) {
-		tiempoInvulnerabilidad -= 1.0f / 60.0f;
-	}
+                return; 
+            }
+        }
+    }
+    
+    // Actualizar invulnerabilidad...
+    if (tiempoInvulnerabilidad > 0.0f) {
+        tiempoInvulnerabilidad -= 1.0f / 60.0f;
+    }
 }

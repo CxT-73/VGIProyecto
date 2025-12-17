@@ -2190,7 +2190,6 @@ int main(void)
 		}
 
 		if (g_MenuController->getCarHealth() == 0) {
-			g_MenuController->calculateScore();
 			g_MenuController->SwitchState(new EndGameState());
 		}
 

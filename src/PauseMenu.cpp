@@ -48,6 +48,7 @@ void PauseMenuState::Render(MenuController& controller) {
 
     if (ImGui::Button(u8"Sortir al Menú principal", button_size)) {
         controller.GetContext()->isGameRunning = false;
+		controller.setRestart();
         controller.SwitchState(new MainMenuState());
     }
 
