@@ -8,6 +8,7 @@
 const ImVec4 NEON_GREEN_TITLE = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
 
 void EndGameState::Render(MenuController& controller) {
+    PlaySound(NULL, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
     // 1. CAMBIO DE CÁMARA (Solo si es necesario)
     char* cameraPtr = controller.GetCameraPtr();
     if (cameraPtr && *cameraPtr != 'I') {
