@@ -16,9 +16,9 @@ private:
     IMenuState* currentState = nullptr;
     GameContext* contextData;
     char* externalCameraPtr = nullptr;
-
 public:
 
+    int n = 0; // 1: menu principal, 2: menu pausa
     MenuController(GameContext* context, char* cameraPtr);
 
     ~MenuController();
@@ -33,7 +33,7 @@ public:
 
     void DrawBackgroundOverlay();
 
-    float BeginButtonWindow(const char* name, float required_content_height);
+    float BeginButtonWindow(const char* name, float required_content_height, float width = BUTTON_WIDTH + MARGIN);
 
     void PushUserNeonStyle();
 

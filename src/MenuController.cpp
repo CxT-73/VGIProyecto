@@ -41,34 +41,42 @@ void MenuController::DrawBackgroundOverlay() {
 
 // --- 2. AYUDANTE PARA CENTRADO (Calcula y prepara la ventana invisible) ---
 // Devuelve el offset Y necesario para centrar el contenido, y posiciona el cursor X.
-float MenuController::BeginButtonWindow(const char* name, float required_content_height) {
+float MenuController::BeginButtonWindow(const char* name,
+    float required_content_height,
+    float forced_width) {
     ImVec2 display_size = ImGui::GetIO().DisplaySize;
 
     ImGuiWindowFlags menu_flags =
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize;
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoBackground;
+    // ? Quitamos AlwaysAutoResize
 
-    ImVec2 menu_size(BUTTON_WIDTH + MARGIN, required_content_height + MARGIN);
+    ImVec2 menu_size(forced_width, required_content_height + MARGIN);
+
     ImGui::SetNextWindowSize(menu_size);
-    ImGui::SetNextWindowPos(ImVec2(
-        (display_size.x - menu_size.x) * 0.5f,
-        (display_size.y - menu_size.y) * 0.5f
-    ));
+    ImGui::SetNextWindowPos(
+        ImVec2(
+            (display_size.x - menu_size.x) * 0.5f,
+            (display_size.y - menu_size.y) * 0.5f
+        ),
+        ImGuiCond_Always
+    );
 
     ImGui::Begin(name, nullptr, menu_flags);
 
-    // Centrado de los botones dentro de esta ventana
     float centered_x_pos = (ImGui::GetWindowWidth() - BUTTON_WIDTH) * 0.5f;
-    float centered_y_offset = (ImGui::GetWindowHeight() - required_content_height) * 0.5f;
+    float centered_y_offset =
+        (ImGui::GetWindowHeight() - required_content_height) * 0.5f;
 
-    // Posicionar el cursor Y
     ImGui::SetCursorPosY(centered_y_offset);
-
-    // Posicionar el cursor X para que los elementos empiecen centrados
     ImGui::SetCursorPosX(centered_x_pos);
 
-    return centered_x_pos; // Devolvemos la posición X para que las llamadas la usen
+    return centered_x_pos;
 }
+
 
 // --- 3. APLICAR ESTILO NEÓN LOCAL (Según tu código de prueba) ---
 void MenuController::PushUserNeonStyle() {

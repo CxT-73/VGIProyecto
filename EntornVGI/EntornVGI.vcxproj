@@ -28,6 +28,7 @@
     <ClCompile Include="..\include\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="..\src\coche.cpp" />
     <ClCompile Include="..\src\colocarObjeto.cpp" />
+    <ClCompile Include="..\src\Controls.cpp" />
     <ClCompile Include="..\src\EndGame.cpp" />
     <ClCompile Include="..\src\IMenuState.cpp" />
     <ClCompile Include="..\src\MainMenu.cpp" />
@@ -57,6 +58,7 @@
     <ClInclude Include="..\src\coche.h" />
     <ClInclude Include="..\src\constants.h" />
     <ClInclude Include="..\src\colocarObjeto.h" />
+    <ClInclude Include="..\src\Controls.h" />
     <ClInclude Include="..\src\EndGame.h" />
     <ClInclude Include="..\src\GameContext.h" />
     <ClInclude Include="..\src\IMenuState.h" />

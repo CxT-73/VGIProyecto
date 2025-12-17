@@ -1,6 +1,6 @@
 #include "NewGame.h"
 #include "MainMenu.h"
-#include "Playing.h"
+#include "Playing.h" 
 
 void NewGameState::Render(MenuController& controller) {
 
@@ -21,10 +21,12 @@ void NewGameState::Render(MenuController& controller) {
     controller.PushUserNeonStyle();
 
     // --- Título ---
-    ImGui::TextColored(NEON_CYAN_TITLE, "CONFIGURACION DE PARTIDA");
-    ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
+    const char* title = u8"-- CONFIGURACIÓ --";
+    float title_width = ImGui::CalcTextSize(title).x;
+    ImGui::SetCursorPosX((ImGui::GetWindowWidth() - title_width) * 0.5f);
+    ImGui::TextColored(NEON_CYAN_TITLE, title);
 
-    ImGui::SetWindowFontScale(1.2f);
+    ImGui::Spacing();
 
     // --- SOLUCIÓN: Centrado del Contenido y Altura ---
 
@@ -60,7 +62,7 @@ void NewGameState::Render(MenuController& controller) {
     ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
 
     ImVec2 button_size(BUTTON_WIDTH, BUTTON_HEIGHT);
-    if (ImGui::Button("Sart Practice", button_size)) {
+    if (ImGui::Button(u8"Començar partida", button_size)) {
    
         controller.GetContext()->isGameRunning = true;
         controller.GetContext()->resetGame = true;
@@ -71,7 +73,7 @@ void NewGameState::Render(MenuController& controller) {
         controller.SwitchState(new PlayingState());
     }
     ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
-    if (ImGui::Button("Return", button_size)) {
+    if (ImGui::Button("Enrere", button_size)) {
         controller.SwitchState(new MainMenuState());
     }
 

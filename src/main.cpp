@@ -1721,7 +1721,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 
 	// -------- T�TULO PRINCIPAL --------
 	ImGui::SetWindowFontScale(4.0f);
-	const char* title = u8"GIMCANA AUTOMOBIL�STICA";
+	const char* title = u8"GIMCANA AUTOMOBILÍSTICA";
 	ImVec2 titleSize = ImGui::CalcTextSize(title);
 
 	ImVec2 titlePos(center.x - titleSize.x * 0.5f, center.y - 170);
@@ -1764,7 +1764,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 	// -------- CONSEJO --------
 	const char* tip =
 		u8"Consell: Controla l'accelerador,\n"
-		u8"             no tot �s velocitat.";
+		u8"             no tot és velocitat.";
 
 	ImVec2 tipSize = ImGui::CalcTextSize(tip);
 	ImVec2 tipPos(center.x - tipSize.x * 0.5f, center.y + 45);
