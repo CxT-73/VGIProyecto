@@ -1,6 +1,9 @@
 #include "coche.h"
 #include "objLoader.h" 
 #include <iostream>
+#include <Windows.h>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 extern ControlLuces controlLlumsCotxe;
 
 Coche::Coche() {
@@ -192,21 +195,24 @@ void Coche::update() {
     float fuerzaFreno = 0.0f;
 
     // CONFIGURACIÓN DE FUERZAS
-    float potAcelerar = -5000.0f; // Fuerza para ir adelante
-    float potAtras = 4000.0f;     // Fuerza para ir atrás
-
-    // VALORES AUMENTADOS PARA QUE FRENE DE VERDAD
+    float potAcelerar = -5000.0f;
+    float potAtras = 4000.0f;
     float frenoABS = 300.0f;
     float frenoBloqueo = 15000.0f;
     float frenoParking = 100000.0f;
+
+    // VARIABLE PARA SONIDO
+    bool inputAcelerar = false;
 
     // INPUTS
     bool W = (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS);
     bool S = (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS);
     bool A = (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS);
     bool D = (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
-    bool Espacio = (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS); // Freno
+    bool Espacio = (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS);
     bool P = (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS);
+
+    if (W) inputAcelerar = true;
 
     if (FrenoDeMano) {
         fuerzaMotor = 0.0f;
@@ -268,17 +274,18 @@ void Coche::update() {
         if (!FrenoDeMano) {
             float valorR2 = axes[4];
             float valorL2 = axes[3];
-            float deadzoneTriggers = 0.05f;
+            float deadzoneTriggers = 0.20f;
 
             if (valorR2 > deadzoneTriggers) {
                 fuerzaMotor = potAcelerar * valorR2;
+                inputAcelerar = true;
             }
             else if (valorL2 > deadzoneTriggers) {
                 fuerzaMotor = potAtras * valorL2;
             }
 
             if (buttons[0] == GLFW_PRESS) {
-                Espacio = true; // Actualizamos para lógica interna
+                Espacio = true;
                 if (activadoABS) fuerzaFreno = frenoABS;
                 else fuerzaFreno = frenoBloqueo;
             }
@@ -292,10 +299,7 @@ void Coche::update() {
         }
     }
 
-    // PRIORIDAD DE FRENO: Si frenamos, cortamos motor
-    if (fuerzaFreno > 0.0f) {
-        fuerzaMotor = 0.0f;
-    }
+    // HE QUITADO EL BLOQUE QUE CORTABA EL MOTOR AQUÍ, ESO ERA LO QUE HACÍA QUE CABECEARA
 
     // APLICAR FUERZAS AL MOTOR
     m_vehicle->applyEngineForce(fuerzaMotor, 2);
@@ -312,15 +316,13 @@ void Coche::update() {
             m_vehicle->setBrake(fuerzaFreno, 3);
         }
         else if (activadoABS) {
-            // Reparto 60% Delante / 40% Detrás para frenada estable
-            m_vehicle->setBrake(fuerzaFreno * 0.6f, 0);
-            m_vehicle->setBrake(fuerzaFreno * 0.6f, 1);
-            m_vehicle->setBrake(fuerzaFreno * 0.4f, 2);
-            m_vehicle->setBrake(fuerzaFreno * 0.4f, 3);
+            // VOLVEMOS A 0.5f (50% DELANTE / 50% DETRAS) COMO EN EL ORIGINAL
+            m_vehicle->setBrake(fuerzaFreno * 0.5f, 0);
+            m_vehicle->setBrake(fuerzaFreno * 0.5f, 1);
+            m_vehicle->setBrake(fuerzaFreno * 0.5f, 2);
+            m_vehicle->setBrake(fuerzaFreno * 0.5f, 3);
         }
         else {
-            // Frenada bloqueo (solo traseras para derrape o todas según prefieras)
-            // Aquí pongo bloqueo trasero para facilitar derrape controlado
             m_vehicle->setBrake(0.0f, 0);
             m_vehicle->setBrake(0.0f, 1);
             m_vehicle->setBrake(fuerzaFreno, 2);
@@ -328,23 +330,31 @@ void Coche::update() {
         }
     }
     else {
-        // Liberar frenos
         m_vehicle->setBrake(0, 0);
         m_vehicle->setBrake(0, 1);
         m_vehicle->setBrake(0, 2);
         m_vehicle->setBrake(0, 3);
     }
 
-    // Dirección con penalización si bloqueamos ruedas (solo sin ABS)
+    // Dirección con penalización
     float anguloFinal = angulo_ruedas;
     if (!activadoABS && Espacio && std::abs(velocidadActual) > 1.0f && !FrenoDeMano) {
-        anguloFinal *= 0.05f; // El volante apenas responde bloqueando
+        anguloFinal *= 0.05f;
     }
 
     m_vehicle->setSteeringValue(anguloFinal, 0);
     m_vehicle->setSteeringValue(anguloFinal, 1);
-}
 
+    // LÓGICA DE SONIDO
+    if (inputAcelerar && !sonidoAceleracionActivo) {
+        PlaySound(TEXT("acelerar.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+        sonidoAceleracionActivo = true;
+    }
+    else if (!inputAcelerar && sonidoAceleracionActivo) {
+        PlaySound(TEXT("motor.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+        sonidoAceleracionActivo = false;
+    }
+}
 void Coche::render(GLuint sh_programID, glm::mat4 MatriuVista) {
     if (!model) return;
 
