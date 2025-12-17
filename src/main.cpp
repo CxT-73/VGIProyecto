@@ -2059,7 +2059,7 @@ int main(void)
 	bool g_ShowMenu = true; // Control maestro
 
 	g_GameContext.isGameRunning = false;
-	g_MenuController = new MenuController(&g_GameContext, &camera);
+	g_MenuController = new MenuController(&g_GameContext, &camera, miCoche);
 	g_MenuController->SwitchState(new MainMenuState()); // Estado inicial
 
 	OnVistaSkyBox();

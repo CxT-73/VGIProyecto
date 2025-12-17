@@ -78,7 +78,7 @@ class btRigidBody;
 //Llums cotxe
 void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin);
 
-float calcularFactorProximidad(btDynamicsWorld* world, btRigidBody* me, const glm::vec3& start, const glm::vec3& dir, float maxDist);
+float calcularFactorProximidad(btDynamicsWorld* world, btRigidBody* me, btRigidBody* circuitoBody, btRigidBody* muro, const glm::vec3& start, const glm::vec3& dir, float maxDist);
 
 // Entorn VGI: Càrrega TG
 glm::mat4 instancia(bool TR, INSTANCIA tg, INSTANCIA tgF);
