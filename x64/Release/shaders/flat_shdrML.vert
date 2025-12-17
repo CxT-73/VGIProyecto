@@ -1,21 +1,19 @@
 //******** PRACTICA VISUALITZACIÓ GRÀFICA INTERACTIVA (EE-UAB)
 //******** Entorn bàsic VS2022 amb interfície MFC/GLFW i Status Bar
-//******** Enric Marti (Setembre 2025)
-// flat_shdrML.vert: Vertex Program en GLSL en versió OpenGL 3.3 o 4.60 per a implementar:
+//******** Enric Marti (Setembre 2023)
+// flat_shdrML.vert: Vertex Program en GLSL en versió OpenGL 3.3 o 4.30 per a implementar:
 //     a) Iluminació plana
 //     b) Fonts de llum puntuals o direccionals
 //     c) Fonts de llum restringides
 //     d) Atenuació de fonts de llum
 //     e) Modus d'assignació de textura MODULATE o DECAL
-//     f) Calcul component a de transparència segons color sigui provinent de material o de VAO
-//     g) Algorisme de cares planes encapsulat en flatModel()
 
 //#version 330 core
 #version 460 core
 
 #define MaxLights 8
 
-// --- L18- Estructures Font de LLum i Material (coeficients reflectivitat).
+// --- L16- Estructures Font de LLum i Material (coeficients reflectivitat).
 struct Light
 {	bool sw_light;		// Booleana si font encesa (TRUE) o apagada (FALSE).
 	vec4 position;		// Posició de la font de llum (x,y,z,w).
@@ -37,7 +35,7 @@ struct Material
 	float shininess;	// Exponent reflexió llum especular (n).
 };
 
-// --- L40- Variables in
+// --- L38- Variables in
 layout (location = 0) in vec3 in_Vertex; 	// Coordenades (x,y,z) posicio Vertex.
 layout (location = 1) in vec4 in_Color; 	// Coordenades (r,g,b,a) Color.
 layout (location = 2) in vec3 in_Normal; 	// Coordenades (x,y,z) Vector Normal.
@@ -59,36 +57,40 @@ uniform vec4 LightModelAmbient;	// Intensitat de llum ambient (r,g,b,a)-
 uniform Light LightSource[MaxLights];	// Vector de fonts de llum.
 uniform Material material;	// Vector de coeficients reflectivitat de materials.
 
-// --- L62- Variables out
+// --- L60- Variables out
 flat out vec4 VertexColor;	// Color del vèrtex
 out vec2 VertexTexCoord;	// Coordenades textura del vèrtex
 
-vec3 flatModel(inout int numMat, inout float aValue)
+void main ()	// --- L64
 {
-// --- L68- Calcul variables previes.
+// --- L66- Calcul variables previes.
     //mat4 NormalMatrix = transpose(inverse(viewMatrix * modelMatrix));
     vec3 N = vec3(normalMatrix * vec4(in_Normal,1.0));
     N = normalize(N);
     vec3 vertexPV = vec3(viewMatrix * modelMatrix * vec4(in_Vertex,1.0));
     vec3 V = normalize(-vertexPV);
 
-// --- L75- Multiples llums
-    vec3 ILlums = vec3 (0.0,0.0,0.0);		// Intensitat acumulada per a totes les fonts de llum.
-    vec3 Idiffuse = vec3 (0.0,0.0,0.0);		// Intensitat difusa d’una font de llum.
+// --- L73- Multiples llums
+    vec3 ILlums = vec3 (0.0,0.0,0.0);	// Intensitat acumulada per a totes les fonts de llum.
+    vec3 Idiffuse = vec3 (0.0,0.0,0.0);	// Intensitat difusa d’una font de llum.
     vec3 Ispecular = vec3 (0.0,0.0,0.0);	// Intensitat especular d’una font de llum.
     vec4 lightPosition = vec4(0.0,0.0,0.0,1.0);	// Posició de la font de llum en coordenades Punt de Vista.
-    vec3 L = vec3 (0.0,0.0,0.0);		// Vector L per a càlcul intensitat difusa i especular.
+    vec3 L = vec3 (0.0,0.0,0.0);	// Vector L per a càlcul intensitat difusa i especular.
     float fatt=1.0;				// Factor d'atenuació llum per distància (fatt).
 						// fatt = 1/Light.attenuation.x*d2 + Light.attenuation.y * d + Light.attenuation.z
     vec3 spotDirectionPV = vec3 (0.0,0.0,0.0);	// Vector spotDirection en coordenades càmera i normalitzat.
     float spotDot; 				// Angle d'obertura en radians entre el vèrtex i el vector de la font restringida (spotDirection).
 
-// --- L86- Textura
+// --- L85- Transparència
+    int numMat = 0;				// Numero de materials actius a sw_material[].
+    float aValue = 0.0;			        // Valor de coordenada a de transparència acumulat. 
+
+// --- L84- Textura
     //VertexTexCoord = in_TexCoord;
     if (flag_invert_y) VertexTexCoord = vec2(in_TexCoord.x,1.0-in_TexCoord.y); // SOIL_FLAG_INVERT_Y
       else VertexTexCoord = vec2(in_TexCoord.x,in_TexCoord.y);
  
-// --- L91- Compute emissive term
+// --- L89- Compute emissive term
     vec3 Iemissive = vec3 (0.0,0.0,0.0);	// Intensitat emissiva de l’objecte.
     if (sw_intensity[0])  {	if (sw_material) { Iemissive = material.emission.rgb;
                                                    // Càlcul component a de transparència per llum emissiva.
@@ -100,7 +102,7 @@ vec3 flatModel(inout int numMat, inout float aValue)
 			  }
 
 
-// --- L103- Compute ambient term
+// --- L95- Compute ambient term
     vec3 Iambient = vec3 (0.0,0.0,0.0);		// Intensitat ambient reflexada
     if (sw_intensity[1]) {	if (sw_material) { Iambient = material.ambient.rgb * LightModelAmbient.rgb;
                                                    // Càlcul component a de transparència per llum ambient i per material.
@@ -111,26 +113,26 @@ vec3 flatModel(inout int numMat, inout float aValue)
         			Iambient = clamp(Iambient, 0.0, 1.0);
     			}
 
-// --- L114- Multiples llums
+// --- L102- Multiples llums
     for (int i=0;i<MaxLights;i++) {
 	if (LightSource[i].sw_light) { 
 		fatt = 1.0; 	// Inicialitzar factor d'atenuació. 
-		// --- L118- Compute light position (fixed in WC of attached to camera)
+		// --- L106- Compute light position (fixed in WC of attached to camera)
 		if (fixedLight) lightPosition = viewMatrix * LightSource[i].position;
 			else lightPosition = vec4(-vertexPV,1.0);
 
-		// --- L122- Compute point light source (w=1) or direccional light (w=0)
+		// --- L110- Compute point light source (w=1) or direccional light (w=0)
 		if (LightSource[i].position.w == 1) 
 		  {  //L = normalize(lightPosition.xyz - vertexPV);
 		     L = lightPosition.xyz - vertexPV;
-		     // -L126- Compute Attenuation factor
+		     // -L114- Compute Attenuation factor
                      fatt = length(L);		// Càlcul de la distància entre la posició de la font de llum i el vèrtex.
 		     fatt = 1 / (LightSource[i].attenuation.x * fatt * fatt + LightSource[i].attenuation.y * fatt + LightSource[i].attenuation.z);
 		     L = normalize(L);		// Normalitzar el vector.
 		  }
-                     else L = normalize(-lightPosition.xyz);
+                     else L = normalize(lightPosition.xyz);
 
-		// --- L133- Compute Spot Light Factor
+		// --- L121- Compute Spot Light Factor
 		if (LightSource[i].restricted) 
                   { spotDirectionPV = vec3(normalMatrix * vec4(LightSource[i].spotDirection,1.0));
   		    spotDirectionPV = normalize(spotDirectionPV);
@@ -142,7 +144,7 @@ vec3 flatModel(inout int numMat, inout float aValue)
 		      else fatt=0.0;
                   }
 
-		// --- L145- Compute the diffuse term
+		// --- L133- Compute the diffuse term
 		Idiffuse = vec3 (0.0,0.0,0.0);
      		if (sw_intensity[2]) {
         		float diffuseLight = max(dot(L, N), 0.0);
@@ -155,7 +157,7 @@ vec3 flatModel(inout int numMat, inout float aValue)
         		Idiffuse = clamp(Idiffuse, 0.0, 1.0);
      			}
 
-		// --- L158- Compute the specular term
+		// --- L142- Compute the specular term
     		Ispecular = vec3 (0.0,0.0,0.0);
     		if (sw_intensity[3]) {
         		//vec3 V = normalize(-vertexPV);
@@ -173,25 +175,16 @@ vec3 flatModel(inout int numMat, inout float aValue)
    		ILlums += Idiffuse + Ispecular;
 		}
    }
-    return Iemissive + Iambient + ILlums;
-}
-
-void main ()	// --- L179
-{
-// --- L181- Transparència
-    int numMaterials = 0;		// Numero de materials actius a sw_material[].
-    float aValor = 0.0;			// Valor de coordenada a de transparència acumulat dels materials. 
-    vec4 fragmentColor = vec4(0.0,0.0,0.0,1.0);	// Intensitat final del fragment (pixel) segons equació il.luminació.
     
-// --- L186- Transformacio de Visualitzacio amb Matriu Projeccio (projectionMatrix), Matriu Càmera (viewMatrix) i Matriu TG (modelMatrix)
+// --- L157- Transformacio de Visualitzacio amb Matriu Projeccio (projectionMatrix), Matriu Càmera (viewMatrix) i Matriu TG (modelMatrix)
     gl_Position = vec4(projectionMatrix * viewMatrix * modelMatrix * vec4(in_Vertex,1.0));
 
-// --- L189- Calcul intensitat final del vertex
-    VertexColor.rgb = flatModel(numMaterials, aValor);
-
-// --- L192- Càlcul component a de transparència.
+// --- L160- Calcul intensitat final del vertex
+    VertexColor.rgb = Iemissive + Iambient + ILlums;
+   // --- L184- Càlcul component a de transparència.
     // if (sw_material) vertexColor.a = material.diffuse.a; else VertexColor.a = in_Color.a;
-    if (sw_material) { if (numMaterials != 0) VertexColor.a = aValor / numMaterials; else VertexColor.a = 1.0;
-                     }
+    if (sw_material) { if (numMat != 0) VertexColor.a = aValue / numMat; else VertexColor.a = 1.0;
+                    }
 	else VertexColor.a = in_Color.a;
+
 }

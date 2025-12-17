@@ -1542,43 +1542,43 @@ OBJ::OBJ(const std::string& nombreObjeto) {
 
 	if (nombreObjeto == "cono") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Cono/Cono.obj");
+		strcpy(ruta, "OBJFiles/Cono/Cono.obj");
 	}
 	else if (nombreObjeto == "cono_estatic") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Cono/Cono.obj");
+		strcpy(ruta, "OBJFiles/Cono/Cono.obj");
 	}
 	else if (nombreObjeto == "barrera") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Barrera_m1/Barrera_m1.obj");
+		strcpy(ruta, "OBJFiles/Barrera_m1/Barrera_m1.obj");
 	}
 	else if (nombreObjeto == "senyal1") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Senyal_m1/Road_sign.obj");
+		strcpy(ruta, "OBJFiles/Senyal_m1/Road_sign.obj");
 	}
 	else if (nombreObjeto == "senyal2") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Senyal_m2/35 mph speed limit sign.obj");
+		strcpy(ruta, "OBJFiles/Senyal_m2/35 mph speed limit sign.obj");
 	}
 	else if (nombreObjeto == "bloc") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Bloc/Bloc.obj");
+		strcpy(ruta, "OBJFiles/Bloc/Bloc.obj");
 	}
 	else if (nombreObjeto == "barril") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Barril/Barril.obj");
+		strcpy(ruta, "OBJFiles/Barril/Barril.obj");
 	}
 	else if (nombreObjeto == "circuit") {
 		nom = nombreObjeto;  
-		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m6/TRACKSENSEMUR.obj");
+		strcpy(ruta, "OBJFiles/Circuit_m6/TRACKSENSEMUR.obj");
 	}
 	else if (nombreObjeto == "muro") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Circuit_m6/MURO.obj");
+		strcpy(ruta, "OBJFiles/Circuit_m6/MURO.obj");
 	}
 	else if (nombreObjeto == "punt") {
 		nom = nombreObjeto;
-		strcpy(ruta, "../x64/Release/OBJFiles/Punt/Prueba1.obj");
+		strcpy(ruta, "OBJFiles/Punt/Prueba1.obj");
 	}
 	else {
 		fprintf(stderr, "ERROR: Nombre de objeto desconocido: %s\n", nombreObjeto.c_str());

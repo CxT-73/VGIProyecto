@@ -1,7 +1,7 @@
 //******** PRACTICA VISUALITZACIÓ GRÀFICA INTERACTIVA (EE-UAB)
 //******** Entorn bàsic VS2022 amb interfície MFC/GLFW i Status Bar
-//******** Enric Marti (Setembre 2025)
-// flat_shdrML.frag: Fragment Program en GLSL per en versió OpenGL 3.3 o 4.60 per a implementar:
+//******** Enric Marti (Setembre 2023)
+// flat_shdrML.frag: Fragment Program en GLSL per en versió OpenGL 3.3 o 4.30 per a implementar:
 //     a) Iluminació plana
 //     b) Fonts de llum puntuals o direccionals
 //     c) Fonts de llum restringides

@@ -2018,7 +2018,7 @@ int main(void)
 
 
 	ImFont* font = io.Fonts->AddFontFromFileTTF(
-		"../include/RobotoSlab-VariableFont_wght.ttf",
+		"type/RobotoSlab-VariableFont_wght.ttf",
 		32.0f,
 		&cfg,
 		ranges
