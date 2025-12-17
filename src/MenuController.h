@@ -2,6 +2,8 @@
 #include "GameContext.h" // Asumiendo que guardaste el struct anterior aquí
 #include "IMenuState.h"
 #include <iostream>
+#include "coche.h"
+#include <mmsystem.h>
 
 const float BUTTON_WIDTH = 380.0f;
 const float BUTTON_HEIGHT = 75.0f;
@@ -16,10 +18,11 @@ private:
     IMenuState* currentState = nullptr;
     GameContext* contextData;
     char* externalCameraPtr = nullptr;
-
+	Coche* miCoche = nullptr;
 public:
 
-    MenuController(GameContext* context, char* cameraPtr);
+    int n = 0; // 1: menu principal, 2: menu pausa
+    MenuController(GameContext* context, char* cameraPtr, Coche* coche);
 
     ~MenuController();
 
@@ -33,7 +36,7 @@ public:
 
     void DrawBackgroundOverlay();
 
-    float BeginButtonWindow(const char* name, float required_content_height);
+    float BeginButtonWindow(const char* name, float required_content_height, float width = BUTTON_WIDTH + MARGIN);
 
     void PushUserNeonStyle();
 
@@ -52,12 +55,14 @@ public:
 
     void calculateScore();
     void setRestart() {
+        PlaySound(NULL, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 		contextData->isGameRunning = false;
-		contextData->carHealth = 10;
+		contextData->carHealth = 100;
 		contextData->gameTime = 0.0f;
 		contextData->collisionCount = 0;
 		contextData->finalTime = 0.0f;
 		contextData->score = 0;
+        miCoche->reiniciarPosicion();
     }
 
     std::string getState() const {
@@ -73,4 +78,7 @@ public:
             contextData->carHealth = 0;
         }
 	}
+
+    // Add a public getter for miCoche
+    Coche* GetCoche() const { return miCoche; }
 };

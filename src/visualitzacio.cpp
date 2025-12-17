@@ -20,20 +20,44 @@
 
 #include "visualitzacio.h"
 #include "escena.h"
-
+#include <btBulletDynamicsCommon.h>
 // Iluminació: Configurar iluminació de l'escena
 
 void Iluminacio(GLint sh_programID, char ilumin, bool ifix[], bool ilu2sides, bool ll_amb, LLUM* lumin, char obj, bool frnt_fcs,
-	bool bc_lin, int step)
+	bool bc_lin, int step, int ambienteIdx)
 {
 
 	glUseProgram(sh_programID);
 
-
+	GLfloat luz_mañana[] = { 0.4f, 0.3f, 0.3f, 1.0f };   // Más cálido
+	GLfloat luz_mediodia[] = { 0.5f, 0.5f, 0.5f, 1.0f }; // Neutro
+	GLfloat anochecer[] = { 0.3f, 0.2f, 0.4f, 1.0f };    // Violeta oscuro
+	GLfloat atardecer[] = { 0.4f,0.3f,0.2f,1.0 };    // Naranja
+	GLfloat noche[] = { 0.15f, 0.15f, 0.35f, 1.0f };
 
 	// Variables per a configurar paràmetres de les fonts de llum
 	GLfloat especular[] = { 0.0,0.0,0.0,1.0 };
-	GLfloat ambientg[] = { .5,.5,.5,1.0 };
+	GLfloat* ambientg;
+
+	switch (ambienteIdx) {
+	case 0: ambientg = luz_mañana;
+		lumin[0].difusa = { 0.8f, 0.7f, 0.6f, 1.0f };
+		lumin[0].especular = { 0.5f, 0.5f, 0.5f, 1.0f }; break;
+	case 1: ambientg = luz_mediodia; 
+		lumin[0].difusa = { 1.0f, 1.0f, 1.0f, 1.0f };
+		lumin[0].especular = { 1.0f, 1.0f, 1.0f, 1.0f }; break;
+	case 2: ambientg = anochecer; 
+		lumin[0].difusa = { 0.6f, 0.4f, 0.5f, 1.0f };
+		lumin[0].especular = { 0.4f, 0.3f, 0.4f, 1.0f }; break;
+	case 3: ambientg = atardecer;
+		lumin[0].difusa = { 0.9f, 0.5f, 0.2f, 1.0f };
+		lumin[0].especular = { 0.8f, 0.4f, 0.2f, 1.0f }; break;
+	case 4: ambientg = noche;
+		lumin[0].difusa = { 0.2f, 0.3f, 0.6f, 1.0f };
+		lumin[0].especular = { 0.7f, 0.7f, 0.9f, 1.0f }; break;
+	default: ambientg = luz_mediodia; 
+		lumin[0].difusa = { 1.0f, 1.0f, 1.0f, 1.0f }; break; // Por defecto
+	}
 
 
 // Definició de llum ambient segons booleana ll_amb
@@ -319,6 +343,48 @@ void Iluminacio(GLint sh_programID, char ilumin, bool ifix[], bool ilu2sides, bo
 	//	glEnable(GL_LIGHT7);	//	glDisable(GL_LIGHT7);	// Codi OpenGL 1.1
 	glUniform1i(glGetUniformLocation(sh_programID, "LightSource[7].sw_light"), lumin[7].encesa);
 
+	// =================================================================
+	// BUCLE PER LLUMS COTXE
+	// =================================================================
+
+	for (int i = 8; i < NUM_MAX_LLUMS; i++)
+	{
+		std::string base = "LightSource[" + std::to_string(i) + "]"; // Crea "LightSource[0]", "LightSource[1]", etc.
+
+		// 1. Posición
+		glUniform4f(glGetUniformLocation(sh_programID, (base + ".position").c_str()),
+			lumin[i].posicio.x, lumin[i].posicio.y, lumin[i].posicio.z, lumin[i].posicio.w);
+
+		// 2. Colores (Difusa / Especular)
+		glUniform4f(glGetUniformLocation(sh_programID, (base + ".diffuse").c_str()),
+			lumin[i].difusa.r, lumin[i].difusa.g, lumin[i].difusa.b, lumin[i].difusa.a);
+
+		glUniform4f(glGetUniformLocation(sh_programID, (base + ".specular").c_str()),
+			lumin[i].especular.r, lumin[i].especular.g, lumin[i].especular.b, lumin[i].especular.a);
+
+		// 3. Atenuación
+		glUniform3f(glGetUniformLocation(sh_programID, (base + ".attenuation").c_str()),
+			lumin[i].atenuacio.a, lumin[i].atenuacio.b, lumin[i].atenuacio.c);
+
+		// 4. Focos Restringidos (Spotlights)
+		glUniform1i(glGetUniformLocation(sh_programID, (base + ".restricted").c_str()), lumin[i].restringida);
+
+		glUniform3f(glGetUniformLocation(sh_programID, (base + ".spotDirection").c_str()),
+			lumin[i].spotdirection.x, lumin[i].spotdirection.y, lumin[i].spotdirection.z);
+
+		glUniform1f(glGetUniformLocation(sh_programID, (base + ".spotCosCutoff").c_str()), lumin[i].spotcoscutoff);
+
+		glUniform1f(glGetUniformLocation(sh_programID, (base + ".spotExponent").c_str()), lumin[i].spotexponent);
+
+		// 5. Interruptor (Encendida/Apagada)
+		glUniform1i(glGetUniformLocation(sh_programID, (base + ".sw_light").c_str()), lumin[i].encesa);
+	}
+
+	// =================================================================
+	// FIN DEL BUCLE
+	// =================================================================
+
+// Selecció del model d'iluminació segons variable ilumin
 	// =================================================================
 	// BUCLE PER LLUMS COTXE
 	// =================================================================
@@ -709,11 +775,11 @@ glm::mat4 Projeccio_Perspectiva(GLsizei w, GLsizei h, double fov_grados)
 
 glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix[], bool il2sides)
+	LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	Fons(col_fons);
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0, ambienteIdx);
 	static glm::vec3 s_smoothedCameraPos = glm::vec3(0.0f);
 	static bool s_firstCall = true;
 	const float SMOOTHING_FACTOR = 0.8f;
@@ -788,12 +854,12 @@ glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool
 	return MatriuVista;
 }
 
-glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides)
+glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0);
 	Fons(col_fons); 
 	bool activarIluminacion = true;
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0, ambienteIdx);
 
 	if (coche != nullptr)
 	{
@@ -839,11 +905,11 @@ glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fon
 	return MatriuVista;
 }
 
-glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides)
+glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	// ¡NO LIMPIAMOS FONDO (Fons(col_fons))! Dibujamos encima.
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0,  ambienteIdx);
 
 	if (coche != nullptr)
 	{
@@ -874,11 +940,11 @@ glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fon
 	return MatriuVista;
 }
 
-glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche, bool esIzquierdo, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides)
+glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche, bool esIzquierdo, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	// ¡NO LIMPIAMOS FONDO (Fons(col_fons))! Dibujamos encima.
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0,  ambienteIdx);
 
 	if (coche != nullptr)
 	{
@@ -915,11 +981,11 @@ glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche, bool esIzquierdo, 
 
 glm::mat4 Vista_Lliure(GLuint sh_programID, CColor col_fons, CEsfe3D opv, glm::vec3 g_FreeCamPos,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix[], bool il2sides)
+	LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	Fons(col_fons); // Limpia la pantalla
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0,  ambienteIdx);
 	
 
 	glm::vec3 front;
@@ -956,11 +1022,11 @@ glm::mat4 Vista_Lliure(GLuint sh_programID, CColor col_fons, CEsfe3D opv, glm::v
 
 glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix[], bool il2sides)
+	LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	Fons(col_fons);
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0,  ambienteIdx);
 
 	if (coche != nullptr)
 	{
@@ -985,9 +1051,9 @@ glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool 
 
 		glm::vec3 cameraPos;
 		//aplicamos los calculos al punto del coche
-		cameraPos.x = puntMig.x + horizontalDist * cosf(azimut_final_rad) * 30;
-		cameraPos.y = puntMig.y - horizontalDist * sinf(azimut_final_rad) * 30;
-		cameraPos.z = puntMig.z + verticalDist * 160;
+		cameraPos.x = puntMig.x + horizontalDist * cosf(azimut_final_rad) * 20;
+		cameraPos.y = puntMig.y - horizontalDist * sinf(azimut_final_rad) * 20;
+		cameraPos.z = puntMig.z + verticalDist * 150;
 
 
 		glm::vec3 cameraTarget = puntMig;
@@ -1016,12 +1082,12 @@ glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool 
 } 
 glm::mat4 Vista_Pausa(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix[], bool il2sides)
+	LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 
 	Fons(col_fons);
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0, ambienteIdx);
 
 	if (coche != nullptr)
 	{
@@ -1151,12 +1217,13 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 
 			if (control.modoFaros == 1) 
 			{
+				float factorProximidad = calcularFactorProximidad(mundo, body, circuit->m_rigidBody, muro->m_rigidBody, posFaro_world, worldDir, 6.0f);
 				
 				lumin[i].spotcoscutoff = cos(glm::radians(40.0f));
 				lumin[i].spotexponent = 10.0f; 
 
 				
-				lumin[i].difusa = { 200.0f, 200.0f, 180.0f, 1.0f };
+				lumin[i].difusa = { 200.0f * factorProximidad, 200.0f * factorProximidad, 180.0f * factorProximidad, 1.0f };
 				lumin[i].especular = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 
@@ -1165,11 +1232,13 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 			else 
 			{
 				
+				float factorLargas = calcularFactorProximidad(mundo, body, circuit->m_rigidBody, muro->m_rigidBody, posFaro_world, worldDir, 20.0f);
+
 				lumin[i].spotcoscutoff = cos(glm::radians(15.0f));
 				lumin[i].spotexponent = 120.0f; 
 
 				
-				lumin[i].difusa = { 1500.0f, 1500.0f, 1400.0f, 1.0f };
+				lumin[i].difusa = { 1500.0f * factorLargas, 1500.0f * factorLargas, 1400.0f * factorLargas, 1.0f };
 				lumin[i].especular = { 10.0f, 10.0f, 10.0f, 1.0f }; 
 
 				
@@ -1208,15 +1277,15 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[i].spotcoscutoff = cos(glm::radians(30.0f));
 		lumin[i].spotexponent = 10.0f;
 		lumin[i].especular = { 1.0f, 0.5f, 0.5f, 1.0f };
-
+		float factorFreno = calcularFactorProximidad(mundo, body, circuit->m_rigidBody, muro->m_rigidBody, posCola, dirFreno, 10.0f);
 		if (frenando) {
 			lumin[i].encesa = true;
-			lumin[i].difusa = { 80.0f, 0.0f, 0.0f, 1.0f };
+			lumin[i].difusa = { 80.0f * factorFreno, 0.0f, 0.0f, 1.0f };
 			lumin[i].atenuacio = { 0.5f, 0.5f, 0.5f };
 		}
 		else if (control.modoFaros != 0) {
 			lumin[i].encesa = true;
-			lumin[i].difusa = { 5.0f, 0.0f, 0.0f, 1.0f };
+			lumin[i].difusa = { 5.0f * factorFreno, 0.0f, 0.0f, 1.0f };
 			lumin[i].atenuacio = { 0.5f, 0.5f, 0.5f };
 		}
 		else lumin[i].encesa = false;
@@ -1242,10 +1311,10 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[i].spotcoscutoff = cos(glm::radians(45.0f));
 		lumin[i].spotexponent = 5.0f;
 		lumin[i].especular = { 1.0f, 1.0f, 1.0f, 1.0f };
-
+		float factorAtras = calcularFactorProximidad(mundo, body, circuit->m_rigidBody, muro->m_rigidBody, posMarcha, dirMarcha, 30.0f);
 		if (enMarchaAtras) {
 			lumin[i].encesa = true;
-			lumin[i].difusa = { 30.0f, 30.0f, 30.0f, 1.0f };
+			lumin[i].difusa = { 30.0f* factorAtras, 30.0f* factorAtras, 30.0f* factorAtras, 1.0f };
 			lumin[i].atenuacio = { 0.5f, 0.5f, 0.5f };
 		}
 		else lumin[i].encesa = false;
@@ -1263,8 +1332,7 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 	if (control.intermitenteIzquierdo && parpadeoOn)
 	{
 		// DELANTE IZQUIERDA (14)
-		lumin[14].encesa = true;
-		lumin[14].difusa = { 20.0f, 10.0f, 0.0f, 1.0f };   
+		lumin[14].encesa = true; 
 		lumin[14].restringida = true;
 		lumin[14].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
 		lumin[14].atenuacio = { 1.0f, 2.0f, 3.0f };
@@ -1277,10 +1345,11 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[14].spotdirection = { dir.x, dir.y, dir.z };
 		lumin[14].spotcoscutoff = cos(glm::radians(80.0f));
 		//lumin[14].spotexponent = 10.0f;
+		float factorint14 = calcularFactorProximidad(mundo, body, circuit->m_rigidBody, muro->m_rigidBody, pos, dir, 10.0f);
+		lumin[14].difusa = { 20.0f * factorint14, 10.0f * factorint14, 0.0f, 1.0f };
 
 		// DETRÁS IZQUIERDA (16)
 		lumin[16].encesa = true;
-		lumin[16].difusa = { 20.0f, 10.0f, 0.0f, 1.0f };
 		lumin[16].restringida = true;
 		lumin[16].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
 		lumin[16].atenuacio = { 1.0f, 2.0f, 3.0f };
@@ -1293,6 +1362,8 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[16].spotdirection = { dir.x, dir.y, dir.z };
 		lumin[16].spotcoscutoff = cos(glm::radians(80.0f));
 		//lumin[16].spotexponent = 10.0f;
+		float factorint16 = calcularFactorProximidad(mundo, body, circuit->m_rigidBody, muro->m_rigidBody, pos, dir, 10.0f);
+		lumin[16].difusa = { 20.0f * factorint16, 10.0f * factorint16, 0.0f, 1.0f };
 	}
 	else { lumin[14].encesa = false; lumin[16].encesa = false; }
 
@@ -1300,7 +1371,6 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 	{
 		// DELANTE DERECHA (15)
 		lumin[15].encesa = true;
-		lumin[15].difusa = { 20.0f, 10.0f, 0.0f, 1.0f };
 		lumin[15].restringida = true;
 		lumin[15].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
 		lumin[15].atenuacio = { 1.0f, 2.0f, 3.0f };
@@ -1313,10 +1383,11 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[15].spotdirection = { dir.x, dir.y, dir.z };
 		lumin[15].spotcoscutoff = cos(glm::radians(80.0f));
 		//lumin[15].spotexponent = 10.0f;
+		float factorint15 = calcularFactorProximidad(mundo, body, circuit->m_rigidBody, muro->m_rigidBody, pos, dir, 10.0f);
+		lumin[15].difusa = { 20.0f * factorint15, 10.0f * factorint15, 0.0f, 1.0f };
 
 		// DETRÁS DERECHA (17)
 		lumin[17].encesa = true;
-		lumin[17].difusa = { 20.0f, 10.0f, 0.0f, 1.0f };
 		lumin[17].restringida = true;
 		lumin[17].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
 		lumin[17].atenuacio = { 1.0f, 2.0f, 3.0f };
@@ -1329,11 +1400,237 @@ void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
 		lumin[17].spotdirection = { dir.x, dir.y, dir.z };
 		lumin[17].spotcoscutoff = cos(glm::radians(80.0f));
 		//lumin[17].spotexponent = 10.0f;
+		float factorint17 = calcularFactorProximidad(mundo, body, circuit->m_rigidBody, muro->m_rigidBody, pos, dir, 10.0f);
+		lumin[17].difusa = { 20.0f * factorint17, 10.0f * factorint17, 0.0f, 1.0f };
 	}
 	else { lumin[15].encesa = false; lumin[17].encesa = false; }
 }
 
+float calcularFactorProximidad(btDynamicsWorld* world, btRigidBody* me, btRigidBody* circuitoBody, btRigidBody* muro, const glm::vec3& start, const glm::vec3& dir, float maxDist) {
+	btVector3 from(start.x, start.y, start.z);
+	btVector3 to = from + btVector3(dir.x, dir.y, dir.z) * maxDist;
 
+	btCollisionWorld::ClosestRayResultCallback rayCallback(from, to);
+	rayCallback.m_collisionFilterMask = ~0;
+
+	world->rayTest(from, to, rayCallback);
+
+	if (rayCallback.hasHit()) {
+		// Obtenemos el objeto colisionado como puntero de la clase base
+		const btCollisionObject* hitObj = rayCallback.m_collisionObject;
+
+		// Comparamos punteros (Bullet permite comparar el puntero de la base directamente)
+		// Ignoramos si es el coche O si es el circuito
+		if (hitObj == me || hitObj == circuitoBody || hitObj == muro) {
+			return 1.0f;
+		}
+
+		float dist = (rayCallback.m_hitPointWorld - from).length();
+
+		// Ajuste de intensidad (0.3m de margen para evitar clipping)
+		float factor = (dist - 0.3f) / (maxDist - 0.3f);
+		return glm::clamp(factor, 0.0f, 1.0f);
+	}
+	return 1.0f;
+}
+
+/*
+void func_llumsCotxe(Coche* coche, ControlLuces& control, LLUM* lumin)
+{
+	if (coche == nullptr) return;
+
+	float anguloRad = glm::radians(coche->psi - 15.0f);
+	glm::vec3 forward = glm::normalize(glm::vec3(-sin(anguloRad), cos(anguloRad), 0.0f));
+	glm::vec3 right = glm::cross(forward, glm::vec3(0.0f, 0.0f, 1.0f));
+
+	glm::vec3 rawPos = glm::vec3(coche->x, coche->y, coche->z);
+
+	// CORRECCIÓ: Apliquem l'offset (-7.5) en la direcció del vector forward, no a l'eix Y global
+	glm::vec3 carPos = rawPos + (forward * -7.5f);
+
+	glm::vec2 worldVelocity = glm::vec2(coche->vx, coche->vy);
+	glm::vec2 worldForwardXY = glm::vec2(forward.x, forward.y);
+	float velocidadAdelante = glm::dot(worldVelocity, worldForwardXY);
+	bool enMarchaAtras = control.frenando && (velocidadAdelante < -0.1f);
+	bool frenando = control.frenando && !enMarchaAtras;
+	bool parpadeoOn = (fmod(control.tiempoTotal, 1.0f) < 0.5f);
+
+	// ---------------------------------------------------------
+	// 1. FAROS DELANTEROS (Indices 8 y 9)
+	// ---------------------------------------------------------
+	if (control.modoFaros != 0)
+	{
+		for (int i = 8; i < 10; i++)
+		{
+			lumin[i].encesa = true;
+			float offX;
+			if (i == 8) offX = -0.65f;
+			else        offX = 0.15f;
+
+			glm::vec3 posFaro = carPos + (forward * 2.3f) + (right * offX);
+			posFaro.z += 0.65f;
+
+			lumin[i].posicio = { posFaro.x, posFaro.y, posFaro.z, 1.0f };
+			lumin[i].restringida = true;
+			lumin[i].atenuacio = { 0.1f, 0.01f, 0.001f };
+
+			if (control.modoFaros == 1) // CORTAS
+			{
+				glm::vec3 dir = glm::normalize(glm::vec3(forward.x, forward.y, forward.z - 0.8f));
+				lumin[i].spotdirection = { dir.x, dir.y, dir.z };
+				lumin[i].spotcoscutoff = cos(glm::radians(60.0f));
+				lumin[i].spotexponent = 2.0f;
+				lumin[i].difusa = { 50.0f, 50.0f, 40.0f, 1.0f };
+				lumin[i].especular = { 1.0f, 1.0f, 1.0f, 1.0f };
+			}
+			else // LARGAS
+			{
+				glm::vec3 dir = glm::normalize(glm::vec3(forward.x, forward.y, forward.z - 0.2f));
+				lumin[i].spotdirection = { dir.x, dir.y, dir.z };
+				lumin[i].spotcoscutoff = cos(glm::radians(30.0f));
+				lumin[i].spotexponent = 10.0f;
+				lumin[i].difusa = { 100.0f, 100.0f, 90.0f, 1.0f };
+				lumin[i].especular = { 1.0f, 1.0f, 1.0f, 1.0f };
+			}
+		}
+	}
+	else
+	{
+		// Assegurem que s'apaguen si el mode es 0
+		lumin[8].encesa = false;
+		lumin[9].encesa = false;
+	}
+
+	// ---------------------------------------------------------
+	// 2. FRENOS (Índices 10 y 11)
+	// ---------------------------------------------------------
+	for (int i = 10; i < 12; i++)
+	{
+		float offX, offZ;
+		if (i == 10) { offX = -0.76f; offZ = 2.45f; }
+		else { offX = 0.15f;  offZ = 2.50f; }
+
+		glm::vec3 posCola = carPos - (forward * offZ) + (right * offX);
+		posCola.z += 0.65f;
+
+		lumin[i].posicio = { posCola.x, posCola.y, posCola.z, 1.0f };
+		lumin[i].restringida = true;
+
+		glm::vec3 dirFreno = forward;
+		dirFreno.z -= 0.8f;
+		dirFreno = glm::normalize(dirFreno);
+
+		lumin[i].spotdirection = { dirFreno.x, dirFreno.y, dirFreno.z };
+		lumin[i].spotcoscutoff = cos(glm::radians(50.0f));
+		lumin[i].spotexponent = 10.0f;
+		lumin[i].especular = { 1.0f, 0.5f, 0.5f, 1.0f };
+
+		if (frenando) {
+			lumin[i].encesa = true;
+			lumin[i].difusa = { 80.0f, 0.0f, 0.0f, 1.0f };
+			lumin[i].atenuacio = { 0.1f, 0.1f, 0.1f };
+		}
+		else if (control.modoFaros != 0) {
+			lumin[i].encesa = true;
+			lumin[i].difusa = { 5.0f, 0.0f, 0.0f, 1.0f };
+			lumin[i].atenuacio = { 0.1f, 0.1f, 0.1f };
+		}
+		else lumin[i].encesa = false;
+	}
+
+	// ---------------------------------------------------------
+	// 3. MARCHA ATRÁS (Índices 12 y 13)
+	// ---------------------------------------------------------
+	for (int i = 12; i < 14; i++)
+	{
+		float offX, offZ;
+		if (i == 12) { offX = -0.60f; offZ = 2.45f; }
+		else { offX = 0.05f;  offZ = 2.50f; }
+
+		glm::vec3 posMarcha = carPos - (forward * offZ) + (right * offX);
+		posMarcha.z += 0.65f;
+
+		lumin[i].posicio = { posMarcha.x, posMarcha.y, posMarcha.z, 1.0f };
+		lumin[i].restringida = true;
+
+		glm::vec3 dirMarcha = glm::vec3(0, 0, -1);
+		lumin[i].spotdirection = { dirMarcha.x, dirMarcha.y, dirMarcha.z };
+		lumin[i].spotcoscutoff = cos(glm::radians(60.0f));
+		lumin[i].spotexponent = 5.0f;
+		lumin[i].especular = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		if (enMarchaAtras) {
+			lumin[i].encesa = true;
+			lumin[i].difusa = { 10.0f, 10.0f, 10.0f, 1.0f };
+			lumin[i].atenuacio = { 0.1f, 0.1f, 0.1f };
+		}
+		else lumin[i].encesa = false;
+	}
+
+	// ---------------------------------------------------------
+	// 4. INTERMITENTES (Índices 14-17)
+	// ---------------------------------------------------------
+	float intDel_X_Izq = -0.80f;
+	float intDel_X_Der = 0.30f;
+	float intTras_X_Izq = -0.80f;
+	float intTras_X_Der = 0.30f;
+
+	float distDelante = 2.2f;
+	float distDetras = 2.9f;
+
+	if (control.intermitenteIzquierdo && parpadeoOn)
+	{
+		// DELANTE (14)
+		lumin[14].encesa = true;
+		lumin[14].difusa = { 50.0f, 25.0f, 0.0f, 1.0f };
+		lumin[14].restringida = false;
+		lumin[14].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
+		lumin[14].atenuacio = { 0.1f, 2.0f, 8.0f };
+
+		glm::vec3 pos = carPos + (forward * distDelante) + (right * intDel_X_Izq);
+		pos.z += 0.6f;
+		lumin[14].posicio = { pos.x, pos.y, pos.z, 1.0f };
+
+		// DETRÁS (16)
+		lumin[16].encesa = true;
+		lumin[16].difusa = { 50.0f, 25.0f, 0.0f, 1.0f };
+		lumin[16].restringida = false;
+		lumin[16].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
+		lumin[16].atenuacio = { 0.1f, 2.0f, 8.0f };
+
+		pos = carPos - (forward * distDetras) + (right * intTras_X_Izq);
+		pos.z += 0.6f;
+		lumin[16].posicio = { pos.x, pos.y, pos.z, 1.0f };
+	}
+	else { lumin[14].encesa = false; lumin[16].encesa = false; }
+
+	if (control.intermitenteDerecho && parpadeoOn)
+	{
+		// DELANTE (15)
+		lumin[15].encesa = true;
+		lumin[15].difusa = { 50.0f, 25.0f, 0.0f, 1.0f };
+		lumin[15].restringida = false;
+		lumin[15].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
+		lumin[15].atenuacio = { 0.1f, 2.0f, 8.0f };
+
+		glm::vec3 pos = carPos + (forward * distDelante) + (right * intDel_X_Der);
+		pos.z += 0.6f;
+		lumin[15].posicio = { pos.x, pos.y, pos.z, 1.0f };
+
+		// DETRÁS (17)
+		lumin[17].encesa = true;
+		lumin[17].difusa = { 50.0f, 25.0f, 0.0f, 1.0f };
+		lumin[17].restringida = false;
+		lumin[17].especular = { 1.0f, 0.8f, 0.0f, 1.0f };
+		lumin[17].atenuacio = { 0.1f, 2.0f, 8.0f };
+
+		pos = carPos - (forward * distDetras) + (right * intTras_X_Der);
+		pos.z += 0.6f;
+		lumin[17].posicio = { pos.x, pos.y, pos.z, 1.0f };
+	}
+	else { lumin[15].encesa = false; lumin[17].encesa = false; }
+}
+*/
 // instancia: Aplica Transformacions Geometriques d'instanciació, segons els parametres 
 //            definits a la persiana Transformacions
 glm::mat4 instancia(bool TR, INSTANCIA tg, INSTANCIA tgF)

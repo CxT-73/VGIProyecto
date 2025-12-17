@@ -1,7 +1,7 @@
 #include "MenuController.h"
 
-MenuController::MenuController(GameContext* data, char* cameraPtr)
-    : currentState(nullptr), contextData(data), externalCameraPtr(cameraPtr) {
+MenuController::MenuController(GameContext* data, char* cameraPtr, Coche* coche)
+    : currentState(nullptr), contextData(data), externalCameraPtr(cameraPtr), miCoche(coche){
 }
 
 MenuController::~MenuController() {
@@ -41,34 +41,42 @@ void MenuController::DrawBackgroundOverlay() {
 
 // --- 2. AYUDANTE PARA CENTRADO (Calcula y prepara la ventana invisible) ---
 // Devuelve el offset Y necesario para centrar el contenido, y posiciona el cursor X.
-float MenuController::BeginButtonWindow(const char* name, float required_content_height) {
+float MenuController::BeginButtonWindow(const char* name,
+    float required_content_height,
+    float forced_width) {
     ImVec2 display_size = ImGui::GetIO().DisplaySize;
 
     ImGuiWindowFlags menu_flags =
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize;
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoBackground;
+    // ? Quitamos AlwaysAutoResize
 
-    ImVec2 menu_size(BUTTON_WIDTH + MARGIN, required_content_height + MARGIN);
+    ImVec2 menu_size(forced_width, required_content_height + MARGIN);
+
     ImGui::SetNextWindowSize(menu_size);
-    ImGui::SetNextWindowPos(ImVec2(
-        (display_size.x - menu_size.x) * 0.5f,
-        (display_size.y - menu_size.y) * 0.5f
-    ));
+    ImGui::SetNextWindowPos(
+        ImVec2(
+            (display_size.x - menu_size.x) * 0.5f,
+            (display_size.y - menu_size.y) * 0.5f
+        ),
+        ImGuiCond_Always
+    );
 
     ImGui::Begin(name, nullptr, menu_flags);
 
-    // Centrado de los botones dentro de esta ventana
     float centered_x_pos = (ImGui::GetWindowWidth() - BUTTON_WIDTH) * 0.5f;
-    float centered_y_offset = (ImGui::GetWindowHeight() - required_content_height) * 0.5f;
+    float centered_y_offset =
+        (ImGui::GetWindowHeight() - required_content_height) * 0.5f;
 
-    // Posicionar el cursor Y
     ImGui::SetCursorPosY(centered_y_offset);
-
-    // Posicionar el cursor X para que los elementos empiecen centrados
     ImGui::SetCursorPosX(centered_x_pos);
 
-    return centered_x_pos; // Devolvemos la posición X para que las llamadas la usen
+    return centered_x_pos;
 }
+
 
 // --- 3. APLICAR ESTILO NEÓN LOCAL (Según tu código de prueba) ---
 void MenuController::PushUserNeonStyle() {
@@ -100,35 +108,45 @@ void MenuController::PopUserNeonStyle() {
 void MenuController::calculateScore() {
     if (!contextData) return;
 
-    // --- CONFIGURACIÓN DE PUNTUACIÓN ---
-    const float TIME_LIMIT = 300.0f;      // Tiempo objetivo (ej: 5 minutos / 300 segundos)
-    const int POINTS_PER_HEALTH = 100;    // Puntos por cada 1% de vida
-    const int POINTS_PER_SEC_SAVED = 50;  // Puntos por cada segundo ahorrado respecto al límite
-    const int PENALTY_PER_COLLISION = 200;// Puntos restados por cada choque
+    // 1. REGLA DE ORO: SI MUERE (VIDA <= 0), PUNTUACIÓN AUTOMÁTICA 0
+    if (contextData->carHealth <= 0) {
+        contextData->score = 0;
+        return;
+    }
 
-    // 1. Puntuación por Vida Restante
-    // GameContext::carHealth
-    int healthScore = contextData->carHealth * POINTS_PER_HEALTH;
+    float notaFinal = 10.0f; // Empezamos en la nota máxima
 
-    // 2. Puntuación por Tiempo
-    // Usamos finalTime si la carrera terminó, de lo contrario usamos gameTime actual
+    // --- CONFIGURACIÓN DE LÍMITES ---
+    const float TIEMPO_PERFECTO = 240.0f;      // 4 minutos
+    const float TIEMPO_MAXIMO_ADMITIDO = 600.0f; // 10 minutos
+    const float PENALIZACION_CHOQUE = 1.0f;    // -1 punto por choque
+
     float timeTaken = (contextData->finalTime > 0.0f) ? contextData->finalTime : contextData->gameTime;
 
-    float timeSaved = TIME_LIMIT - timeTaken;
-    if (timeSaved < 0.0f) timeSaved = 0.0f; // No damos puntos negativos por tiempo, solo 0 bonus
+    // 2. PENALIZACIÓN POR TIEMPO
+    if (timeTaken > TIEMPO_PERFECTO) {
+        // Calculamos cuánto se ha pasado de los 4 minutos
+        float exceso = timeTaken - TIEMPO_PERFECTO;
+        float margen = TIEMPO_MAXIMO_ADMITIDO - TIEMPO_PERFECTO;
 
-    int timeScore = static_cast<int>(timeSaved * POINTS_PER_SEC_SAVED);
+        // Si tarda 10 min o más, la penalización máxima por tiempo es de 5 puntos
+        float penalizacionTiempo = (exceso / margen) * 5.0f;
+        notaFinal -= penalizacionTiempo;
+    }
 
-    // 3. Penalización por Colisiones
-    // GameContext::collisionCount
-    int collisionPenalty = contextData->collisionCount * PENALTY_PER_COLLISION;
+    // 3. PENALIZACIÓN POR COLISIONES
+    notaFinal -= (contextData->collisionCount * PENALIZACION_CHOQUE);
 
-    // 4. Cálculo Total
-    int totalScore = (healthScore + timeScore) - collisionPenalty;
+    // 4. REGLA DE LOS 5 CHOQUES (CAP)
+    if (contextData->collisionCount > 5) {
+        if (notaFinal > 5.0f) {
+            notaFinal = 5.0f; // Máximo aspiras a 5
+        }
+    }
 
-    // Evitamos que la puntuación sea negativa
-    if (totalScore < 0) totalScore = 0;
+    // 5. AJUSTE FINAL Y GUARDADO
+    if (notaFinal < 0.0f) notaFinal = 0.0f;
+    if (notaFinal > 10.0f) notaFinal = 10.0f;
 
-    // 5. Guardar resultado en el contexto
-    contextData->score = totalScore;
+    contextData->score = static_cast<int>(notaFinal);
 }

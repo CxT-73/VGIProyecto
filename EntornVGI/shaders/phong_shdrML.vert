@@ -48,11 +48,14 @@ uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 uniform bool flag_invert_y;
 
+uniform mat4 lightSpaceMatrix;
+
 // Variables OUT (Se envían al Fragment Shader para ser interpoladas)
 out vec3 vertexPV;       // Posición en View Space
 out vec3 vertexNormalPV; // Normal en View Space
 out vec2 vertexTexCoord;
 out vec4 vertexColor;
+out vec4 FragPosLightSpace;
 
 void main()
 {
@@ -71,4 +74,6 @@ void main()
 
     // 5. Posición en pantalla
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Vertex, 1.0);
+
+    FragPosLightSpace = lightSpaceMatrix * modelMatrix * vec4(in_Vertex, 1.0);
 }

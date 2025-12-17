@@ -17,7 +17,7 @@ public:
     float rotacion_ruedas; // rotación por movimiento (gira mas rapido contra haya mas velocidad)
     bool activadoABS;
     bool FrenoDeMano;
-    
+    bool sonidoAceleracionActivo = false;
     Coche();              // Constructor
     ~Coche();             // Destructor to free memory
     void initFisicas(btDiscreteDynamicsWorld* mundo);

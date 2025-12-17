@@ -1677,7 +1677,7 @@ void OBJ::initFisicas(btDiscreteDynamicsWorld* mundo, glm::vec3 offset)
 		m_collisionShape = shape;
 
 		if (nom == "cono") masa = 4.0f;
-		else masa = 500.0f;
+		else masa = 50000.0f;
 
 	}
 	else if (nom == "barril")
