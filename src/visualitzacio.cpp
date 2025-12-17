@@ -24,16 +24,40 @@
 // Iluminació: Configurar iluminació de l'escena
 
 void Iluminacio(GLint sh_programID, char ilumin, bool ifix[], bool ilu2sides, bool ll_amb, LLUM* lumin, char obj, bool frnt_fcs,
-	bool bc_lin, int step)
+	bool bc_lin, int step, int ambienteIdx)
 {
 
 	glUseProgram(sh_programID);
 
-
+	GLfloat luz_mañana[] = { 0.4f, 0.3f, 0.3f, 1.0f };   // Más cálido
+	GLfloat luz_mediodia[] = { 0.5f, 0.5f, 0.5f, 1.0f }; // Neutro
+	GLfloat anochecer[] = { 0.3f, 0.2f, 0.4f, 1.0f };    // Violeta oscuro
+	GLfloat atardecer[] = { 0.4f,0.3f,0.2f,1.0 };    // Naranja
+	GLfloat noche[] = { 0.15f, 0.15f, 0.35f, 1.0f };
 
 	// Variables per a configurar paràmetres de les fonts de llum
 	GLfloat especular[] = { 0.0,0.0,0.0,1.0 };
-	GLfloat ambientg[] = { .5,.5,.5,1.0 };
+	GLfloat* ambientg;
+
+	switch (ambienteIdx) {
+	case 0: ambientg = luz_mañana;
+		lumin[0].difusa = { 0.8f, 0.7f, 0.6f, 1.0f };
+		lumin[0].especular = { 0.5f, 0.5f, 0.5f, 1.0f }; break;
+	case 1: ambientg = luz_mediodia; 
+		lumin[0].difusa = { 1.0f, 1.0f, 1.0f, 1.0f };
+		lumin[0].especular = { 1.0f, 1.0f, 1.0f, 1.0f }; break;
+	case 2: ambientg = anochecer; 
+		lumin[0].difusa = { 0.6f, 0.4f, 0.5f, 1.0f };
+		lumin[0].especular = { 0.4f, 0.3f, 0.4f, 1.0f }; break;
+	case 3: ambientg = atardecer;
+		lumin[0].difusa = { 0.9f, 0.5f, 0.2f, 1.0f };
+		lumin[0].especular = { 0.8f, 0.4f, 0.2f, 1.0f }; break;
+	case 4: ambientg = noche;
+		lumin[0].difusa = { 0.2f, 0.3f, 0.6f, 1.0f };
+		lumin[0].especular = { 0.7f, 0.7f, 0.9f, 1.0f }; break;
+	default: ambientg = luz_mediodia; 
+		lumin[0].difusa = { 1.0f, 1.0f, 1.0f, 1.0f }; break; // Por defecto
+	}
 
 
 // Definició de llum ambient segons booleana ll_amb
@@ -751,11 +775,11 @@ glm::mat4 Projeccio_Perspectiva(GLsizei w, GLsizei h, double fov_grados)
 
 glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix[], bool il2sides)
+	LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	Fons(col_fons);
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0, ambienteIdx);
 	static glm::vec3 s_smoothedCameraPos = glm::vec3(0.0f);
 	static bool s_firstCall = true;
 	const float SMOOTHING_FACTOR = 0.8f;
@@ -830,12 +854,12 @@ glm::mat4 Vista_Seguimiento(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool
 	return MatriuVista;
 }
 
-glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides)
+glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0);
 	Fons(col_fons); 
 	bool activarIluminacion = true;
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0, ambienteIdx);
 
 	if (coche != nullptr)
 	{
@@ -881,11 +905,11 @@ glm::mat4 Vista_PrimeraPersona(GLuint sh_programID, Coche* coche, CColor col_fon
 	return MatriuVista;
 }
 
-glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides)
+glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	// ¡NO LIMPIAMOS FONDO (Fons(col_fons))! Dibujamos encima.
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0,  ambienteIdx);
 
 	if (coche != nullptr)
 	{
@@ -916,11 +940,11 @@ glm::mat4 Vista_Espejo_Central(GLuint sh_programID, Coche* coche, CColor col_fon
 	return MatriuVista;
 }
 
-glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche, bool esIzquierdo, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides)
+glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche, bool esIzquierdo, CColor col_fons, bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb, LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	// ¡NO LIMPIAMOS FONDO (Fons(col_fons))! Dibujamos encima.
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0,  ambienteIdx);
 
 	if (coche != nullptr)
 	{
@@ -957,11 +981,11 @@ glm::mat4 Vista_Retrovisor(GLuint sh_programID, Coche* coche, bool esIzquierdo, 
 
 glm::mat4 Vista_Lliure(GLuint sh_programID, CColor col_fons, CEsfe3D opv, glm::vec3 g_FreeCamPos,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix[], bool il2sides)
+	LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	Fons(col_fons); // Limpia la pantalla
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0,  ambienteIdx);
 	
 
 	glm::vec3 front;
@@ -998,11 +1022,11 @@ glm::mat4 Vista_Lliure(GLuint sh_programID, CColor col_fons, CEsfe3D opv, glm::v
 
 glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix[], bool il2sides)
+	LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 	Fons(col_fons);
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0,  ambienteIdx);
 
 	if (coche != nullptr)
 	{
@@ -1058,12 +1082,12 @@ glm::mat4 Vista_menu_inici(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool 
 } 
 glm::mat4 Vista_Pausa(GLuint sh_programID, Coche* coche, CEsfe3D opv, bool mobil, CColor col_fons,
 	bool oculta, bool testv, bool bck_ln, char iluminacio, bool llum_amb,
-	LLUM* lumi, bool ifix[], bool il2sides)
+	LLUM* lumi, bool ifix[], bool il2sides, int ambienteIdx)
 {
 	glm::mat4 MatriuVista = glm::mat4(1.0f);
 
 	Fons(col_fons);
-	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0);
+	Iluminacio(sh_programID, iluminacio, ifix, il2sides, llum_amb, lumi, ' ', false, bck_ln, 0, ambienteIdx);
 
 	if (coche != nullptr)
 	{

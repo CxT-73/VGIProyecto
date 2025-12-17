@@ -401,8 +401,15 @@ void OnSize(GLFWwindow* window, int width, int height)
 // OnPaint: Funci� de dibuix i visualitzaci� en frame buffer del frame
 void OnPaint(GLFWwindow* window)
 {
+	 
+
+
 	int fbW, fbH;
 	glfwGetFramebufferSize(window, &fbW, &fbH);
+	int currentAmbience = 0; 
+	if (g_MenuController != nullptr && g_MenuController->GetContext() != nullptr) {
+		currentAmbience = g_MenuController->GetContext()->selectedLLum;
+	}
 	glViewport(0, 0, fbW, fbH);
 
 	// Si usas w/h en el resto del c�digo, sincron�zalos
@@ -438,6 +445,7 @@ void OnPaint(GLFWwindow* window)
 	//LLUMS COTXE
 	controlLlumsCotxe.tiempoTotal += 1.0f / 90.0f;
 	func_llumsCotxe(miCoche, controlLlumsCotxe, llumGL);
+
 
 	//OMBRES
 	glm::vec3 lightPos(llumGL[0].posicio.x, llumGL[0].posicio.y, llumGL[0].posicio.z);
@@ -494,7 +502,7 @@ void OnPaint(GLFWwindow* window)
 		for (int i = 0; i < NUM_MAX_LLUMS; i++) printf("%d ", ifixe[i]);
 		ViewMatrix = Vista_Seguimiento(shader_programID, miCoche, OPV, mobil, c_fons,
 			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
+			llumGL, ifixe, ilum2sides, currentAmbience);
 		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
 		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 	}
@@ -509,7 +517,7 @@ void OnPaint(GLFWwindow* window)
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
 		ViewMatrix = Vista_PrimeraPersona(shader_programID, miCoche, c_fons,
 			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
+			llumGL, ifixe, ilum2sides,currentAmbience);
 
 		configura_Escena();
 		if (SkyBoxCube) dibuixa_Skybox(skC_programID, cubemapTexture, Vis_Polar, ProjectionMatrix, ViewMatrix);
@@ -530,7 +538,7 @@ void OnPaint(GLFWwindow* window)
 
 		ProjectionMatrix = Projeccio_Perspectiva(mirrorWidth, mirrorHeight, fov_central);
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_Espejo_Central(shader_programID, miCoche, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+		ViewMatrix = Vista_Espejo_Central(shader_programID, miCoche, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides, currentAmbience);
 
 
 		configura_Escena();
@@ -549,7 +557,7 @@ void OnPaint(GLFWwindow* window)
 
 		ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, true, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+		ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, true, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides, currentAmbience);
 
 
 		configura_Escena();
@@ -563,7 +571,7 @@ void OnPaint(GLFWwindow* window)
 		//glClear(GL_DEPTH_BUFFER_BIT);
 		ProjectionMatrix = Projeccio_Perspectiva(retrovWidth, retrovHeight, fov_lateral);
 		glUniformMatrix4fv(glGetUniformLocation(shader_programID, "projectionMatrix"), 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, false, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides);
+		ViewMatrix = Vista_Retrovisor(shader_programID, miCoche, false, c_fons, oculta, test_vis, back_line, ilumina, llum_ambient, llumGL, ifixe, ilum2sides,currentAmbience);
 
 
 		configura_Escena();
@@ -577,7 +585,7 @@ void OnPaint(GLFWwindow* window)
 	else if (camera == CAM_LLIURE) {
 		ViewMatrix = Vista_Lliure(shader_programID, c_fons, OPV, g_FreeCamPos,
 			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
+			llumGL, ifixe, ilum2sides,currentAmbience);
 		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
 		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 	}
@@ -585,7 +593,7 @@ void OnPaint(GLFWwindow* window)
 
 		ViewMatrix = Vista_Pausa(shader_programID, miCoche, OPV, mobil, c_fons,
 			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
+			llumGL, ifixe, ilum2sides, currentAmbience);
 		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
 		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 	}
@@ -593,11 +601,11 @@ void OnPaint(GLFWwindow* window)
 
 		ViewMatrix = Vista_menu_inici(shader_programID, miCoche, OPV, mobil, c_fons,
 			oculta, test_vis, back_line, ilumina, llum_ambient,
-			llumGL, ifixe, ilum2sides);
+			llumGL, ifixe, ilum2sides, currentAmbience);
 		configura_Escena();     // Aplicar Transformacions Geometriques segons persiana Transformacio i configurar objectes.
 		dibuixa_Escena();		// Dibuix geometria de l'escena amb comandes GL.
 	}
-	 
+	
 		//  Actualitzar la barra d'estat de l'aplicació amb els valors R,A,B,PVx,PVy,PVz
 		//if (true) Barra_Estat(); 
 

@@ -4,6 +4,8 @@
 
 void NewGameState::Render(MenuController& controller) {
 
+
+
     char* cameraPtr = controller.GetCameraPtr();
     if (cameraPtr) {
         *cameraPtr = 'F';
@@ -14,7 +16,7 @@ void NewGameState::Render(MenuController& controller) {
     controller.DrawBackgroundOverlay();
 
     // Cálculo de altura
-    float total_content_height = 2.0f * ImGui::GetTextLineHeight() + 2.0f * BUTTON_HEIGHT + 2.0f * BUTTON_HEIGHT + 5.0f * SPACING;
+    float total_content_height = 3.0f * ImGui::GetTextLineHeight() + 3.0f * BUTTON_HEIGHT + 2.0f * BUTTON_HEIGHT + 7.0f * SPACING;
 
     float centered_x_pos = controller.BeginButtonWindow("NewGameButtons", total_content_height);
 
@@ -55,11 +57,23 @@ void NewGameState::Render(MenuController& controller) {
     ImGui::Combo("##Circuito", &controller.GetContext()->selectedCircuit, trackOptions, IM_ARRAYSIZE(trackOptions));
     ImGui::PopItemWidth();
 
-    // --- FIN DEL AJUSTE DE ESTILO LOCAL ---
-    ImGui::PopStyleVar(); // Quita FramePadding (Centrado y Altura)
-
-    // --- Botones ---
     ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
+
+    // ILUMINACIONES
+    ImGui::Text("Ambient:"); // Texto para la etiqueta
+    ImGui::SetCursorPosX(centered_x_pos);
+
+    ImGui::PushItemWidth(BUTTON_WIDTH);
+    // Asegúrate de agregar 'selectedLighting' (int) a tu GameContext
+    ImGui::Combo("##Iluminacion", &controller.GetContext()->selectedLLum, IluminacioOptions, IM_ARRAYSIZE(IluminacioOptions));
+    ImGui::PopItemWidth();
+
+    // --- FIN DEL AJUSTE DE ESTILO LOCAL ---
+    ImGui::PopStyleVar(); // Quita FramePadding
+
+    // --- Botones Inferiores ---
+    ImGui::Spacing(); ImGui::Spacing(); ImGui::SetCursorPosX(centered_x_pos);
+
 
     ImVec2 button_size(BUTTON_WIDTH, BUTTON_HEIGHT);
     if (ImGui::Button(u8"Començar partida", button_size)) {

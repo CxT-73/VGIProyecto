@@ -8,6 +8,7 @@
 struct GameContext {
     int selectedCar = 0;
     int selectedCircuit = 0;
+    int selectedLLum = 0;
 
     // Estadísticas para el End Menu
     float finalTime = 0.0f;
