@@ -29,6 +29,13 @@ void ObjetoSeguidor::crearDuplicados(
             copia->setTransform(posFinal, rot, escala);
             copia->initFisicas(mundo, offset);
 
+            if (zonaID == 0 && i == 51) {
+                // Usamos el miembro m_rigidBody que acabas de mostrar en el código
+                if (copia->m_rigidBody) {
+                    copia->m_rigidBody->setUserPointer((void*)"META");
+                }
+            }
+
             duplicados.push_back(copia);
             posicionesDuplicados.push_back(posFinal);
             bool invisible = false;
