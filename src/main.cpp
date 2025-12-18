@@ -880,6 +880,9 @@ void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
 		else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
 			if (miCoche) miCoche->reiniciarPosicion();
 		}
+		else if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+			if (miCoche) miCoche->irMeta();
+		}
 		else if (camera == CAM_FOLLOW)
 			if (mods == 0 && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 		// =====================================================
